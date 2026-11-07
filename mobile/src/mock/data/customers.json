@@ -1,0 +1,11 @@
+[
+  { "id": "u-1002", "name": "Meera Iyer", "phone": "+91 93474 89248", "authKey": "9347489248", "email": "meera.iyer@example.com", "homeLocationId": "loc-lpu", "createdAt": "2026-09-02T10:00:00+05:30", "status": "ACTIVE" },
+  { "id": "u-1003", "name": "Arjun Sharma", "phone": "+91 96032 45165", "authKey": "9603245165", "email": "arjun.sharma@example.com", "homeLocationId": "loc-nit", "createdAt": "2026-09-04T10:00:00+05:30", "status": "ACTIVE" },
+  { "id": "u-1004", "name": "Kavya Nair", "phone": "+91 98862 31361", "authKey": "9886231361", "email": "kavya.nair@example.com", "homeLocationId": "loc-outside", "createdAt": "2026-09-06T10:00:00+05:30", "status": "ACTIVE" },
+  { "id": "u-1005", "name": "Rohit Verma", "phone": "+91 91765 77708", "authKey": "9176577708", "email": "rohit.verma@example.com", "homeLocationId": "loc-nit", "createdAt": "2026-09-08T10:00:00+05:30", "status": "ACTIVE" },
+  { "id": "u-1006", "name": "Priya Shetty", "phone": "+91 96684 88279", "authKey": "9668488279", "email": "priya.shetty@example.com", "homeLocationId": "loc-lpu", "createdAt": "2026-09-10T10:00:00+05:30", "status": "ACTIVE" },
+  { "id": "u-1007", "name": "Vikram Rao", "phone": "+91 91899 36506", "authKey": "9189936506", "email": "vikram.rao@example.com", "homeLocationId": "loc-nit", "createdAt": "2026-09-12T10:00:00+05:30", "status": "ACTIVE" },
+  { "id": "u-1008", "name": "Sana Khan", "phone": "+91 95190 62526", "authKey": "9519062526", "email": "sana.khan@example.com", "homeLocationId": "loc-lpu", "createdAt": "2026-09-14T10:00:00+05:30", "status": "ACTIVE" },
+  { "id": "u-1009", "name": "Kiran Thomas", "phone": "+91 92187 21686", "authKey": "9218721686", "email": "kiran.thomas@example.com", "homeLocationId": "loc-outside", "createdAt": "2026-09-16T10:00:00+05:30", "status": "ACTIVE" },
+  { "id": "u-1010", "name": "Aditya Kulkarni", "phone": "+91 98084 48464", "authKey": "9808448464", "email": "aditya.kulkarni@example.com", "homeLocationId": "loc-outside", "createdAt": "2026-09-18T10:00:00+05:30", "status": "ACTIVE" }
+]

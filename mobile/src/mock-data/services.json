@@ -1,0 +1,58 @@
+[
+  {
+    "id": "only-wash",
+    "name": "Only Wash",
+    "tagline": "Washed and folded, by the kilo",
+    "description": "Machine washed, dried and neatly folded. Choose normal, Ezee or a whites-only wash.",
+    "turnaround": "48 hours",
+    "art": "washing"
+  },
+  {
+    "id": "wash-iron",
+    "name": "Wash & Iron",
+    "tagline": "Washed, pressed, ready to wear",
+    "description": "Washed, dried and pressed, priced by weight.",
+    "turnaround": "48 hours",
+    "art": "ironing"
+  },
+  {
+    "id": "shoes-bags",
+    "name": "Shoes, Bags & Soft Toys",
+    "tagline": "Machine, hand or deep clean",
+    "description": "Shoes, bags and soft toys cleaned by machine, by hand, or with a dry or deep clean.",
+    "turnaround": "72 hours",
+    "art": "collecting"
+  },
+  {
+    "id": "stain",
+    "name": "Stain Treatment",
+    "tagline": "For whites and colours",
+    "description": "Targeted treatment for stubborn stains, priced per piece.",
+    "turnaround": "72 hours",
+    "art": "steam"
+  },
+  {
+    "id": "dye",
+    "name": "Colour Dye",
+    "tagline": "Bring faded clothes back",
+    "description": "Basic or premium dyeing, priced per piece.",
+    "turnaround": "5 days",
+    "art": "drying"
+  },
+  {
+    "id": "dry-clean",
+    "name": "Dry Clean",
+    "tagline": "For suits, silks and occasion wear",
+    "description": "Basic or premium dry cleaning for delicate fabrics, priced per piece.",
+    "turnaround": "72 hours",
+    "art": "packing"
+  },
+  {
+    "id": "blanket",
+    "name": "Blanket",
+    "tagline": "Single and double blankets",
+    "description": "Normal, organic or Ezee wash, or dry clean, for single and double blankets.",
+    "turnaround": "72 hours",
+    "art": "delivery"
+  }
+]

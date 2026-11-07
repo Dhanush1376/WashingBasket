@@ -1,0 +1,175 @@
+[
+  {
+    "id": "WB1025",
+    "serviceId": "only-wash",
+    "status": "collected",
+    "placedAt": "2026-11-06T06:30:00+05:30",
+    "pickup": {
+      "date": "2026-11-06",
+      "slotId": "s-1",
+      "addressId": "a-1"
+    },
+    "estimatedDelivery": "2026-11-08",
+    "items": [
+      {
+        "priceItemId": "only-wash-normal-wash",
+        "qty": 4
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Wallet",
+      "status": "paid"
+    },
+    "requestId": "RQ2045"
+  },
+  {
+    "id": "WB1024",
+    "serviceId": "wash-iron",
+    "status": "washing_drying",
+    "placedAt": "2026-11-05T14:20:00+05:30",
+    "pickup": {
+      "date": "2026-11-05",
+      "slotId": "s-2",
+      "addressId": "a-1"
+    },
+    "estimatedDelivery": "2026-11-07",
+    "items": [
+      {
+        "priceItemId": "wash-iron-normal-wash",
+        "qty": 5
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "UPI",
+      "status": "paid"
+    },
+    "requestId": "RQ2041"
+  },
+  {
+    "id": "WB1023",
+    "serviceId": "dry-clean",
+    "status": "ironing_packing",
+    "placedAt": "2026-11-04T10:15:00+05:30",
+    "pickup": {
+      "date": "2026-11-04",
+      "slotId": "s-3",
+      "addressId": "a-2"
+    },
+    "estimatedDelivery": "2026-11-06",
+    "items": [
+      {
+        "priceItemId": "dry-clean-premium-dry-clean",
+        "qty": 1
+      },
+      {
+        "priceItemId": "dry-clean-basic-dry-clean",
+        "qty": 1
+      }
+    ],
+    "discount": 82,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "pending"
+    },
+    "requestId": "RQ2043"
+  },
+  {
+    "id": "WB1022",
+    "serviceId": "blanket",
+    "status": "out_for_delivery",
+    "placedAt": "2026-11-03T09:00:00+05:30",
+    "pickup": {
+      "date": "2026-11-03",
+      "slotId": "s-2",
+      "addressId": "a-1"
+    },
+    "estimatedDelivery": "2026-11-06",
+    "items": [
+      {
+        "priceItemId": "blanket-normal-wash-double",
+        "qty": 2
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Card",
+      "status": "paid"
+    },
+    "requestId": "RQ2042"
+  },
+  {
+    "id": "WB1019",
+    "serviceId": "only-wash",
+    "status": "delivered",
+    "placedAt": "2026-11-01T09:10:00+05:30",
+    "pickup": {
+      "date": "2026-11-01",
+      "slotId": "s-1",
+      "addressId": "a-1"
+    },
+    "estimatedDelivery": "2026-11-03",
+    "deliveredAt": "2026-11-03T17:40:00+05:30",
+    "items": [
+      {
+        "priceItemId": "only-wash-normal-wash",
+        "qty": 5
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Wallet",
+      "status": "paid"
+    }
+  },
+  {
+    "id": "WB1012",
+    "serviceId": "wash-iron",
+    "status": "delivered",
+    "placedAt": "2026-10-25T19:30:00+05:30",
+    "pickup": {
+      "date": "2026-10-26",
+      "slotId": "s-4",
+      "addressId": "a-1"
+    },
+    "estimatedDelivery": "2026-10-28",
+    "deliveredAt": "2026-10-27T12:15:00+05:30",
+    "items": [
+      {
+        "priceItemId": "wash-iron-normal-wash",
+        "qty": 5
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "UPI",
+      "status": "paid"
+    }
+  },
+  {
+    "id": "WB1008",
+    "serviceId": "dry-clean",
+    "status": "cancelled",
+    "placedAt": "2026-10-20T11:00:00+05:30",
+    "pickup": {
+      "date": "2026-10-21",
+      "slotId": "s-2",
+      "addressId": "a-2"
+    },
+    "estimatedDelivery": "2026-10-24",
+    "items": [
+      {
+        "priceItemId": "dry-clean-premium-dry-clean",
+        "qty": 1
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "not_charged"
+    },
+    "requestId": "RQ2036",
+    "cancelReason": "Cancelled by you before pickup."
+  }
+]

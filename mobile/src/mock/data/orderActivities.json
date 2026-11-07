@@ -1,0 +1,1501 @@
+[
+  {
+    "id": "act-107",
+    "orderId": "WB-1010",
+    "at": "2026-11-05T03:41:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1006",
+      "name": "Priya Shetty"
+    },
+    "message": "Waiting for staff at the counter",
+    "locationId": "loc-lpu",
+    "from": "PAYMENT_COMPLETED",
+    "to": "AWAITING_STAFF_ACCEPTANCE"
+  },
+  {
+    "id": "act-106",
+    "orderId": "WB-1010",
+    "at": "2026-11-05T03:41:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1006",
+      "name": "Priya Shetty"
+    },
+    "message": "Payment completed",
+    "locationId": "loc-lpu",
+    "from": "PAYMENT_PENDING",
+    "to": "PAYMENT_COMPLETED"
+  },
+  {
+    "id": "act-105",
+    "orderId": "WB-1010",
+    "at": "2026-11-05T03:41:00.000Z",
+    "type": "QR_UNLOCKED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1006",
+      "name": "Priya Shetty"
+    },
+    "message": "QR unlocked",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-104",
+    "orderId": "WB-1010",
+    "at": "2026-11-05T03:41:00.000Z",
+    "type": "PAYMENT_COMPLETED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1006",
+      "name": "Priya Shetty"
+    },
+    "message": "Paid ₹455 from wallet (wt-19)",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-103",
+    "orderId": "WB-1010",
+    "at": "2026-11-05T03:40:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1006",
+      "name": "Priya Shetty"
+    },
+    "message": "Waiting for payment of ₹455",
+    "locationId": "loc-lpu",
+    "from": "REQUEST_SUBMITTED",
+    "to": "PAYMENT_PENDING"
+  },
+  {
+    "id": "act-102",
+    "orderId": "WB-1010",
+    "at": "2026-11-05T03:40:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1006",
+      "name": "Priya Shetty"
+    },
+    "message": "QR created, locked until payment",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-101",
+    "orderId": "WB-1010",
+    "at": "2026-11-05T03:40:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1006",
+      "name": "Priya Shetty"
+    },
+    "message": "Request submitted",
+    "locationId": "loc-lpu",
+    "to": "REQUEST_SUBMITTED"
+  },
+  {
+    "id": "act-100",
+    "orderId": "WB-1009",
+    "at": "2026-11-05T03:26:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1007",
+      "name": "Vikram Rao"
+    },
+    "message": "Waiting for staff at the counter",
+    "locationId": "loc-nit",
+    "from": "PAYMENT_COMPLETED",
+    "to": "AWAITING_STAFF_ACCEPTANCE"
+  },
+  {
+    "id": "act-99",
+    "orderId": "WB-1009",
+    "at": "2026-11-05T03:26:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1007",
+      "name": "Vikram Rao"
+    },
+    "message": "Payment completed",
+    "locationId": "loc-nit",
+    "from": "PAYMENT_PENDING",
+    "to": "PAYMENT_COMPLETED"
+  },
+  {
+    "id": "act-98",
+    "orderId": "WB-1009",
+    "at": "2026-11-05T03:26:00.000Z",
+    "type": "QR_UNLOCKED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1007",
+      "name": "Vikram Rao"
+    },
+    "message": "QR unlocked",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-97",
+    "orderId": "WB-1009",
+    "at": "2026-11-05T03:26:00.000Z",
+    "type": "PAYMENT_COMPLETED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1007",
+      "name": "Vikram Rao"
+    },
+    "message": "Paid ₹305 from wallet (wt-18)",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-96",
+    "orderId": "WB-1009",
+    "at": "2026-11-05T03:25:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1007",
+      "name": "Vikram Rao"
+    },
+    "message": "Waiting for payment of ₹305",
+    "locationId": "loc-nit",
+    "from": "REQUEST_SUBMITTED",
+    "to": "PAYMENT_PENDING"
+  },
+  {
+    "id": "act-95",
+    "orderId": "WB-1009",
+    "at": "2026-11-05T03:25:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1007",
+      "name": "Vikram Rao"
+    },
+    "message": "QR created, locked until payment",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-94",
+    "orderId": "WB-1009",
+    "at": "2026-11-05T03:25:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1007",
+      "name": "Vikram Rao"
+    },
+    "message": "Request submitted",
+    "locationId": "loc-nit",
+    "to": "REQUEST_SUBMITTED"
+  },
+  {
+    "id": "act-93",
+    "orderId": "WB-1008",
+    "at": "2026-11-05T03:01:00.000Z",
+    "type": "PAYMENT_FAILED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1009",
+      "name": "Kiran Thomas"
+    },
+    "message": "Payment failed: wallet balance ₹150 is ₹150 short",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-92",
+    "orderId": "WB-1008",
+    "at": "2026-11-05T03:00:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1009",
+      "name": "Kiran Thomas"
+    },
+    "message": "Waiting for payment of ₹300",
+    "locationId": "loc-outside",
+    "from": "REQUEST_SUBMITTED",
+    "to": "PAYMENT_PENDING"
+  },
+  {
+    "id": "act-91",
+    "orderId": "WB-1008",
+    "at": "2026-11-05T03:00:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1009",
+      "name": "Kiran Thomas"
+    },
+    "message": "QR created, locked until payment",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-90",
+    "orderId": "WB-1008",
+    "at": "2026-11-05T03:00:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1009",
+      "name": "Kiran Thomas"
+    },
+    "message": "Request submitted",
+    "locationId": "loc-outside",
+    "to": "REQUEST_SUBMITTED"
+  },
+  {
+    "id": "act-89",
+    "orderId": "WB-1007",
+    "at": "2026-11-04T15:31:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1010",
+      "name": "Aditya Kulkarni"
+    },
+    "message": "Waiting for the pickup partner",
+    "locationId": "loc-outside",
+    "from": "PAYMENT_COMPLETED",
+    "to": "AWAITING_STAFF_ACCEPTANCE"
+  },
+  {
+    "id": "act-88",
+    "orderId": "WB-1007",
+    "at": "2026-11-04T15:31:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1010",
+      "name": "Aditya Kulkarni"
+    },
+    "message": "Payment completed",
+    "locationId": "loc-outside",
+    "from": "PAYMENT_PENDING",
+    "to": "PAYMENT_COMPLETED"
+  },
+  {
+    "id": "act-87",
+    "orderId": "WB-1007",
+    "at": "2026-11-04T15:31:00.000Z",
+    "type": "QR_UNLOCKED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1010",
+      "name": "Aditya Kulkarni"
+    },
+    "message": "QR unlocked",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-86",
+    "orderId": "WB-1007",
+    "at": "2026-11-04T15:31:00.000Z",
+    "type": "PAYMENT_COMPLETED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1010",
+      "name": "Aditya Kulkarni"
+    },
+    "message": "Paid ₹675 from wallet (wt-17)",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-85",
+    "orderId": "WB-1007",
+    "at": "2026-11-04T15:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1010",
+      "name": "Aditya Kulkarni"
+    },
+    "message": "Waiting for payment of ₹675",
+    "locationId": "loc-outside",
+    "from": "REQUEST_SUBMITTED",
+    "to": "PAYMENT_PENDING"
+  },
+  {
+    "id": "act-84",
+    "orderId": "WB-1007",
+    "at": "2026-11-04T15:30:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1010",
+      "name": "Aditya Kulkarni"
+    },
+    "message": "QR created, locked until payment",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-83",
+    "orderId": "WB-1007",
+    "at": "2026-11-04T15:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1010",
+      "name": "Aditya Kulkarni"
+    },
+    "message": "Pickup request submitted",
+    "locationId": "loc-outside",
+    "to": "REQUEST_SUBMITTED"
+  },
+  {
+    "id": "act-82",
+    "orderId": "WB-1006",
+    "at": "2026-11-04T10:38:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Rejected by Harpreet Singh: Paint stains need specialist treatment we don’t offer at this office",
+    "locationId": "loc-lpu",
+    "from": "AWAITING_STAFF_ACCEPTANCE",
+    "to": "REJECTED"
+  },
+  {
+    "id": "act-81",
+    "orderId": "WB-1006",
+    "at": "2026-11-04T10:38:00.000Z",
+    "type": "PAYMENT_REVERSED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "₹300 returned to wallet (wt-16): rejected: Paint stains need specialist treatment we don’t offer at this office",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-80",
+    "orderId": "WB-1006",
+    "at": "2026-11-04T10:38:00.000Z",
+    "type": "QR_CONSUMED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Laundry submission QR used and closed",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-79",
+    "orderId": "WB-1006",
+    "at": "2026-11-04T10:31:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1008",
+      "name": "Sana Khan"
+    },
+    "message": "Waiting for staff at the counter",
+    "locationId": "loc-lpu",
+    "from": "PAYMENT_COMPLETED",
+    "to": "AWAITING_STAFF_ACCEPTANCE"
+  },
+  {
+    "id": "act-78",
+    "orderId": "WB-1006",
+    "at": "2026-11-04T10:31:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1008",
+      "name": "Sana Khan"
+    },
+    "message": "Payment completed",
+    "locationId": "loc-lpu",
+    "from": "PAYMENT_PENDING",
+    "to": "PAYMENT_COMPLETED"
+  },
+  {
+    "id": "act-77",
+    "orderId": "WB-1006",
+    "at": "2026-11-04T10:31:00.000Z",
+    "type": "QR_UNLOCKED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1008",
+      "name": "Sana Khan"
+    },
+    "message": "QR unlocked",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-76",
+    "orderId": "WB-1006",
+    "at": "2026-11-04T10:31:00.000Z",
+    "type": "PAYMENT_COMPLETED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1008",
+      "name": "Sana Khan"
+    },
+    "message": "Paid ₹300 from wallet (wt-15)",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-75",
+    "orderId": "WB-1006",
+    "at": "2026-11-04T10:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1008",
+      "name": "Sana Khan"
+    },
+    "message": "Waiting for payment of ₹300",
+    "locationId": "loc-lpu",
+    "from": "REQUEST_SUBMITTED",
+    "to": "PAYMENT_PENDING"
+  },
+  {
+    "id": "act-74",
+    "orderId": "WB-1006",
+    "at": "2026-11-04T10:30:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1008",
+      "name": "Sana Khan"
+    },
+    "message": "QR created, locked until payment",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-73",
+    "orderId": "WB-1006",
+    "at": "2026-11-04T10:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1008",
+      "name": "Sana Khan"
+    },
+    "message": "Request submitted",
+    "locationId": "loc-lpu",
+    "to": "REQUEST_SUBMITTED"
+  },
+  {
+    "id": "act-72",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T06:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Processing started by Simran Kaur",
+    "locationId": "loc-nit",
+    "from": "ACCEPTED",
+    "to": "PROCESSING"
+  },
+  {
+    "id": "act-71",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T04:20:00.000Z",
+    "type": "RECEIPT_ISSUED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Receipt WBR-240005 issued",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-70",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T04:20:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Accepted by Simran Kaur",
+    "locationId": "loc-nit",
+    "from": "AWAITING_STAFF_ACCEPTANCE",
+    "to": "ACCEPTED"
+  },
+  {
+    "id": "act-69",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T04:20:00.000Z",
+    "type": "QR_CONSUMED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Laundry submission QR used and closed",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-68",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T04:11:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1003",
+      "name": "Arjun Sharma"
+    },
+    "message": "Waiting for staff at the counter",
+    "locationId": "loc-nit",
+    "from": "PAYMENT_COMPLETED",
+    "to": "AWAITING_STAFF_ACCEPTANCE"
+  },
+  {
+    "id": "act-67",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T04:11:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1003",
+      "name": "Arjun Sharma"
+    },
+    "message": "Payment completed",
+    "locationId": "loc-nit",
+    "from": "PAYMENT_PENDING",
+    "to": "PAYMENT_COMPLETED"
+  },
+  {
+    "id": "act-66",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T04:11:00.000Z",
+    "type": "QR_UNLOCKED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1003",
+      "name": "Arjun Sharma"
+    },
+    "message": "QR unlocked",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-65",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T04:11:00.000Z",
+    "type": "PAYMENT_COMPLETED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1003",
+      "name": "Arjun Sharma"
+    },
+    "message": "Paid ₹430 from wallet (wt-14)",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-64",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T04:10:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1003",
+      "name": "Arjun Sharma"
+    },
+    "message": "Waiting for payment of ₹430",
+    "locationId": "loc-nit",
+    "from": "REQUEST_SUBMITTED",
+    "to": "PAYMENT_PENDING"
+  },
+  {
+    "id": "act-63",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T04:10:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1003",
+      "name": "Arjun Sharma"
+    },
+    "message": "QR created, locked until payment",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-62",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T04:10:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1003",
+      "name": "Arjun Sharma"
+    },
+    "message": "Request submitted",
+    "locationId": "loc-nit",
+    "to": "REQUEST_SUBMITTED"
+  },
+  {
+    "id": "act-61",
+    "orderId": "WB-1004",
+    "at": "2026-11-04T12:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-out-01",
+      "name": "Gurdeep Sandhu"
+    },
+    "message": "Marked ready by Gurdeep Sandhu",
+    "locationId": "loc-outside",
+    "from": "PROCESSING",
+    "to": "READY_FOR_DELIVERY"
+  },
+  {
+    "id": "act-60",
+    "orderId": "WB-1004",
+    "at": "2026-11-03T07:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-out-01",
+      "name": "Gurdeep Sandhu"
+    },
+    "message": "Processing started by Gurdeep Sandhu",
+    "locationId": "loc-outside",
+    "from": "PICKUP_CONFIRMED",
+    "to": "PROCESSING"
+  },
+  {
+    "id": "act-59",
+    "orderId": "WB-1004",
+    "at": "2026-11-03T03:10:00.000Z",
+    "type": "RECEIPT_ISSUED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-out-01",
+      "name": "Gurdeep Sandhu"
+    },
+    "message": "Receipt WBR-240004 issued",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-58",
+    "orderId": "WB-1004",
+    "at": "2026-11-03T03:10:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-out-01",
+      "name": "Gurdeep Sandhu"
+    },
+    "message": "Laundry collected by Gurdeep Sandhu",
+    "locationId": "loc-outside",
+    "from": "ACCEPTED",
+    "to": "PICKUP_CONFIRMED"
+  },
+  {
+    "id": "act-57",
+    "orderId": "WB-1004",
+    "at": "2026-11-03T03:10:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-out-01",
+      "name": "Gurdeep Sandhu"
+    },
+    "message": "Accepted by Gurdeep Sandhu",
+    "locationId": "loc-outside",
+    "from": "AWAITING_STAFF_ACCEPTANCE",
+    "to": "ACCEPTED"
+  },
+  {
+    "id": "act-56",
+    "orderId": "WB-1004",
+    "at": "2026-11-03T03:10:00.000Z",
+    "type": "QR_CONSUMED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-out-01",
+      "name": "Gurdeep Sandhu"
+    },
+    "message": "Pickup collection QR used and closed",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-55",
+    "orderId": "WB-1004",
+    "at": "2026-11-02T13:31:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1004",
+      "name": "Kavya Nair"
+    },
+    "message": "Waiting for the pickup partner",
+    "locationId": "loc-outside",
+    "from": "PAYMENT_COMPLETED",
+    "to": "AWAITING_STAFF_ACCEPTANCE"
+  },
+  {
+    "id": "act-54",
+    "orderId": "WB-1004",
+    "at": "2026-11-02T13:31:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1004",
+      "name": "Kavya Nair"
+    },
+    "message": "Payment completed",
+    "locationId": "loc-outside",
+    "from": "PAYMENT_PENDING",
+    "to": "PAYMENT_COMPLETED"
+  },
+  {
+    "id": "act-53",
+    "orderId": "WB-1004",
+    "at": "2026-11-02T13:31:00.000Z",
+    "type": "QR_UNLOCKED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1004",
+      "name": "Kavya Nair"
+    },
+    "message": "QR unlocked",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-52",
+    "orderId": "WB-1004",
+    "at": "2026-11-02T13:31:00.000Z",
+    "type": "PAYMENT_COMPLETED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1004",
+      "name": "Kavya Nair"
+    },
+    "message": "Paid ₹399 from wallet (wt-13)",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-51",
+    "orderId": "WB-1004",
+    "at": "2026-11-02T13:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1004",
+      "name": "Kavya Nair"
+    },
+    "message": "Waiting for payment of ₹399",
+    "locationId": "loc-outside",
+    "from": "REQUEST_SUBMITTED",
+    "to": "PAYMENT_PENDING"
+  },
+  {
+    "id": "act-50",
+    "orderId": "WB-1004",
+    "at": "2026-11-02T13:30:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1004",
+      "name": "Kavya Nair"
+    },
+    "message": "QR created, locked until payment",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-49",
+    "orderId": "WB-1004",
+    "at": "2026-11-02T13:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1004",
+      "name": "Kavya Nair"
+    },
+    "message": "Pickup request submitted",
+    "locationId": "loc-outside",
+    "to": "REQUEST_SUBMITTED"
+  },
+  {
+    "id": "act-48",
+    "orderId": "WB-1003",
+    "at": "2026-11-04T13:00:00.000Z",
+    "type": "ISSUE_REPORTED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Issue reported: Normal wash 3/4",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-47",
+    "orderId": "WB-1003",
+    "at": "2026-11-04T13:00:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Customer started checking the clothes",
+    "locationId": "loc-lpu",
+    "from": "READY_FOR_DELIVERY",
+    "to": "AWAITING_CUSTOMER_VERIFICATION"
+  },
+  {
+    "id": "act-46",
+    "orderId": "WB-1003",
+    "at": "2026-11-04T10:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Marked ready by Harpreet Singh",
+    "locationId": "loc-lpu",
+    "from": "PROCESSING",
+    "to": "READY_FOR_DELIVERY"
+  },
+  {
+    "id": "act-45",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T09:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Processing started by Harpreet Singh",
+    "locationId": "loc-lpu",
+    "from": "ACCEPTED",
+    "to": "PROCESSING"
+  },
+  {
+    "id": "act-44",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T06:39:00.000Z",
+    "type": "RECEIPT_ISSUED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Receipt WBR-240003 issued",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-43",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T06:39:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Accepted by Harpreet Singh",
+    "locationId": "loc-lpu",
+    "from": "AWAITING_STAFF_ACCEPTANCE",
+    "to": "ACCEPTED"
+  },
+  {
+    "id": "act-42",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T06:39:00.000Z",
+    "type": "QR_CONSUMED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Laundry submission QR used and closed",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-41",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T06:31:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Waiting for staff at the counter",
+    "locationId": "loc-lpu",
+    "from": "PAYMENT_COMPLETED",
+    "to": "AWAITING_STAFF_ACCEPTANCE"
+  },
+  {
+    "id": "act-40",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T06:31:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Payment completed",
+    "locationId": "loc-lpu",
+    "from": "PAYMENT_PENDING",
+    "to": "PAYMENT_COMPLETED"
+  },
+  {
+    "id": "act-39",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T06:31:00.000Z",
+    "type": "QR_UNLOCKED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "QR unlocked",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-38",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T06:31:00.000Z",
+    "type": "PAYMENT_COMPLETED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Paid ₹360 from wallet (wt-12)",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-37",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T06:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Waiting for payment of ₹360",
+    "locationId": "loc-lpu",
+    "from": "REQUEST_SUBMITTED",
+    "to": "PAYMENT_PENDING"
+  },
+  {
+    "id": "act-36",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T06:30:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "QR created, locked until payment",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-35",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T06:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Request submitted",
+    "locationId": "loc-lpu",
+    "to": "REQUEST_SUBMITTED"
+  },
+  {
+    "id": "act-34",
+    "orderId": "WB-1002",
+    "at": "2026-11-03T05:32:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Collected; confirmed by Harpreet Singh",
+    "locationId": "loc-lpu",
+    "from": "AWAITING_CUSTOMER_VERIFICATION",
+    "to": "DELIVERED"
+  },
+  {
+    "id": "act-33",
+    "orderId": "WB-1002",
+    "at": "2026-11-03T05:32:00.000Z",
+    "type": "QR_CONSUMED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Delivery verification QR used and closed",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-32",
+    "orderId": "WB-1002",
+    "at": "2026-11-03T05:30:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Delivery QR created",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-31",
+    "orderId": "WB-1002",
+    "at": "2026-11-03T05:30:00.000Z",
+    "type": "VERIFICATION_CONFIRMED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Customer confirmed all 9 pieces",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-30",
+    "orderId": "WB-1002",
+    "at": "2026-11-03T05:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Customer started checking the clothes",
+    "locationId": "loc-lpu",
+    "from": "READY_FOR_DELIVERY",
+    "to": "AWAITING_CUSTOMER_VERIFICATION"
+  },
+  {
+    "id": "act-29",
+    "orderId": "WB-1002",
+    "at": "2026-11-02T12:00:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Marked ready by Harpreet Singh",
+    "locationId": "loc-lpu",
+    "from": "PROCESSING",
+    "to": "READY_FOR_DELIVERY"
+  },
+  {
+    "id": "act-28",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T08:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Processing started by Harpreet Singh",
+    "locationId": "loc-lpu",
+    "from": "ACCEPTED",
+    "to": "PROCESSING"
+  },
+  {
+    "id": "act-27",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T04:42:00.000Z",
+    "type": "RECEIPT_ISSUED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Receipt WBR-240002 issued",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-26",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T04:42:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Accepted by Harpreet Singh",
+    "locationId": "loc-lpu",
+    "from": "AWAITING_STAFF_ACCEPTANCE",
+    "to": "ACCEPTED"
+  },
+  {
+    "id": "act-25",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T04:42:00.000Z",
+    "type": "QR_CONSUMED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Laundry submission QR used and closed",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-24",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T04:36:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Waiting for staff at the counter",
+    "locationId": "loc-lpu",
+    "from": "PAYMENT_COMPLETED",
+    "to": "AWAITING_STAFF_ACCEPTANCE"
+  },
+  {
+    "id": "act-23",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T04:36:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Payment completed",
+    "locationId": "loc-lpu",
+    "from": "PAYMENT_PENDING",
+    "to": "PAYMENT_COMPLETED"
+  },
+  {
+    "id": "act-22",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T04:36:00.000Z",
+    "type": "QR_UNLOCKED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "QR unlocked",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-21",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T04:36:00.000Z",
+    "type": "PAYMENT_COMPLETED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Paid ₹440 from wallet (wt-11)",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-20",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T04:35:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Waiting for payment of ₹440",
+    "locationId": "loc-lpu",
+    "from": "REQUEST_SUBMITTED",
+    "to": "PAYMENT_PENDING"
+  },
+  {
+    "id": "act-19",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T04:35:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "QR created, locked until payment",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-18",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T04:35:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1002",
+      "name": "Meera Iyer"
+    },
+    "message": "Request submitted",
+    "locationId": "loc-lpu",
+    "to": "REQUEST_SUBMITTED"
+  },
+  {
+    "id": "act-17",
+    "orderId": "WB-1001",
+    "at": "2026-11-02T05:32:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Collected; confirmed by Simran Kaur",
+    "locationId": "loc-nit",
+    "from": "AWAITING_CUSTOMER_VERIFICATION",
+    "to": "DELIVERED"
+  },
+  {
+    "id": "act-16",
+    "orderId": "WB-1001",
+    "at": "2026-11-02T05:32:00.000Z",
+    "type": "QR_CONSUMED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Delivery verification QR used and closed",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-15",
+    "orderId": "WB-1001",
+    "at": "2026-11-02T05:30:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1005",
+      "name": "Rohit Verma"
+    },
+    "message": "Delivery QR created",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-14",
+    "orderId": "WB-1001",
+    "at": "2026-11-02T05:30:00.000Z",
+    "type": "VERIFICATION_CONFIRMED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1005",
+      "name": "Rohit Verma"
+    },
+    "message": "Customer confirmed all 10 pieces",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-13",
+    "orderId": "WB-1001",
+    "at": "2026-11-02T05:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1005",
+      "name": "Rohit Verma"
+    },
+    "message": "Customer started checking the clothes",
+    "locationId": "loc-nit",
+    "from": "READY_FOR_DELIVERY",
+    "to": "AWAITING_CUSTOMER_VERIFICATION"
+  },
+  {
+    "id": "act-12",
+    "orderId": "WB-1001",
+    "at": "2026-11-01T11:50:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Marked ready by Simran Kaur",
+    "locationId": "loc-nit",
+    "from": "PROCESSING",
+    "to": "READY_FOR_DELIVERY"
+  },
+  {
+    "id": "act-11",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T07:30:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Processing started by Simran Kaur",
+    "locationId": "loc-nit",
+    "from": "ACCEPTED",
+    "to": "PROCESSING"
+  },
+  {
+    "id": "act-10",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T04:44:00.000Z",
+    "type": "RECEIPT_ISSUED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Receipt WBR-240001 issued",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-9",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T04:44:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Accepted by Simran Kaur",
+    "locationId": "loc-nit",
+    "from": "AWAITING_STAFF_ACCEPTANCE",
+    "to": "ACCEPTED"
+  },
+  {
+    "id": "act-8",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T04:44:00.000Z",
+    "type": "QR_CONSUMED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Laundry submission QR used and closed",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-7",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T04:36:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1005",
+      "name": "Rohit Verma"
+    },
+    "message": "Waiting for staff at the counter",
+    "locationId": "loc-nit",
+    "from": "PAYMENT_COMPLETED",
+    "to": "AWAITING_STAFF_ACCEPTANCE"
+  },
+  {
+    "id": "act-6",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T04:36:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1005",
+      "name": "Rohit Verma"
+    },
+    "message": "Payment completed",
+    "locationId": "loc-nit",
+    "from": "PAYMENT_PENDING",
+    "to": "PAYMENT_COMPLETED"
+  },
+  {
+    "id": "act-5",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T04:36:00.000Z",
+    "type": "QR_UNLOCKED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1005",
+      "name": "Rohit Verma"
+    },
+    "message": "QR unlocked",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-4",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T04:36:00.000Z",
+    "type": "PAYMENT_COMPLETED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1005",
+      "name": "Rohit Verma"
+    },
+    "message": "Paid ₹560 from wallet (wt-10)",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-3",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T04:35:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1005",
+      "name": "Rohit Verma"
+    },
+    "message": "Waiting for payment of ₹560",
+    "locationId": "loc-nit",
+    "from": "REQUEST_SUBMITTED",
+    "to": "PAYMENT_PENDING"
+  },
+  {
+    "id": "act-2",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T04:35:00.000Z",
+    "type": "QR_ISSUED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1005",
+      "name": "Rohit Verma"
+    },
+    "message": "QR created, locked until payment",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-1",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T04:35:00.000Z",
+    "type": "STATUS_CHANGED",
+    "actor": {
+      "kind": "customer",
+      "id": "u-1005",
+      "name": "Rohit Verma"
+    },
+    "message": "Request submitted",
+    "locationId": "loc-nit",
+    "to": "REQUEST_SUBMITTED"
+  }
+]

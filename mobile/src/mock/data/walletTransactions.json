@@ -1,0 +1,212 @@
+[
+  {
+    "id": "wt-19",
+    "date": "2026-11-05T03:41:00.000Z",
+    "customerId": "u-1006",
+    "type": "debit",
+    "source": "order",
+    "amount": 455,
+    "title": "Order #WB-1010",
+    "status": "completed",
+    "orderId": "WB-1010",
+    "idempotencyKey": "pay:WB-1010"
+  },
+  {
+    "id": "wt-18",
+    "date": "2026-11-05T03:26:00.000Z",
+    "customerId": "u-1007",
+    "type": "debit",
+    "source": "order",
+    "amount": 305,
+    "title": "Order #WB-1009",
+    "status": "completed",
+    "orderId": "WB-1009",
+    "idempotencyKey": "pay:WB-1009"
+  },
+  {
+    "id": "wt-17",
+    "date": "2026-11-04T15:31:00.000Z",
+    "customerId": "u-1010",
+    "type": "debit",
+    "source": "order",
+    "amount": 675,
+    "title": "Order #WB-1007",
+    "status": "completed",
+    "orderId": "WB-1007",
+    "idempotencyKey": "pay:WB-1007"
+  },
+  {
+    "id": "wt-16",
+    "date": "2026-11-04T10:38:00.000Z",
+    "customerId": "u-1008",
+    "type": "refund",
+    "source": "refund",
+    "amount": 300,
+    "title": "Refund · Order #WB-1006",
+    "status": "completed",
+    "orderId": "WB-1006",
+    "idempotencyKey": "reverse:WB-1006"
+  },
+  {
+    "id": "wt-15",
+    "date": "2026-11-04T10:31:00.000Z",
+    "customerId": "u-1008",
+    "type": "debit",
+    "source": "order",
+    "amount": 300,
+    "title": "Order #WB-1006",
+    "status": "completed",
+    "orderId": "WB-1006",
+    "idempotencyKey": "pay:WB-1006"
+  },
+  {
+    "id": "wt-14",
+    "date": "2026-11-03T04:11:00.000Z",
+    "customerId": "u-1003",
+    "type": "debit",
+    "source": "order",
+    "amount": 430,
+    "title": "Order #WB-1005",
+    "status": "completed",
+    "orderId": "WB-1005",
+    "idempotencyKey": "pay:WB-1005"
+  },
+  {
+    "id": "wt-13",
+    "date": "2026-11-02T13:31:00.000Z",
+    "customerId": "u-1004",
+    "type": "debit",
+    "source": "order",
+    "amount": 399,
+    "title": "Order #WB-1004",
+    "status": "completed",
+    "orderId": "WB-1004",
+    "idempotencyKey": "pay:WB-1004"
+  },
+  {
+    "id": "wt-12",
+    "date": "2026-11-02T06:31:00.000Z",
+    "customerId": "u-1002",
+    "type": "debit",
+    "source": "order",
+    "amount": 360,
+    "title": "Order #WB-1003",
+    "status": "completed",
+    "orderId": "WB-1003",
+    "idempotencyKey": "pay:WB-1003"
+  },
+  {
+    "id": "wt-11",
+    "date": "2026-11-01T04:36:00.000Z",
+    "customerId": "u-1002",
+    "type": "debit",
+    "source": "order",
+    "amount": 440,
+    "title": "Order #WB-1002",
+    "status": "completed",
+    "orderId": "WB-1002",
+    "idempotencyKey": "pay:WB-1002"
+  },
+  {
+    "id": "wt-10",
+    "date": "2026-10-31T04:36:00.000Z",
+    "customerId": "u-1005",
+    "type": "debit",
+    "source": "order",
+    "amount": 560,
+    "title": "Order #WB-1001",
+    "status": "completed",
+    "orderId": "WB-1001",
+    "idempotencyKey": "pay:WB-1001"
+  },
+  {
+    "id": "wt-9",
+    "date": "2026-10-30T04:30:00.000Z",
+    "customerId": "u-1010",
+    "type": "credit",
+    "source": "topup",
+    "amount": 1500,
+    "title": "Top-up (demo, no charge)",
+    "status": "completed"
+  },
+  {
+    "id": "wt-8",
+    "date": "2026-10-30T04:30:00.000Z",
+    "customerId": "u-1009",
+    "type": "credit",
+    "source": "topup",
+    "amount": 150,
+    "title": "Top-up (demo, no charge)",
+    "status": "completed"
+  },
+  {
+    "id": "wt-7",
+    "date": "2026-10-30T04:30:00.000Z",
+    "customerId": "u-1008",
+    "type": "credit",
+    "source": "topup",
+    "amount": 900,
+    "title": "Top-up (demo, no charge)",
+    "status": "completed"
+  },
+  {
+    "id": "wt-6",
+    "date": "2026-10-30T04:30:00.000Z",
+    "customerId": "u-1007",
+    "type": "credit",
+    "source": "topup",
+    "amount": 1000,
+    "title": "Top-up (demo, no charge)",
+    "status": "completed"
+  },
+  {
+    "id": "wt-5",
+    "date": "2026-10-30T04:30:00.000Z",
+    "customerId": "u-1006",
+    "type": "credit",
+    "source": "topup",
+    "amount": 1000,
+    "title": "Top-up (demo, no charge)",
+    "status": "completed"
+  },
+  {
+    "id": "wt-4",
+    "date": "2026-10-30T04:30:00.000Z",
+    "customerId": "u-1005",
+    "type": "credit",
+    "source": "topup",
+    "amount": 800,
+    "title": "Top-up (demo, no charge)",
+    "status": "completed"
+  },
+  {
+    "id": "wt-3",
+    "date": "2026-10-30T04:30:00.000Z",
+    "customerId": "u-1004",
+    "type": "credit",
+    "source": "topup",
+    "amount": 2000,
+    "title": "Top-up (demo, no charge)",
+    "status": "completed"
+  },
+  {
+    "id": "wt-2",
+    "date": "2026-10-30T04:30:00.000Z",
+    "customerId": "u-1003",
+    "type": "credit",
+    "source": "topup",
+    "amount": 1200,
+    "title": "Top-up (demo, no charge)",
+    "status": "completed"
+  },
+  {
+    "id": "wt-1",
+    "date": "2026-10-30T04:30:00.000Z",
+    "customerId": "u-1002",
+    "type": "credit",
+    "source": "topup",
+    "amount": 1500,
+    "title": "Top-up (demo, no charge)",
+    "status": "completed"
+  }
+]

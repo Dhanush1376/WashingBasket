@@ -1,0 +1,69 @@
+[
+  {
+    "id": "loc-lpu",
+    "code": "LPU",
+    "name": "Lovely Professional University",
+    "shortName": "LPU",
+    "city": "Phagwara, Punjab",
+    "type": "CAMPUS_OFFICE",
+    "pincode": "654321",
+    "status": "ACTIVE",
+    "serviceModes": ["OFFICE_DROP_OFF"],
+    "description": "Walk in to our campus office, hand over your laundry and collect it fresh.",
+    "office": {
+      "name": "Washing Basket · LPU office",
+      "address": "Shop 14, Uni Mall, Block 32, LPU Campus",
+      "hours": "8:00 AM – 9:00 PM, every day",
+      "phone": "+91 98140 11001"
+    },
+    "sortOrder": 1
+  },
+  {
+    "id": "loc-nit",
+    "code": "NITJ",
+    "name": "NIT Jalandhar",
+    "shortName": "NIT Jalandhar",
+    "city": "Jalandhar, Punjab",
+    "type": "CAMPUS_OFFICE",
+    "pincode": "123456",
+    "status": "ACTIVE",
+    "serviceModes": ["OFFICE_DROP_OFF"],
+    "description": "Our counter inside the campus, a short walk from the hostels.",
+    "office": {
+      "name": "Washing Basket · NIT Jalandhar office",
+      "address": "Ground floor, Mega Boys Hostel complex, NIT Jalandhar",
+      "hours": "8:30 AM – 8:30 PM, every day",
+      "phone": "+91 98140 11002"
+    },
+    "sortOrder": 2
+  },
+  {
+    "id": "loc-outside",
+    "code": "OUT",
+    "name": "Outside Campus",
+    "shortName": "Outside Campus",
+    "city": "Jalandhar, Punjab",
+    "type": "INDEPENDENT",
+    "pincode": "000000",
+    "status": "ACTIVE",
+    "serviceModes": ["OFFICE_DROP_OFF", "HOME_PICKUP"],
+    "description": "Drop off at our Model Town store, or let our partner pick up from your door.",
+    "office": {
+      "name": "Washing Basket · Model Town store",
+      "address": "SCO 21, Model Town Road, Jalandhar",
+      "hours": "9:00 AM – 9:00 PM, Monday to Saturday",
+      "phone": "+91 98140 11003"
+    },
+    "homePickup": {
+      "areaNote": "Homes and PGs within 8 km of the Model Town store",
+      "daysAhead": 5,
+      "slots": [
+        { "id": "hp-morning", "startHour": 8, "label": "8:00 – 10:00 AM", "period": "Morning" },
+        { "id": "hp-noon", "startHour": 12, "label": "12:00 – 2:00 PM", "period": "Afternoon" },
+        { "id": "hp-evening", "startHour": 17, "label": "5:00 – 7:00 PM", "period": "Evening" },
+        { "id": "hp-night", "startHour": 19, "label": "7:00 – 9:00 PM", "period": "Evening" }
+      ]
+    },
+    "sortOrder": 3
+  }
+]

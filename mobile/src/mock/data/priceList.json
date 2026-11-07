@@ -1,0 +1,85 @@
+{
+  "currency": "INR",
+  "note": "Prices directly from the official price list.",
+  "illustrativeNote": "",
+  "serviceCharges": {
+    "OFFICE_DROP_OFF": { "fee": 0, "label": "No service charge for office drop-off" },
+    "HOME_PICKUP": { "fee": 49, "freeAbove": 499, "label": "Pickup & delivery" }
+  },
+  "categories": [
+    {
+      "id": "only-wash",
+      "name": "Only wash",
+      "description": "Machine washed, dried and neatly folded. Priced per kg.",
+      "items": [
+        { "id": "ow-normal", "name": "Normal wash", "icon": "wash", "unit": "kg", "menuRef": { "section": "only-wash", "item": "Normal wash" } },
+        { "id": "ow-ezee", "name": "Ezee", "icon": "wash", "unit": "kg", "menuRef": { "section": "only-wash", "item": "Ezee" } },
+        { "id": "ow-whites", "name": "Whites wash", "icon": "wash", "unit": "kg", "menuRef": { "section": "only-wash", "item": "Whites wash" } }
+      ]
+    },
+    {
+      "id": "wash-iron",
+      "name": "Wash & iron",
+      "description": "Washed, dried and pressed, ready to wear. Priced per kg.",
+      "items": [
+        { "id": "wi-normal", "name": "Normal wash", "icon": "shirt", "unit": "kg", "menuRef": { "section": "wash-iron", "item": "Normal wash" } },
+        { "id": "wi-ezee", "name": "Ezee wash", "icon": "shirt", "unit": "kg", "menuRef": { "section": "wash-iron", "item": "Ezee wash" } },
+        { "id": "wi-whites", "name": "Whites wash", "icon": "shirt", "unit": "kg", "menuRef": { "section": "wash-iron", "item": "Whites wash" } }
+      ]
+    },
+    {
+      "id": "shoes-bags",
+      "name": "Shoes, bags & soft toys",
+      "description": "Shoes, bags and soft toys, priced per pair.",
+      "items": [
+        { "id": "sb-machine", "name": "Machine wash", "icon": "shoe", "unit": "pair", "menuRef": { "section": "shoes-bags", "item": "Machine wash" } },
+        { "id": "sb-hand", "name": "Hand wash", "icon": "shoe", "unit": "pair", "menuRef": { "section": "shoes-bags", "item": "Hand wash" } },
+        { "id": "sb-deep", "name": "Dry clean / deep clean", "icon": "bag", "unit": "pair", "menuRef": { "section": "shoes-bags", "item": "Dry clean / deep clean" } }
+      ]
+    },
+    {
+      "id": "stain",
+      "name": "Stain treatment",
+      "description": "Targeted treatment for stubborn stains. Priced per piece.",
+      "items": [
+        { "id": "st-white", "name": "White clothes", "icon": "stain", "unit": "piece", "menuRef": { "section": "stain", "item": "White clothes" } },
+        { "id": "st-colour", "name": "Coloured clothes", "icon": "stain", "unit": "piece", "menuRef": { "section": "stain", "item": "Coloured clothes" } }
+      ]
+    },
+    {
+      "id": "dye",
+      "name": "Colour dye",
+      "description": "Bring faded clothes back to life. Priced per piece.",
+      "items": [
+        { "id": "dy-basic", "name": "Basic dye", "icon": "dye", "unit": "piece", "menuRef": { "section": "dye", "item": "Basic dye" } },
+        { "id": "dy-premium", "name": "Premium dye", "icon": "dye", "unit": "piece", "menuRef": { "section": "dye", "item": "Premium dye" } }
+      ]
+    },
+    {
+      "id": "dry-clean",
+      "name": "Dry clean",
+      "description": "For suits, silks, jackets and occasion wear. Priced per piece.",
+      "items": [
+        { "id": "dc-basic", "name": "Basic dry clean", "icon": "jacket", "unit": "piece", "menuRef": { "section": "dry-clean", "item": "Basic dry clean" } },
+        { "id": "dc-premium", "name": "Premium dry clean", "icon": "jacket", "unit": "piece", "menuRef": { "section": "dry-clean", "item": "Premium dry clean" } }
+      ]
+    },
+    {
+      "id": "blanket",
+      "name": "Blanket",
+      "description": "Priced per piece. Quilts and double-layered blankets are ₹50 extra.",
+      "items": [
+        { "id": "bl-normal-single", "name": "Normal wash · Single", "icon": "blanket", "unit": "piece", "menuRef": { "section": "blanket", "item": "Normal wash", "column": 0 } },
+        { "id": "bl-normal-double", "name": "Normal wash · Double", "icon": "blanket", "unit": "piece", "menuRef": { "section": "blanket", "item": "Normal wash", "column": 1 } },
+        { "id": "bl-organic-single", "name": "Organic wash · Single", "icon": "blanket", "unit": "piece", "menuRef": { "section": "blanket", "item": "Organic wash", "column": 0 } },
+        { "id": "bl-organic-double", "name": "Organic wash · Double", "icon": "blanket", "unit": "piece", "menuRef": { "section": "blanket", "item": "Organic wash", "column": 1 } },
+        { "id": "bl-ezee-single", "name": "Ezee wash · Single", "icon": "blanket", "unit": "piece", "menuRef": { "section": "blanket", "item": "Ezee wash", "column": 0 } },
+        { "id": "bl-ezee-double", "name": "Ezee wash · Double", "icon": "blanket", "unit": "piece", "menuRef": { "section": "blanket", "item": "Ezee wash", "column": 1 } },
+        { "id": "bl-ezee-organic-single", "name": "Ezee + organic wash · Single", "icon": "blanket", "unit": "piece", "menuRef": { "section": "blanket", "item": "Ezee + organic wash", "column": 0 } },
+        { "id": "bl-ezee-organic-double", "name": "Ezee + organic wash · Double", "icon": "blanket", "unit": "piece", "menuRef": { "section": "blanket", "item": "Ezee + organic wash", "column": 1 } },
+        { "id": "bl-dry-single", "name": "Dry clean · Single", "icon": "blanket", "unit": "piece", "menuRef": { "section": "blanket", "item": "Dry clean", "column": 0 } },
+        { "id": "bl-dry-double", "name": "Dry clean · Double", "icon": "blanket", "unit": "piece", "menuRef": { "section": "blanket", "item": "Dry clean", "column": 1 } }
+      ]
+    }
+  ]
+}

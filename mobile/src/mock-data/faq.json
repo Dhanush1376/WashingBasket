@@ -1,0 +1,50 @@
+[
+  {
+    "id": "f-1",
+    "categoryId": "pickups",
+    "question": "How do I schedule a pickup?",
+    "answer": "Tap Book a Pickup, choose a service, an address and a time slot. We confirm the slot right away."
+  },
+  {
+    "id": "f-2",
+    "categoryId": "pickups",
+    "question": "Can I change or cancel a pickup?",
+    "answer": "Yes. Open My Requests and cancel any pickup that has not been collected yet."
+  },
+  {
+    "id": "f-3",
+    "categoryId": "orders",
+    "question": "How long does my laundry take?",
+    "answer": "Steam ironing takes 24 hours, wash services 48 hours and dry cleaning about 72 hours from pickup."
+  },
+  {
+    "id": "f-4",
+    "categoryId": "orders",
+    "question": "How do I track my order?",
+    "answer": "Your active order is on the home screen. Open it to see every stage from pickup to delivery."
+  },
+  {
+    "id": "f-5",
+    "categoryId": "payments",
+    "question": "Which payment methods do you accept?",
+    "answer": "Pay on delivery, UPI, cards and your Washing Basket wallet."
+  },
+  {
+    "id": "f-6",
+    "categoryId": "payments",
+    "question": "Is there a delivery fee?",
+    "answer": "Delivery is ₹49, and free on orders of ₹499 or more."
+  },
+  {
+    "id": "f-7",
+    "categoryId": "care",
+    "question": "What if a garment is damaged?",
+    "answer": "Raise a support request from the order within 48 hours of delivery and our team will review it."
+  },
+  {
+    "id": "f-8",
+    "categoryId": "account",
+    "question": "How do I update my details?",
+    "answer": "Go to Profile and tap Edit profile to change your name, email or saved addresses."
+  }
+]

@@ -1,0 +1,154 @@
+{
+  "sections": [
+    {
+      "id": "only-wash",
+      "title": "Only wash",
+      "unit": "kg",
+      "items": [
+        {
+          "name": "Normal wash",
+          "price": 45
+        },
+        {
+          "name": "Ezee",
+          "price": 55
+        },
+        {
+          "name": "Whites wash",
+          "price": 60
+        }
+      ],
+      "note": "Priced per kg."
+    },
+    {
+      "id": "wash-iron",
+      "title": "Wash & iron",
+      "unit": "kg",
+      "items": [
+        {
+          "name": "Normal wash",
+          "price": 55
+        },
+        {
+          "name": "Ezee wash",
+          "price": 65
+        },
+        {
+          "name": "Whites wash",
+          "price": 70
+        }
+      ],
+      "note": "Priced per kg."
+    },
+    {
+      "id": "shoes-bags",
+      "title": "Shoes, bags & soft toys",
+      "unit": "pair",
+      "items": [
+        {
+          "name": "Machine wash",
+          "price": 70
+        },
+        {
+          "name": "Hand wash",
+          "price": 100
+        },
+        {
+          "name": "Dry clean / deep clean",
+          "price": 150
+        }
+      ],
+      "note": "Priced per pair."
+    },
+    {
+      "id": "stain",
+      "title": "Stain treatment",
+      "unit": "pc",
+      "items": [
+        {
+          "name": "White clothes",
+          "price": 70
+        },
+        {
+          "name": "Coloured clothes",
+          "price": 100
+        }
+      ],
+      "note": "Priced per piece."
+    },
+    {
+      "id": "dye",
+      "title": "Colour dye",
+      "unit": "pc",
+      "items": [
+        {
+          "name": "Basic dye",
+          "price": 150
+        },
+        {
+          "name": "Premium dye",
+          "price": 250
+        }
+      ],
+      "note": "Priced per piece."
+    },
+    {
+      "id": "dry-clean",
+      "title": "Dry clean",
+      "unit": "pc",
+      "items": [
+        {
+          "name": "Basic dry clean",
+          "price": 100
+        },
+        {
+          "name": "Premium dry clean",
+          "price": 150
+        }
+      ],
+      "note": "Priced per piece."
+    },
+    {
+      "id": "blanket",
+      "title": "Blanket",
+      "unit": "pc",
+      "columns": [
+        "Single",
+        "Double"
+      ],
+      "items": [
+        {
+          "name": "Normal wash",
+          "price": 150,
+          "price2": 300
+        },
+        {
+          "name": "Organic wash",
+          "price": 250,
+          "price2": 400
+        },
+        {
+          "name": "Ezee + organic wash",
+          "price": 300,
+          "price2": 450
+        },
+        {
+          "name": "Ezee wash",
+          "price": 250,
+          "price2": 400
+        },
+        {
+          "name": "Dry clean",
+          "price": 400,
+          "price2": 600
+        }
+      ],
+      "note": "Priced per piece. Quilts and double-layered blankets are ₹50 extra."
+    }
+  ],
+  "note": "Quilts and double-layered blankets are ₹50 extra on any service.",
+  "fees": {
+    "delivery": 49,
+    "freeDeliveryAbove": 499
+  }
+}

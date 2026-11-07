@@ -1,0 +1,19 @@
+[
+  {
+    "id": "iss-1",
+    "orderId": "WB-1003",
+    "customerId": "u-1002",
+    "kind": "MISSING_ITEMS",
+    "mismatches": [
+      {
+        "itemId": "wi-normal",
+        "name": "Normal wash",
+        "expected": 4,
+        "received": 3
+      }
+    ],
+    "note": "One white formal shirt is missing.",
+    "status": "OPEN",
+    "reportedAt": "2026-11-04T13:00:00.000Z"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "minLength": 6,
+    "maxLength": 12,
+    "welcomeReward": 100
+  },
+  "codes": [
+    { "code": "ANANYA200", "owner": "Ananya R." },
+    { "code": "RAHULM24", "owner": "Rahul M." },
+    { "code": "PRIYAS10", "owner": "Priya S." },
+    { "code": "KIRAN2026", "owner": "Kiran T." }
+  ]
+}

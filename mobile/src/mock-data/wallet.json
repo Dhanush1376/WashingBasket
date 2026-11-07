@@ -1,0 +1,208 @@
+{
+  "transactions": [
+    {
+      "id": "tx-101",
+      "type": "credit",
+      "source": "referral",
+      "amount": 200,
+      "title": "Referral · Vikram S.",
+      "date": "2026-11-05T14:20:00+05:30",
+      "status": "pending"
+    },
+    {
+      "id": "tx-102",
+      "type": "debit",
+      "source": "order",
+      "amount": 112,
+      "title": "Order #WB-1010",
+      "date": "2026-11-05T09:15:00+05:30",
+      "status": "completed",
+      "orderId": "WB-1010"
+    },
+    {
+      "id": "tx-103",
+      "type": "credit",
+      "source": "bonus",
+      "amount": 100,
+      "title": "Top-up bonus",
+      "date": "2026-11-04T18:30:00+05:30",
+      "status": "completed"
+    },
+    {
+      "id": "tx-104",
+      "type": "credit",
+      "source": "topup",
+      "amount": 2000,
+      "title": "Added via UPI",
+      "date": "2026-11-04T18:29:00+05:30",
+      "status": "completed"
+    },
+    {
+      "id": "tx-105",
+      "type": "refund",
+      "source": "refund",
+      "amount": 300,
+      "title": "Refund · #WB-1006",
+      "date": "2026-11-04T10:38:00+05:30",
+      "status": "completed",
+      "orderId": "WB-1006"
+    },
+    {
+      "id": "tx-106",
+      "type": "debit",
+      "source": "order",
+      "amount": 160,
+      "title": "Order #WB-1005",
+      "date": "2026-11-03T16:45:00+05:30",
+      "status": "completed",
+      "orderId": "WB-1005"
+    },
+    {
+      "id": "tx-107",
+      "type": "debit",
+      "source": "order",
+      "amount": 128,
+      "title": "Order #WB-1003",
+      "date": "2026-11-02T11:20:00+05:30",
+      "status": "completed",
+      "orderId": "WB-1003"
+    },
+    {
+      "id": "tx-108",
+      "type": "debit",
+      "source": "order",
+      "amount": 146,
+      "title": "Order #WB-1002",
+      "date": "2026-11-01T15:10:00+05:30",
+      "status": "completed",
+      "orderId": "WB-1002"
+    },
+    {
+      "id": "tx-109",
+      "type": "credit",
+      "source": "topup",
+      "amount": 1500,
+      "title": "Added via UPI",
+      "date": "2026-10-30T12:00:00+05:30",
+      "status": "completed"
+    },
+    {
+      "id": "tx-110",
+      "type": "debit",
+      "source": "order",
+      "amount": 444,
+      "title": "Order #WB-1019",
+      "date": "2026-10-26T11:05:00+05:30",
+      "status": "completed",
+      "orderId": "WB-1019"
+    },
+    {
+      "id": "tx-111",
+      "type": "credit",
+      "source": "referral",
+      "amount": 200,
+      "title": "Referral · Rahul M.",
+      "date": "2026-10-22T14:15:00+05:30",
+      "status": "completed"
+    },
+    {
+      "id": "tx-112",
+      "type": "refund",
+      "source": "refund",
+      "amount": 49,
+      "title": "Refund · #WB-1012",
+      "date": "2026-10-20T16:15:00+05:30",
+      "status": "completed",
+      "orderId": "WB-1012"
+    },
+    {
+      "id": "tx-113",
+      "type": "debit",
+      "source": "order",
+      "amount": 275,
+      "title": "Order #WB-1015",
+      "date": "2026-10-15T17:50:00+05:30",
+      "status": "completed",
+      "orderId": "WB-1015"
+    },
+    {
+      "id": "tx-114",
+      "type": "credit",
+      "source": "referral",
+      "amount": 200,
+      "title": "Referral · Ananya R.",
+      "date": "2026-10-10T09:30:00+05:30",
+      "status": "completed"
+    },
+    {
+      "id": "tx-115",
+      "type": "debit",
+      "source": "order",
+      "amount": 190,
+      "title": "Order #WB-1001",
+      "date": "2026-10-05T13:40:00+05:30",
+      "status": "completed",
+      "orderId": "WB-1001"
+    },
+    {
+      "id": "tx-116",
+      "type": "credit",
+      "source": "topup",
+      "amount": 1000,
+      "title": "Added via GPay",
+      "date": "2026-10-01T20:10:00+05:30",
+      "status": "completed"
+    },
+    {
+      "id": "tx-117",
+      "type": "debit",
+      "source": "order",
+      "amount": 320,
+      "title": "Order #WB-1000",
+      "date": "2026-09-25T15:30:00+05:30",
+      "status": "completed",
+      "orderId": "WB-1000"
+    },
+    {
+      "id": "tx-118",
+      "type": "credit",
+      "source": "bonus",
+      "amount": 50,
+      "title": "Festival Cashback",
+      "date": "2026-09-20T11:00:00+05:30",
+      "status": "completed"
+    },
+    {
+      "id": "tx-119",
+      "type": "credit",
+      "source": "topup",
+      "amount": 500,
+      "title": "Added via card",
+      "date": "2026-09-14T19:25:00+05:30",
+      "status": "completed"
+    },
+    {
+      "id": "tx-120",
+      "type": "credit",
+      "source": "bonus",
+      "amount": 100,
+      "title": "Welcome bonus",
+      "date": "2026-09-12T10:05:00+05:30",
+      "status": "completed"
+    }
+  ],
+  "presets": [
+    100,
+    500,
+    1000,
+    2000
+  ],
+  "limits": {
+    "min": 100,
+    "max": 50000
+  },
+  "topUpBonus": {
+    "percent": 5,
+    "minAmount": 2000
+  }
+}

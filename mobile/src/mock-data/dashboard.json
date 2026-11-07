@@ -1,0 +1,40 @@
+{
+  "tagline": "Your laundry deserves the best care.",
+  "booking": {
+    "title": "Fresh clothes, just a pickup away.",
+    "message": "Schedule your laundry collection in a few simple steps.",
+    "cta": "Book a Pickup"
+  },
+  "promo": {
+    "title": "Your first laundry pickup, made effortless.",
+    "message": "Free doorstep delivery on orders of ₹499 or more.",
+    "cta": "See offers",
+    "offerId": "of-1"
+  },
+  "emptyOrder": {
+    "title": "No active orders",
+    "message": "Book a pickup and follow your clothes from washing to your door."
+  },
+  "trust": [
+    {
+      "icon": "sparkle",
+      "title": "Expert care",
+      "body": "Every garment handled by trained professionals."
+    },
+    {
+      "icon": "shield",
+      "title": "Hygienic cleaning",
+      "body": "Separate wash for every order."
+    },
+    {
+      "icon": "package",
+      "title": "Careful packing",
+      "body": "Folded, wrapped and sealed."
+    },
+    {
+      "icon": "truck",
+      "title": "Doorstep service",
+      "body": "Pickup and delivery at your slot."
+    }
+  ]
+}

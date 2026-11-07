@@ -1,0 +1,22 @@
+[
+  {
+    "id": "a-1",
+    "label": "Home",
+    "line1": "Flat 304, Sai Residency, 2nd Cross",
+    "line2": "HSR Layout, Sector 2",
+    "city": "Bengaluru",
+    "pincode": "123456",
+    "isDefault": true,
+    "pickupInstructions": "Ring the bell twice. If no one answers, hand over at the security desk."
+  },
+  {
+    "id": "a-2",
+    "label": "Work",
+    "line1": "5th Floor, Galaxy Towers, 43 Residency Road",
+    "line2": "Ashok Nagar",
+    "city": "Bengaluru",
+    "pincode": "123456",
+    "isDefault": false,
+    "pickupInstructions": null
+  }
+]

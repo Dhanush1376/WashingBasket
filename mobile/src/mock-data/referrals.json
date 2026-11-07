@@ -1,0 +1,32 @@
+{
+  "rewardPerReferral": 200,
+  "applied": null,
+  "steps": [
+    "Share your code with a friend.",
+    "They sign up and book their first pickup.",
+    "You get ₹200 in your wallet once their order is delivered."
+  ],
+  "history": [
+    {
+      "id": "rf-3",
+      "name": "Sneha K.",
+      "date": "2026-11-01",
+      "status": "invited",
+      "reward": 0
+    },
+    {
+      "id": "rf-2",
+      "name": "Rahul M.",
+      "date": "2026-10-30",
+      "status": "joined",
+      "reward": 200
+    },
+    {
+      "id": "rf-1",
+      "name": "Ananya R.",
+      "date": "2026-10-08",
+      "status": "rewarded",
+      "reward": 200
+    }
+  ]
+}

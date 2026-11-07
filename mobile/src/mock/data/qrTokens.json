@@ -1,0 +1,228 @@
+[
+  {
+    "id": "qr-12",
+    "token": "4BPJZHRPBF",
+    "orderId": "WB-1010",
+    "locationId": "loc-lpu",
+    "purpose": "ORDER_SUBMISSION",
+    "status": "ACTIVE",
+    "createdAt": "2026-11-05T03:40:00.000Z",
+    "ttlMinutes": 1440,
+    "scans": [],
+    "activatedAt": "2026-11-05T03:41:00.000Z",
+    "expiresAt": "2026-11-06T03:41:00.000Z"
+  },
+  {
+    "id": "qr-11",
+    "token": "E77PNHKQA8",
+    "orderId": "WB-1009",
+    "locationId": "loc-nit",
+    "purpose": "ORDER_SUBMISSION",
+    "status": "ACTIVE",
+    "createdAt": "2026-11-05T03:25:00.000Z",
+    "ttlMinutes": 1440,
+    "scans": [],
+    "activatedAt": "2026-11-05T03:26:00.000Z",
+    "expiresAt": "2026-11-06T03:26:00.000Z"
+  },
+  {
+    "id": "qr-10",
+    "token": "VXQX2U2Q8Q",
+    "orderId": "WB-1008",
+    "locationId": "loc-outside",
+    "purpose": "ORDER_SUBMISSION",
+    "status": "LOCKED",
+    "createdAt": "2026-11-05T03:00:00.000Z",
+    "ttlMinutes": 1440,
+    "scans": []
+  },
+  {
+    "id": "qr-9",
+    "token": "AJVTVNBVJZ",
+    "orderId": "WB-1007",
+    "locationId": "loc-outside",
+    "purpose": "PICKUP_COLLECTION",
+    "status": "ACTIVE",
+    "createdAt": "2026-11-04T15:30:00.000Z",
+    "ttlMinutes": 4320,
+    "scans": [],
+    "activatedAt": "2026-11-04T15:31:00.000Z",
+    "expiresAt": "2026-11-07T15:31:00.000Z"
+  },
+  {
+    "id": "qr-8",
+    "token": "KHZ25U44ER",
+    "orderId": "WB-1006",
+    "locationId": "loc-lpu",
+    "purpose": "ORDER_SUBMISSION",
+    "status": "CONSUMED",
+    "createdAt": "2026-11-04T10:30:00.000Z",
+    "ttlMinutes": 1440,
+    "scans": [
+      {
+        "at": "2026-11-04T10:38:00.000Z",
+        "staffId": "st-lpu-01",
+        "result": "CONSUMED",
+        "reason": "Used to complete the step"
+      }
+    ],
+    "activatedAt": "2026-11-04T10:31:00.000Z",
+    "expiresAt": "2026-11-05T10:31:00.000Z",
+    "consumedAt": "2026-11-04T10:38:00.000Z",
+    "consumedBy": "st-lpu-01"
+  },
+  {
+    "id": "qr-7",
+    "token": "GC4T3VYENV",
+    "orderId": "WB-1005",
+    "locationId": "loc-nit",
+    "purpose": "ORDER_SUBMISSION",
+    "status": "CONSUMED",
+    "createdAt": "2026-11-03T04:10:00.000Z",
+    "ttlMinutes": 1440,
+    "scans": [
+      {
+        "at": "2026-11-03T04:20:00.000Z",
+        "staffId": "st-nit-01",
+        "result": "CONSUMED",
+        "reason": "Used to complete the step"
+      }
+    ],
+    "activatedAt": "2026-11-03T04:11:00.000Z",
+    "expiresAt": "2026-11-04T04:11:00.000Z",
+    "consumedAt": "2026-11-03T04:20:00.000Z",
+    "consumedBy": "st-nit-01"
+  },
+  {
+    "id": "qr-6",
+    "token": "CRYCRCGS9K",
+    "orderId": "WB-1004",
+    "locationId": "loc-outside",
+    "purpose": "PICKUP_COLLECTION",
+    "status": "CONSUMED",
+    "createdAt": "2026-11-02T13:30:00.000Z",
+    "ttlMinutes": 4320,
+    "scans": [
+      {
+        "at": "2026-11-03T03:10:00.000Z",
+        "staffId": "st-out-01",
+        "result": "CONSUMED",
+        "reason": "Used to complete the step"
+      }
+    ],
+    "activatedAt": "2026-11-02T13:31:00.000Z",
+    "expiresAt": "2026-11-05T13:31:00.000Z",
+    "consumedAt": "2026-11-03T03:10:00.000Z",
+    "consumedBy": "st-out-01"
+  },
+  {
+    "id": "qr-5",
+    "token": "F8KC9RX2WC",
+    "orderId": "WB-1003",
+    "locationId": "loc-lpu",
+    "purpose": "ORDER_SUBMISSION",
+    "status": "CONSUMED",
+    "createdAt": "2026-11-02T06:30:00.000Z",
+    "ttlMinutes": 1440,
+    "scans": [
+      {
+        "at": "2026-11-02T06:39:00.000Z",
+        "staffId": "st-lpu-01",
+        "result": "CONSUMED",
+        "reason": "Used to complete the step"
+      }
+    ],
+    "activatedAt": "2026-11-02T06:31:00.000Z",
+    "expiresAt": "2026-11-03T06:31:00.000Z",
+    "consumedAt": "2026-11-02T06:39:00.000Z",
+    "consumedBy": "st-lpu-01"
+  },
+  {
+    "id": "qr-4",
+    "token": "MRSG9DBSY4",
+    "orderId": "WB-1002",
+    "locationId": "loc-lpu",
+    "purpose": "CUSTOMER_DELIVERY_VERIFICATION",
+    "status": "CONSUMED",
+    "createdAt": "2026-11-03T05:30:00.000Z",
+    "ttlMinutes": 30,
+    "activatedAt": "2026-11-03T05:30:00.000Z",
+    "expiresAt": "2026-11-03T06:00:00.000Z",
+    "scans": [
+      {
+        "at": "2026-11-03T05:32:00.000Z",
+        "staffId": "st-lpu-01",
+        "result": "CONSUMED",
+        "reason": "Used to complete the step"
+      }
+    ],
+    "consumedAt": "2026-11-03T05:32:00.000Z",
+    "consumedBy": "st-lpu-01"
+  },
+  {
+    "id": "qr-3",
+    "token": "NDVMC772P5",
+    "orderId": "WB-1002",
+    "locationId": "loc-lpu",
+    "purpose": "ORDER_SUBMISSION",
+    "status": "CONSUMED",
+    "createdAt": "2026-11-01T04:35:00.000Z",
+    "ttlMinutes": 1440,
+    "scans": [
+      {
+        "at": "2026-11-01T04:42:00.000Z",
+        "staffId": "st-lpu-01",
+        "result": "CONSUMED",
+        "reason": "Used to complete the step"
+      }
+    ],
+    "activatedAt": "2026-11-01T04:36:00.000Z",
+    "expiresAt": "2026-11-02T04:36:00.000Z",
+    "consumedAt": "2026-11-01T04:42:00.000Z",
+    "consumedBy": "st-lpu-01"
+  },
+  {
+    "id": "qr-2",
+    "token": "EX6CTEPYAX",
+    "orderId": "WB-1001",
+    "locationId": "loc-nit",
+    "purpose": "CUSTOMER_DELIVERY_VERIFICATION",
+    "status": "CONSUMED",
+    "createdAt": "2026-11-02T05:30:00.000Z",
+    "ttlMinutes": 30,
+    "activatedAt": "2026-11-02T05:30:00.000Z",
+    "expiresAt": "2026-11-02T06:00:00.000Z",
+    "scans": [
+      {
+        "at": "2026-11-02T05:32:00.000Z",
+        "staffId": "st-nit-01",
+        "result": "CONSUMED",
+        "reason": "Used to complete the step"
+      }
+    ],
+    "consumedAt": "2026-11-02T05:32:00.000Z",
+    "consumedBy": "st-nit-01"
+  },
+  {
+    "id": "qr-1",
+    "token": "KPZ8S5B6VM",
+    "orderId": "WB-1001",
+    "locationId": "loc-nit",
+    "purpose": "ORDER_SUBMISSION",
+    "status": "CONSUMED",
+    "createdAt": "2026-10-31T04:35:00.000Z",
+    "ttlMinutes": 1440,
+    "scans": [
+      {
+        "at": "2026-10-31T04:44:00.000Z",
+        "staffId": "st-nit-01",
+        "result": "CONSUMED",
+        "reason": "Used to complete the step"
+      }
+    ],
+    "activatedAt": "2026-10-31T04:36:00.000Z",
+    "expiresAt": "2026-11-01T04:36:00.000Z",
+    "consumedAt": "2026-10-31T04:44:00.000Z",
+    "consumedBy": "st-nit-01"
+  }
+]

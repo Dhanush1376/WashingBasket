@@ -1,0 +1,53 @@
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+import type { OrderFilter } from '../services/mock/orders.service';
+import type { ServiceId } from '../types/models';
+
+/** Bottom tabs inside the signed-in app. */
+export type MainTabParamList = {
+  Home: undefined;
+  Wallet: undefined;
+  Book: { serviceId?: ServiceId } | undefined;
+  Orders: { filter?: OrderFilter } | undefined;
+  Profile: undefined;
+};
+
+export type RootStackParamList = {
+  // sign-in and onboarding
+  Login: undefined;
+  Otp: { requestId: string; phone: string; displayPhone: string; resendAfter: number };
+  Details: undefined;
+  Pincode: undefined;
+  // the app
+  Main: NavigatorScreenParams<MainTabParamList> | undefined;
+  OrderDetail: { orderId: string };
+  BookingSuccess: { requestId: string };
+  /** `offerId` opens the page on that coupon (from Home's offer deck). */
+  Offers: { offerId?: string } | undefined;
+  Refer: undefined;
+  PriceList: undefined;
+  Support: undefined;
+  Notifications: undefined;
+  EditProfile: undefined;
+  AddAddress: undefined;
+  Intro: undefined;
+  // laundry orders (customer)
+  LaundryOrder: { orderId: string };
+  Receipt: { orderId: string };
+  VerifyClothes: { orderId: string };
+  // staff (signed in with the demo staff number)
+  StaffHome: undefined;
+  StaffScan: { intent?: 'ANY' | 'INTAKE' | 'DELIVERY'; orderId?: string } | undefined;
+  StaffReview: { orderId: string; qrId: string };
+  StaffOrder: { orderId: string };
+  StaffDelivery: { orderId: string; qrId: string };
+};
+
+export type ScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<RootStackParamList, T>;
+
+export type TabProps<T extends keyof MainTabParamList> = CompositeScreenProps<
+  BottomTabScreenProps<MainTabParamList, T>,
+  NativeStackScreenProps<RootStackParamList>
+>;

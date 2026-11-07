@@ -1,0 +1,43 @@
+[
+  {
+    "id": "RQ2045",
+    "serviceId": "only-wash",
+    "createdAt": "2026-11-03T08:30:00+05:30",
+    "pickupDate": "2026-11-07",
+    "slotId": "s-2",
+    "addressId": "a-1",
+    "status": "pending",
+    "notes": "Please ring the bell twice."
+  },
+  {
+    "id": "RQ2043",
+    "serviceId": "dry-clean",
+    "createdAt": "2026-11-02T18:05:00+05:30",
+    "pickupDate": "2026-11-03",
+    "slotId": "s-3",
+    "addressId": "a-2",
+    "status": "confirmed",
+    "orderId": "WB1023"
+  },
+  {
+    "id": "RQ2041",
+    "serviceId": "wash-iron",
+    "createdAt": "2026-11-01T10:20:00+05:30",
+    "pickupDate": "2026-11-02",
+    "slotId": "s-2",
+    "addressId": "a-1",
+    "status": "picked_up",
+    "orderId": "WB1024"
+  },
+  {
+    "id": "RQ2036",
+    "serviceId": "dry-clean",
+    "createdAt": "2026-10-04T11:00:00+05:30",
+    "pickupDate": "2026-10-05",
+    "slotId": "s-2",
+    "addressId": "a-2",
+    "status": "cancelled",
+    "orderId": "WB1008",
+    "cancelReason": "Cancelled by you before pickup."
+  }
+]

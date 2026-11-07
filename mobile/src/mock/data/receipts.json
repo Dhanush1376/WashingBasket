@@ -1,0 +1,47 @@
+[
+  {
+    "id": "rc-WB-1005",
+    "number": "WBR-240005",
+    "orderId": "WB-1005",
+    "customerId": "u-1003",
+    "issuedAt": "2026-11-03T04:20:00.000Z",
+    "acceptedBy": "st-nit-01",
+    "animationShownAt": "2026-11-03T04:20:00.000Z"
+  },
+  {
+    "id": "rc-WB-1004",
+    "number": "WBR-240004",
+    "orderId": "WB-1004",
+    "customerId": "u-1004",
+    "issuedAt": "2026-11-03T03:10:00.000Z",
+    "acceptedBy": "st-out-01",
+    "animationShownAt": "2026-11-03T03:10:00.000Z"
+  },
+  {
+    "id": "rc-WB-1003",
+    "number": "WBR-240003",
+    "orderId": "WB-1003",
+    "customerId": "u-1002",
+    "issuedAt": "2026-11-02T06:39:00.000Z",
+    "acceptedBy": "st-lpu-01",
+    "animationShownAt": "2026-11-02T06:39:00.000Z"
+  },
+  {
+    "id": "rc-WB-1002",
+    "number": "WBR-240002",
+    "orderId": "WB-1002",
+    "customerId": "u-1002",
+    "issuedAt": "2026-11-01T04:42:00.000Z",
+    "acceptedBy": "st-lpu-01",
+    "animationShownAt": "2026-11-01T04:42:00.000Z"
+  },
+  {
+    "id": "rc-WB-1001",
+    "number": "WBR-240001",
+    "orderId": "WB-1001",
+    "customerId": "u-1005",
+    "issuedAt": "2026-10-31T04:44:00.000Z",
+    "acceptedBy": "st-nit-01",
+    "animationShownAt": "2026-10-31T04:44:00.000Z"
+  }
+]

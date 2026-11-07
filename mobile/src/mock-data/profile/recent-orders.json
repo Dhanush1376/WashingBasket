@@ -1,0 +1,80 @@
+[
+  {
+    "id": "WB1024",
+    "service": "Wash & Iron",
+    "status": "washing",
+    "placedAt": "2026-11-01T10:20:00+05:30",
+    "scheduledPickup": "2026-11-02",
+    "pickedUpAt": "2026-11-02T10:30:00+05:30",
+    "deliveredAt": null,
+    "estimatedDelivery": "2026-11-04",
+    "itemsLabel": "11 garments",
+    "amount": 469,
+    "paymentStatus": "pending"
+  },
+  {
+    "id": "WB1023",
+    "service": "Dry Cleaning",
+    "status": "pickup_scheduled",
+    "placedAt": "2026-11-02T18:05:00+05:30",
+    "scheduledPickup": "2026-11-03",
+    "pickedUpAt": null,
+    "deliveredAt": null,
+    "estimatedDelivery": "2026-11-06",
+    "itemsLabel": "2 garments",
+    "amount": 466,
+    "paymentStatus": "pending"
+  },
+  {
+    "id": "WB1019",
+    "service": "Only Wash",
+    "status": "delivered",
+    "placedAt": "2026-10-23T09:10:00+05:30",
+    "scheduledPickup": "2026-10-24",
+    "pickedUpAt": "2026-10-24T08:50:00+05:30",
+    "deliveredAt": "2026-10-26T17:40:00+05:30",
+    "estimatedDelivery": "2026-10-26",
+    "itemsLabel": "5 kg",
+    "amount": 444,
+    "paymentStatus": "paid"
+  },
+  {
+    "id": "WB1012",
+    "service": "Wash & Iron",
+    "status": "delivered",
+    "placedAt": "2026-10-12T19:30:00+05:30",
+    "scheduledPickup": "2026-10-13",
+    "pickedUpAt": "2026-10-13T16:25:00+05:30",
+    "deliveredAt": "2026-10-14T12:15:00+05:30",
+    "estimatedDelivery": "2026-10-14",
+    "itemsLabel": "16 garments",
+    "amount": 289,
+    "paymentStatus": "paid"
+  },
+  {
+    "id": "WB1008",
+    "service": "Dry Cleaning",
+    "status": "cancelled",
+    "placedAt": "2026-10-04T11:00:00+05:30",
+    "scheduledPickup": "2026-10-05",
+    "pickedUpAt": null,
+    "deliveredAt": null,
+    "estimatedDelivery": "2026-10-08",
+    "itemsLabel": "1 garment",
+    "amount": 448,
+    "paymentStatus": "not_charged"
+  },
+  {
+    "id": "WB1003",
+    "service": "Blanket",
+    "status": "delivered",
+    "placedAt": "2026-09-19T08:45:00+05:30",
+    "scheduledPickup": "2026-09-20",
+    "pickedUpAt": "2026-09-20T08:35:00+05:30",
+    "deliveredAt": "2026-09-22T16:00:00+05:30",
+    "estimatedDelivery": "2026-09-23",
+    "itemsLabel": "2 garments",
+    "amount": 698,
+    "paymentStatus": "paid"
+  }
+]

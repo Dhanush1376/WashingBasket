@@ -1,0 +1,581 @@
+[
+  {
+    "id": "WB-1010",
+    "customerId": "u-1006",
+    "locationId": "loc-lpu",
+    "serviceMode": "OFFICE_DROP_OFF",
+    "status": "AWAITING_STAFF_ACCEPTANCE",
+    "lines": [
+      {
+        "itemId": "ow-normal",
+        "name": "Normal wash",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 45,
+        "qty": 5,
+        "amount": 225
+      },
+      {
+        "itemId": "ow-ezee",
+        "name": "Ezee",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 55,
+        "qty": 2,
+        "amount": 110
+      },
+      {
+        "itemId": "ow-whites",
+        "name": "Whites wash",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 60,
+        "qty": 2,
+        "amount": 120
+      }
+    ],
+    "pieces": 9,
+    "subtotal": 455,
+    "serviceCharge": 0,
+    "total": 455,
+    "payment": {
+      "status": "COMPLETED",
+      "amount": 455,
+      "method": "WALLET",
+      "failedAttempts": 0,
+      "txnId": "wt-19",
+      "paidAt": "2026-11-05T03:41:00.000Z"
+    },
+    "intakeQrId": "qr-12",
+    "createdAt": "2026-11-05T03:40:00.000Z",
+    "updatedAt": "2026-11-05T03:41:00.000Z"
+  },
+  {
+    "id": "WB-1009",
+    "customerId": "u-1007",
+    "locationId": "loc-nit",
+    "serviceMode": "OFFICE_DROP_OFF",
+    "status": "AWAITING_STAFF_ACCEPTANCE",
+    "lines": [
+      {
+        "itemId": "wi-normal",
+        "name": "Normal wash",
+        "icon": "shirt",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
+        "unit": "kg",
+        "unitPrice": 55,
+        "qty": 3,
+        "amount": 165
+      },
+      {
+        "itemId": "wi-whites",
+        "name": "Whites wash",
+        "icon": "shirt",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
+        "unit": "kg",
+        "unitPrice": 70,
+        "qty": 2,
+        "amount": 140
+      }
+    ],
+    "pieces": 5,
+    "subtotal": 305,
+    "serviceCharge": 0,
+    "total": 305,
+    "payment": {
+      "status": "COMPLETED",
+      "amount": 305,
+      "method": "WALLET",
+      "failedAttempts": 0,
+      "txnId": "wt-18",
+      "paidAt": "2026-11-05T03:26:00.000Z"
+    },
+    "intakeQrId": "qr-11",
+    "createdAt": "2026-11-05T03:25:00.000Z",
+    "updatedAt": "2026-11-05T03:26:00.000Z"
+  },
+  {
+    "id": "WB-1008",
+    "customerId": "u-1009",
+    "locationId": "loc-outside",
+    "serviceMode": "OFFICE_DROP_OFF",
+    "status": "PAYMENT_PENDING",
+    "lines": [
+      {
+        "itemId": "bl-normal-double",
+        "name": "Normal wash · Double",
+        "icon": "blanket",
+        "categoryId": "blanket",
+        "categoryName": "Blanket",
+        "unit": "piece",
+        "unitPrice": 300,
+        "qty": 1,
+        "amount": 300
+      }
+    ],
+    "pieces": 1,
+    "subtotal": 300,
+    "serviceCharge": 0,
+    "total": 300,
+    "payment": {
+      "status": "FAILED",
+      "amount": 300,
+      "method": "WALLET",
+      "failedAttempts": 1,
+      "lastFailure": {
+        "at": "2026-11-05T03:01:00.000Z",
+        "reason": "Insufficient wallet balance",
+        "balance": 150,
+        "shortfall": 150
+      }
+    },
+    "intakeQrId": "qr-10",
+    "createdAt": "2026-11-05T03:00:00.000Z",
+    "updatedAt": "2026-11-05T03:01:00.000Z"
+  },
+  {
+    "id": "WB-1007",
+    "customerId": "u-1010",
+    "locationId": "loc-outside",
+    "serviceMode": "HOME_PICKUP",
+    "status": "AWAITING_STAFF_ACCEPTANCE",
+    "lines": [
+      {
+        "itemId": "ow-normal",
+        "name": "Normal wash",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 45,
+        "qty": 6,
+        "amount": 270
+      },
+      {
+        "itemId": "wi-normal",
+        "name": "Normal wash",
+        "icon": "shirt",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
+        "unit": "kg",
+        "unitPrice": 55,
+        "qty": 3,
+        "amount": 165
+      },
+      {
+        "itemId": "ow-whites",
+        "name": "Whites wash",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 60,
+        "qty": 4,
+        "amount": 240
+      }
+    ],
+    "pieces": 13,
+    "subtotal": 675,
+    "serviceCharge": 0,
+    "total": 675,
+    "pickup": {
+      "address": "House 118, Urban Estate Phase 2, Jalandhar",
+      "contactPhone": "+91 98084 48464",
+      "date": "2026-11-05",
+      "slotId": "hp-noon",
+      "slotLabel": "12:00 – 2:00 PM"
+    },
+    "payment": {
+      "status": "COMPLETED",
+      "amount": 675,
+      "method": "WALLET",
+      "failedAttempts": 0,
+      "txnId": "wt-17",
+      "paidAt": "2026-11-04T15:31:00.000Z"
+    },
+    "intakeQrId": "qr-9",
+    "createdAt": "2026-11-04T15:30:00.000Z",
+    "updatedAt": "2026-11-04T15:31:00.000Z"
+  },
+  {
+    "id": "WB-1006",
+    "customerId": "u-1008",
+    "locationId": "loc-lpu",
+    "serviceMode": "OFFICE_DROP_OFF",
+    "status": "REJECTED",
+    "lines": [
+      {
+        "itemId": "st-colour",
+        "name": "Coloured clothes",
+        "icon": "stain",
+        "categoryId": "stain",
+        "categoryName": "Stain treatment",
+        "unit": "piece",
+        "unitPrice": 100,
+        "qty": 2,
+        "amount": 200
+      },
+      {
+        "itemId": "dc-basic",
+        "name": "Basic dry clean",
+        "icon": "jacket",
+        "categoryId": "dry-clean",
+        "categoryName": "Dry clean",
+        "unit": "piece",
+        "unitPrice": 100,
+        "qty": 1,
+        "amount": 100
+      }
+    ],
+    "pieces": 3,
+    "subtotal": 300,
+    "serviceCharge": 0,
+    "total": 300,
+    "payment": {
+      "status": "REVERSED",
+      "amount": 300,
+      "method": "WALLET",
+      "failedAttempts": 0,
+      "txnId": "wt-15",
+      "paidAt": "2026-11-04T10:31:00.000Z",
+      "reversalTxnId": "wt-16",
+      "reversedAt": "2026-11-04T10:38:00.000Z"
+    },
+    "intakeQrId": "qr-8",
+    "createdAt": "2026-11-04T10:30:00.000Z",
+    "updatedAt": "2026-11-04T10:38:00.000Z",
+    "rejectedBy": "st-lpu-01",
+    "rejectedAt": "2026-11-04T10:38:00.000Z",
+    "rejectionReason": "Paint stains need specialist treatment we don’t offer at this office"
+  },
+  {
+    "id": "WB-1005",
+    "customerId": "u-1003",
+    "locationId": "loc-nit",
+    "serviceMode": "OFFICE_DROP_OFF",
+    "status": "PROCESSING",
+    "lines": [
+      {
+        "itemId": "ow-normal",
+        "name": "Normal wash",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 45,
+        "qty": 4,
+        "amount": 180
+      },
+      {
+        "itemId": "ow-whites",
+        "name": "Whites wash",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 60,
+        "qty": 3,
+        "amount": 180
+      },
+      {
+        "itemId": "sb-machine",
+        "name": "Machine wash",
+        "icon": "shoe",
+        "categoryId": "shoes-bags",
+        "categoryName": "Shoes, bags & soft toys",
+        "unit": "pair",
+        "unitPrice": 70,
+        "qty": 1,
+        "amount": 70
+      }
+    ],
+    "pieces": 8,
+    "subtotal": 430,
+    "serviceCharge": 0,
+    "total": 430,
+    "payment": {
+      "status": "COMPLETED",
+      "amount": 430,
+      "method": "WALLET",
+      "failedAttempts": 0,
+      "txnId": "wt-14",
+      "paidAt": "2026-11-03T04:11:00.000Z"
+    },
+    "intakeQrId": "qr-7",
+    "createdAt": "2026-11-03T04:10:00.000Z",
+    "updatedAt": "2026-11-03T06:30:00.000Z",
+    "acceptedBy": "st-nit-01",
+    "acceptedAt": "2026-11-03T04:20:00.000Z",
+    "receiptId": "rc-WB-1005",
+    "processingBy": "st-nit-01"
+  },
+  {
+    "id": "WB-1004",
+    "customerId": "u-1004",
+    "locationId": "loc-outside",
+    "serviceMode": "HOME_PICKUP",
+    "status": "READY_FOR_DELIVERY",
+    "lines": [
+      {
+        "itemId": "wi-normal",
+        "name": "Normal wash",
+        "icon": "shirt",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
+        "unit": "kg",
+        "unitPrice": 55,
+        "qty": 2,
+        "amount": 110
+      },
+      {
+        "itemId": "dc-premium",
+        "name": "Premium dry clean",
+        "icon": "jacket",
+        "categoryId": "dry-clean",
+        "categoryName": "Dry clean",
+        "unit": "piece",
+        "unitPrice": 150,
+        "qty": 1,
+        "amount": 150
+      },
+      {
+        "itemId": "ow-normal",
+        "name": "Normal wash",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 45,
+        "qty": 2,
+        "amount": 90
+      }
+    ],
+    "pieces": 5,
+    "subtotal": 350,
+    "serviceCharge": 49,
+    "total": 399,
+    "pickup": {
+      "address": "Flat 302, Green Avenue Apartments, Model Town, Jalandhar",
+      "landmark": "Opposite City Park",
+      "contactPhone": "+91 98862 31361",
+      "date": "2026-11-03",
+      "slotId": "hp-morning",
+      "slotLabel": "8:00 – 10:00 AM"
+    },
+    "instructions": "Call before arriving. Sarees are delicate.",
+    "payment": {
+      "status": "COMPLETED",
+      "amount": 399,
+      "method": "WALLET",
+      "failedAttempts": 0,
+      "txnId": "wt-13",
+      "paidAt": "2026-11-02T13:31:00.000Z"
+    },
+    "intakeQrId": "qr-6",
+    "createdAt": "2026-11-02T13:30:00.000Z",
+    "updatedAt": "2026-11-04T12:30:00.000Z",
+    "acceptedBy": "st-out-01",
+    "acceptedAt": "2026-11-03T03:10:00.000Z",
+    "receiptId": "rc-WB-1004",
+    "processingBy": "st-out-01",
+    "readyBy": "st-out-01"
+  },
+  {
+    "id": "WB-1003",
+    "customerId": "u-1002",
+    "locationId": "loc-lpu",
+    "serviceMode": "OFFICE_DROP_OFF",
+    "status": "AWAITING_CUSTOMER_VERIFICATION",
+    "lines": [
+      {
+        "itemId": "wi-normal",
+        "name": "Normal wash",
+        "icon": "shirt",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
+        "unit": "kg",
+        "unitPrice": 55,
+        "qty": 4,
+        "amount": 220
+      },
+      {
+        "itemId": "wi-whites",
+        "name": "Whites wash",
+        "icon": "shirt",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
+        "unit": "kg",
+        "unitPrice": 70,
+        "qty": 2,
+        "amount": 140
+      }
+    ],
+    "pieces": 6,
+    "subtotal": 360,
+    "serviceCharge": 0,
+    "total": 360,
+    "payment": {
+      "status": "COMPLETED",
+      "amount": 360,
+      "method": "WALLET",
+      "failedAttempts": 0,
+      "txnId": "wt-12",
+      "paidAt": "2026-11-02T06:31:00.000Z"
+    },
+    "intakeQrId": "qr-5",
+    "createdAt": "2026-11-02T06:30:00.000Z",
+    "updatedAt": "2026-11-04T13:00:00.000Z",
+    "acceptedBy": "st-lpu-01",
+    "acceptedAt": "2026-11-02T06:39:00.000Z",
+    "receiptId": "rc-WB-1003",
+    "processingBy": "st-lpu-01",
+    "readyBy": "st-lpu-01"
+  },
+  {
+    "id": "WB-1002",
+    "customerId": "u-1002",
+    "locationId": "loc-lpu",
+    "serviceMode": "OFFICE_DROP_OFF",
+    "status": "DELIVERED",
+    "lines": [
+      {
+        "itemId": "ow-normal",
+        "name": "Normal wash",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 45,
+        "qty": 6,
+        "amount": 270
+      },
+      {
+        "itemId": "ow-ezee",
+        "name": "Ezee",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 55,
+        "qty": 2,
+        "amount": 110
+      },
+      {
+        "itemId": "ow-whites",
+        "name": "Whites wash",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 60,
+        "qty": 1,
+        "amount": 60
+      }
+    ],
+    "pieces": 9,
+    "subtotal": 440,
+    "serviceCharge": 0,
+    "total": 440,
+    "instructions": "Please fold the T-shirts separately.",
+    "payment": {
+      "status": "COMPLETED",
+      "amount": 440,
+      "method": "WALLET",
+      "failedAttempts": 0,
+      "txnId": "wt-11",
+      "paidAt": "2026-11-01T04:36:00.000Z"
+    },
+    "intakeQrId": "qr-3",
+    "createdAt": "2026-11-01T04:35:00.000Z",
+    "updatedAt": "2026-11-03T05:32:00.000Z",
+    "acceptedBy": "st-lpu-01",
+    "acceptedAt": "2026-11-01T04:42:00.000Z",
+    "receiptId": "rc-WB-1002",
+    "processingBy": "st-lpu-01",
+    "readyBy": "st-lpu-01",
+    "verification": {
+      "confirmedAt": "2026-11-03T05:30:00.000Z",
+      "piecesConfirmed": 9
+    },
+    "deliveryQrId": "qr-4",
+    "deliveredBy": "st-lpu-01",
+    "deliveredAt": "2026-11-03T05:32:00.000Z"
+  },
+  {
+    "id": "WB-1001",
+    "customerId": "u-1005",
+    "locationId": "loc-nit",
+    "serviceMode": "OFFICE_DROP_OFF",
+    "status": "DELIVERED",
+    "lines": [
+      {
+        "itemId": "wi-normal",
+        "name": "Normal wash",
+        "icon": "shirt",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
+        "unit": "kg",
+        "unitPrice": 55,
+        "qty": 5,
+        "amount": 275
+      },
+      {
+        "itemId": "wi-ezee",
+        "name": "Ezee wash",
+        "icon": "shirt",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
+        "unit": "kg",
+        "unitPrice": 65,
+        "qty": 3,
+        "amount": 195
+      },
+      {
+        "itemId": "ow-normal",
+        "name": "Normal wash",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "kg",
+        "unitPrice": 45,
+        "qty": 2,
+        "amount": 90
+      }
+    ],
+    "pieces": 10,
+    "subtotal": 560,
+    "serviceCharge": 0,
+    "total": 560,
+    "payment": {
+      "status": "COMPLETED",
+      "amount": 560,
+      "method": "WALLET",
+      "failedAttempts": 0,
+      "txnId": "wt-10",
+      "paidAt": "2026-10-31T04:36:00.000Z"
+    },
+    "intakeQrId": "qr-1",
+    "createdAt": "2026-10-31T04:35:00.000Z",
+    "updatedAt": "2026-11-02T05:32:00.000Z",
+    "acceptedBy": "st-nit-01",
+    "acceptedAt": "2026-10-31T04:44:00.000Z",
+    "receiptId": "rc-WB-1001",
+    "processingBy": "st-nit-01",
+    "readyBy": "st-nit-01",
+    "verification": {
+      "confirmedAt": "2026-11-02T05:30:00.000Z",
+      "piecesConfirmed": 10
+    },
+    "deliveryQrId": "qr-2",
+    "deliveredBy": "st-nit-01",
+    "deliveredAt": "2026-11-02T05:32:00.000Z"
+  }
+]

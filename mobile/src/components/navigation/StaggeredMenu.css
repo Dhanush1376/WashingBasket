@@ -1,0 +1,508 @@
+/* Theme-specific text selection: matches brand theme */
+::selection {
+  background-color: var(--sm-accent, #FE8701) !important;
+  color: #FFFFFF !important;
+}
+
+::-moz-selection {
+  background-color: var(--sm-accent, #FE8701) !important;
+  color: #FFFFFF !important;
+}
+
+.staggered-menu-wrapper ::selection,
+.staggered-menu-panel ::selection,
+.sm-panel-list ::selection,
+.sm-panel-item ::selection,
+.sm-panel-itemLabel ::selection {
+  background-color: var(--sm-accent, #FE8701) !important;
+  color: #FFFFFF !important;
+}
+
+.staggered-menu-wrapper ::-moz-selection,
+.staggered-menu-panel ::-moz-selection,
+.sm-panel-list ::-moz-selection,
+.sm-panel-item ::-moz-selection,
+.sm-panel-itemLabel ::-moz-selection {
+  background-color: var(--sm-accent, #FE8701) !important;
+  color: #FFFFFF !important;
+}
+
+.staggered-menu-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 40;
+  pointer-events: none;
+  font-family: 'PlusJakartaSans_800ExtraBold', 'Plus Jakarta Sans', 'Inter_800ExtraBold', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+.staggered-menu-wrapper:not([data-open]) {
+  visibility: hidden;
+  pointer-events: none !important;
+}
+
+.staggered-menu-wrapper[data-open] {
+  visibility: visible;
+  pointer-events: auto !important;
+}
+
+.staggered-menu-wrapper.fixed-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* Semi-transparent dimmed backdrop covering remaining 1/4th of screen */
+.sm-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(11, 18, 32, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 4;
+}
+
+.staggered-menu-wrapper[data-open] .sm-backdrop {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+/* 3/4th Width Drawer Panel */
+.staggered-menu-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: clamp(260px, 75vw, 340px);
+  height: 100%;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  padding: 1.4em 1.3em 1.4em 1.3em;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  z-index: 10;
+  pointer-events: auto;
+  opacity: 0;
+  box-sizing: border-box;
+  font-family: 'PlusJakartaSans_800ExtraBold', 'Plus Jakarta Sans', 'Inter_800ExtraBold', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+.staggered-menu-wrapper[data-open] .staggered-menu-panel {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.staggered-menu-wrapper[data-open] .sm-prelayers,
+.staggered-menu-wrapper[data-open] .sm-prelayer {
+  opacity: 1 !important;
+}
+
+.staggered-menu-panel::-webkit-scrollbar {
+  display: none;
+}
+
+[data-position='left'] .staggered-menu-panel {
+  left: 0;
+  right: auto;
+  border-radius: 0;
+}
+
+[data-position='right'] .staggered-menu-panel {
+  right: 0;
+  left: auto;
+  border-radius: 0;
+}
+
+/* Shadow only while open: parked off-screen, it would bleed a grey strip onto every page. */
+[data-open][data-position='left'] .staggered-menu-panel {
+  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.22);
+}
+
+[data-open][data-position='right'] .staggered-menu-panel {
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.22);
+}
+
+/* Prelayers matching 3/4th width */
+.sm-prelayers {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: clamp(260px, 75vw, 340px);
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+}
+
+[data-position='left'] .sm-prelayers {
+  left: 0;
+  right: auto;
+}
+
+[data-position='right'] .sm-prelayers {
+  right: 0;
+  left: auto;
+}
+
+.sm-prelayer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  width: 100%;
+  transform: translateX(0);
+  opacity: 0;
+}
+
+[data-position='left'] .sm-prelayer {
+  left: 0;
+  right: auto;
+  border-radius: 0;
+}
+
+[data-position='right'] .sm-prelayer {
+  right: 0;
+  left: auto;
+  border-radius: 0;
+}
+
+/* Panel Internal Header (Logo + Brand + Close Button) */
+.sm-panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.95rem;
+  border-bottom: 1px solid #EAE6DB;
+}
+
+.sm-panel-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+}
+
+.sm-panel-brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+}
+
+.sm-panel-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sm-panel-brand-title {
+  color: #0A1C3E;
+  font-family: 'PlusJakartaSans_700Bold', 'Plus Jakarta Sans', 'Inter_700Bold', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 18px;
+  line-height: 24px;
+  letter-spacing: -0.35px;
+  display: inline-flex;
+  align-items: baseline;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sm-panel-brand-cap {
+  font-size: 23px;
+  line-height: 24px;
+  font-weight: 800 !important;
+  color: #0A1C3E;
+}
+
+.sm-panel-brand-wash,
+.sm-panel-brand-basket {
+  color: #0A1C3E;
+  font-family: 'PlusJakartaSans_700Bold', 'Plus Jakarta Sans', 'Inter_700Bold', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 19.5px;
+  line-height: 24px;
+  letter-spacing: -0.35px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sm-panel-brand-text {
+  font-family: 'PlusJakartaSans_800ExtraBold', 'Plus Jakarta Sans', 'Inter_700Bold', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 18px;
+  line-height: 22px;
+  color: #0A1C3E;
+  letter-spacing: -0.4px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sm-panel-brand-sub {
+  font-family: 'Inter_500Medium', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 14px;
+  color: #8C93A1;
+  letter-spacing: 0.1px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sm-panel-close-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 19px;
+  background: #FFFFFF;
+  border: 1px solid #EAE6DB;
+  box-shadow: 0 2px 8px rgba(20, 33, 61, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #0A1C3E;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sm-panel-close-btn:hover {
+  background: #FAF9F6;
+  border-color: #DDD8CD;
+  box-shadow: 0 4px 12px rgba(20, 33, 61, 0.12);
+  transform: scale(1.05);
+}
+
+.sm-panel-close-btn:active {
+  transform: scale(0.95);
+  background: #F1EDE4;
+}
+
+.sm-panel-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* User profile card inside drawer */
+.sm-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #F4F5F7;
+  border-radius: 14px;
+  margin-bottom: 0.2rem;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+}
+
+.sm-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: #013E86;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+}
+
+.sm-user-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.sm-user-name {
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #0A1C3E;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sm-user-sub {
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  font-size: 11px;
+  color: #8C93A1;
+  margin-top: 1px;
+}
+
+/* Menu items: a plain icon, then the label in the Home greeting's bold, tight type */
+.sm-panel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sm-panel-itemWrap {
+  position: relative;
+  overflow: hidden;
+  line-height: 1;
+}
+
+.sm-panel-item {
+  position: relative;
+  color: #0A1C3E;
+  font-family: 'Inter_700Bold', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 17.5px;
+  line-height: 22px;
+  letter-spacing: -0.4px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  display: block;
+  text-decoration: none;
+  width: 100%;
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 7px 4px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.sm-panel-item:hover,
+.sm-panel-item.active-item {
+  color: var(--sm-accent, #FE8701);
+}
+
+.sm-panel-itemLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  will-change: transform;
+  transform-origin: 50% 100%;
+}
+
+.sm-panel-itemIcon {
+  width: 20px; height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sm-panel-itemText {
+  font-family: inherit !important;
+}
+
+/* Logout action button */
+.sm-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px;
+  background: #F4F5F7;
+  border: none;
+  border-radius: 14px;
+  color: #0A1C3E;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  margin-top: 0.4rem;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.sm-logout-btn:hover {
+  background: #E5E7EB;
+  transform: scale(0.99);
+}
+
+/* Social links section */
+.sm-socials {
+  margin-top: 0.6rem;
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid #E5E7EB;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+}
+
+.sm-socials-title {
+  margin: 0;
+  font-family: 'PlusJakartaSans_800ExtraBold', 'Plus Jakarta Sans', -apple-system, sans-serif !important;
+  font-size: 0.8rem;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--sm-accent, #FE8701);
+}
+
+.sm-socials-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.sm-socials-link {
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0A1C3E;
+  text-decoration: none;
+  position: relative;
+  display: inline-block;
+  transition: color 0.25s ease, opacity 0.25s ease;
+}
+
+.sm-socials-link:hover {
+  color: var(--sm-accent, #FE8701);
+}
+
+@media (max-width: 640px) {
+  .staggered-menu-panel {
+    width: 75vw;
+    max-width: 340px;
+    padding: 1.2em 1.1em 1.2em 1.1em;
+  }
+  .sm-prelayers {
+    width: 75vw;
+    max-width: 340px;
+  }
+  .sm-panel-item {
+    font-size: 17px;
+    line-height: 21px;
+    padding: 6.5px 4px;
+  }
+}
+
+.sm-panel-item-divider {
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid #EAE6DB;
+}
+
+.sm-panel-item.danger-item {
+  color: #0A1C3E;
+}
+
+.sm-panel-item.danger-item:hover {
+  color: #D30D24 !important;
+}
+
+.sm-panel-item.danger-item .sm-panel-itemIcon {
+  color: #D30D24;
+}

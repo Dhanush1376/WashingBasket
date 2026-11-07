@@ -1,0 +1,12 @@
+{
+  "id": "u-1001",
+  "fullName": "Dhanush Atmakuri",
+  "phone": "+91 98765 43210",
+  "email": "dhanush@example.com",
+  "customerSince": "2026-09-12",
+  "avatarUrl": "https://api.dicebear.com/9.x/avataaars/png?seed=Alexander&skinColor=ffdbb4&hairColor=2c1b18&top=shortFlat&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=collarAndSweater&clothingColor=262e33&backgroundColor=fec837",
+  "verification": {
+    "phone": true,
+    "email": false
+  }
+}

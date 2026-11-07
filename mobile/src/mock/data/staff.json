@@ -1,0 +1,17 @@
+{
+  "demoLogin": {
+    "phone": "+91 98765 43210",
+    "otp": "123456",
+    "note": "MOCK CREDENTIALS, not real security. Sign in with 9876543210 and the demo code, then enter a location PIN code (LPU 654321, NIT Jalandhar 123456, Outside Campus 000000) to work as that location's staff member."
+  },
+  "staff": [
+    { "id": "st-lpu-01", "name": "Harpreet Singh", "phone": "+91 98765 43210", "locationId": "loc-lpu", "role": "COUNTER_STAFF", "permissions": ["ORDER_ACCEPT", "ORDER_REJECT", "ORDER_PROCESS", "DELIVERY_CONFIRM"], "status": "ACTIVE", "joinedAt": "2026-07-01T09:00:00+05:30", "demoLogin": true },
+    { "id": "st-lpu-02", "name": "Neha Kapoor", "phone": "+91 90410 22011", "locationId": "loc-lpu", "role": "COUNTER_STAFF", "permissions": ["ORDER_ACCEPT", "ORDER_REJECT", "ORDER_PROCESS", "DELIVERY_CONFIRM"], "status": "ACTIVE", "joinedAt": "2026-08-12T09:00:00+05:30", "demoLogin": false },
+    { "id": "st-lpu-03", "name": "Manpreet Gill", "phone": "+91 90410 22012", "locationId": "loc-lpu", "role": "LOCATION_MANAGER", "permissions": ["ORDER_ACCEPT", "ORDER_REJECT", "ORDER_PROCESS", "DELIVERY_CONFIRM"], "status": "ACTIVE", "joinedAt": "2026-06-15T09:00:00+05:30", "demoLogin": false },
+    { "id": "st-nit-01", "name": "Simran Kaur", "phone": "+91 98765 43210", "locationId": "loc-nit", "role": "COUNTER_STAFF", "permissions": ["ORDER_ACCEPT", "ORDER_REJECT", "ORDER_PROCESS", "DELIVERY_CONFIRM"], "status": "ACTIVE", "joinedAt": "2026-07-05T09:00:00+05:30", "demoLogin": true },
+    { "id": "st-nit-02", "name": "Aman Bhatia", "phone": "+91 90410 22021", "locationId": "loc-nit", "role": "COUNTER_STAFF", "permissions": ["ORDER_ACCEPT", "ORDER_REJECT", "ORDER_PROCESS", "DELIVERY_CONFIRM"], "status": "ACTIVE", "joinedAt": "2026-09-01T09:00:00+05:30", "demoLogin": false },
+    { "id": "st-out-01", "name": "Gurdeep Sandhu", "phone": "+91 98765 43210", "locationId": "loc-outside", "role": "PICKUP_AGENT", "permissions": ["ORDER_ACCEPT", "ORDER_REJECT", "ORDER_PROCESS", "PICKUP_COLLECT", "DELIVERY_CONFIRM"], "status": "ACTIVE", "joinedAt": "2026-07-10T09:00:00+05:30", "demoLogin": true },
+    { "id": "st-out-02", "name": "Ritika Malhotra", "phone": "+91 90410 22031", "locationId": "loc-outside", "role": "COUNTER_STAFF", "permissions": ["ORDER_ACCEPT", "ORDER_REJECT", "ORDER_PROCESS", "DELIVERY_CONFIRM"], "status": "ACTIVE", "joinedAt": "2026-08-20T09:00:00+05:30", "demoLogin": false },
+    { "id": "st-out-03", "name": "Jaspreet Rana", "phone": "+91 90410 22032", "locationId": "loc-outside", "role": "PICKUP_AGENT", "permissions": ["ORDER_ACCEPT", "ORDER_REJECT", "ORDER_PROCESS", "PICKUP_COLLECT", "DELIVERY_CONFIRM"], "status": "SUSPENDED", "joinedAt": "2026-08-01T09:00:00+05:30", "demoLogin": false }
+  ]
+}
