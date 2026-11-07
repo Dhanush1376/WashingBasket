@@ -1,0 +1,56 @@
+[
+  {
+    "id": "rf-3",
+    "referrerId": "u-1001",
+    "friendName": "Sneha K.",
+    "friendCustomerId": null,
+    "date": "2026-11-01",
+    "status": "invited",
+    "reward": 0
+  },
+  {
+    "id": "rf-2",
+    "referrerId": "u-1001",
+    "friendName": "Rahul M.",
+    "friendCustomerId": "u-1019",
+    "date": "2026-10-30",
+    "status": "joined",
+    "reward": 200
+  },
+  {
+    "id": "rf-1",
+    "referrerId": "u-1001",
+    "friendName": "Ananya R.",
+    "friendCustomerId": "u-1012",
+    "date": "2026-10-08",
+    "status": "rewarded",
+    "reward": 200
+  },
+  {
+    "id": "rf-4",
+    "referrerId": "u-1005",
+    "friendName": "Divya M.",
+    "friendCustomerId": "u-1014",
+    "date": "2026-10-14",
+    "status": "joined",
+    "reward": 200
+  },
+  {
+    "id": "rf-5",
+    "referrerId": "u-1008",
+    "friendName": "Manoj P.",
+    "friendCustomerId": "u-1017",
+    "date": "2026-10-22",
+    "status": "joined",
+    "reward": 200
+  },
+  {
+    "id": "rf-6",
+    "referrerId": "u-1003",
+    "friendName": "Harsha V.",
+    "friendCustomerId": null,
+    "date": "2026-11-02",
+    "status": "invited",
+    "reward": 0
+  }
+]

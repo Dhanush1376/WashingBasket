@@ -1,0 +1,6 @@
+node_modules
+dist
+*.log
+
+# dev-only laundry demo snapshot (mock relay)
+.mock-relay/

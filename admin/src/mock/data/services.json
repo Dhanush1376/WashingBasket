@@ -1,0 +1,62 @@
+[
+  {
+    "id": "wash-fold",
+    "name": "Wash & Fold",
+    "tagline": "Everyday clothes, by the kilo",
+    "description": "Machine washed with gentle detergent, tumble dried and neatly folded.",
+    "turnaround": "48 hours",
+    "art": "washing",
+    "available": true,
+    "position": 1
+  },
+  {
+    "id": "wash-iron",
+    "name": "Wash & Iron",
+    "tagline": "Washed, pressed, ready to wear",
+    "description": "Washed, dried and steam pressed piece by piece, delivered on hangers or folded.",
+    "turnaround": "48 hours",
+    "art": "ironing",
+    "available": true,
+    "position": 2
+  },
+  {
+    "id": "dry-clean",
+    "name": "Dry Cleaning",
+    "tagline": "For suits, silks and occasion wear",
+    "description": "Solvent cleaning for delicate fabrics, with stain treatment and careful finishing.",
+    "turnaround": "72 hours",
+    "art": "collecting",
+    "available": true,
+    "position": 3
+  },
+  {
+    "id": "steam-iron",
+    "name": "Steam Ironing",
+    "tagline": "Crisp, wrinkle-free in a day",
+    "description": "Professional steam pressing for clothes that are already clean.",
+    "turnaround": "24 hours",
+    "art": "steam",
+    "available": true,
+    "position": 4
+  },
+  {
+    "id": "premium",
+    "name": "Premium Laundry",
+    "tagline": "Woollens, blankets and curtains",
+    "description": "Individual care for heavy and delicate household fabrics.",
+    "turnaround": "72 hours",
+    "art": "packing",
+    "available": true,
+    "position": 5
+  },
+  {
+    "id": "special-care",
+    "name": "Special Garment Care",
+    "tagline": "Bridal wear, leather and shoes",
+    "description": "Hand-finished cleaning for your most precious pieces, assessed item by item.",
+    "turnaround": "5 days",
+    "art": "drying",
+    "available": true,
+    "position": 6
+  }
+]

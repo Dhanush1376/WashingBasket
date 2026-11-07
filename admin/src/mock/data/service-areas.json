@@ -1,0 +1,65 @@
+[
+  {
+    "pincode": "123456",
+    "area": "Demo test area",
+    "city": "Bengaluru",
+    "active": true,
+    "note": "Test PIN code the demo app accepts."
+  },
+  {
+    "pincode": "560102",
+    "area": "HSR Layout",
+    "city": "Bengaluru",
+    "active": true,
+    "note": ""
+  },
+  {
+    "pincode": "560095",
+    "area": "Koramangala 5th Block",
+    "city": "Bengaluru",
+    "active": true,
+    "note": ""
+  },
+  {
+    "pincode": "560038",
+    "area": "Indiranagar",
+    "city": "Bengaluru",
+    "active": true,
+    "note": ""
+  },
+  {
+    "pincode": "560076",
+    "area": "BTM Layout 2nd Stage",
+    "city": "Bengaluru",
+    "active": true,
+    "note": ""
+  },
+  {
+    "pincode": "560041",
+    "area": "Jayanagar 4th Block",
+    "city": "Bengaluru",
+    "active": true,
+    "note": ""
+  },
+  {
+    "pincode": "560066",
+    "area": "Whitefield",
+    "city": "Bengaluru",
+    "active": true,
+    "note": ""
+  },
+  {
+    "pincode": "560103",
+    "area": "Bellandur",
+    "city": "Bengaluru",
+    "active": true,
+    "note": ""
+  },
+  {
+    "pincode": "560037",
+    "area": "Marathahalli",
+    "city": "Bengaluru",
+    "active": false,
+    "note": "Opening once we have a second van."
+  }
+]

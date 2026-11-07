@@ -1,0 +1,218 @@
+[
+  {
+    "id": "n-101",
+    "customerId": "u-1018",
+    "type": "pickup",
+    "title": "Pickup confirmed",
+    "body": "Order WB1034 will be collected on your chosen slot.",
+    "createdAt": "2026-11-05T08:15:00+05:30",
+    "read": false,
+    "orderId": "WB1034",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-102",
+    "customerId": "u-1023",
+    "type": "pickup",
+    "title": "Pickup confirmed",
+    "body": "Order WB1033 will be collected on your chosen slot.",
+    "createdAt": "2026-11-04T19:50:10+05:30",
+    "read": true,
+    "orderId": "WB1033",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-103",
+    "customerId": "u-1009",
+    "type": "pickup",
+    "title": "Pickup confirmed",
+    "body": "Order WB1032 will be collected on your chosen slot.",
+    "createdAt": "2026-11-04T10:00:47+05:30",
+    "read": true,
+    "orderId": "WB1032",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-104",
+    "customerId": "u-1013",
+    "type": "order",
+    "title": "Your clothes are on their way",
+    "body": "Order WB1029 is moving through our care process.",
+    "createdAt": "2026-11-03T20:00:46+05:30",
+    "read": true,
+    "orderId": "WB1029",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-111",
+    "customerId": "u-1012",
+    "type": "delivery",
+    "title": "Order delivered",
+    "body": "Order WB1022 was delivered. Enjoy your fresh clothes!",
+    "createdAt": "2026-11-03T19:20:29+05:30",
+    "read": true,
+    "orderId": "WB1022",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-105",
+    "customerId": "u-1011",
+    "type": "order",
+    "title": "Your clothes are on their way",
+    "body": "Order WB1030 is moving through our care process.",
+    "createdAt": "2026-11-03T09:34:11+05:30",
+    "read": true,
+    "orderId": "WB1030",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-106",
+    "customerId": "u-1013",
+    "type": "order",
+    "title": "Your clothes are on their way",
+    "body": "Order WB1031 is moving through our care process.",
+    "createdAt": "2026-11-03T09:20:04+05:30",
+    "read": false,
+    "orderId": "WB1031",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-6",
+    "type": "order",
+    "title": "Your clothes are being washed",
+    "body": "Order WB1024 moved to washing.",
+    "createdAt": "2026-11-03T09:15:00+05:30",
+    "read": false,
+    "orderId": "WB1024",
+    "customerId": "u-1001",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-5",
+    "type": "pickup",
+    "title": "Pickup on Thursday",
+    "body": "We will collect request RQ2045 between 10 AM and 12 PM.",
+    "createdAt": "2026-11-03T08:31:00+05:30",
+    "read": false,
+    "requestId": "RQ2045",
+    "customerId": "u-1001",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-4",
+    "type": "pickup",
+    "title": "Pickup confirmed for today",
+    "body": "Order WB1023 will be collected between 2 and 4 PM.",
+    "createdAt": "2026-11-02T18:06:00+05:30",
+    "read": false,
+    "orderId": "WB1023",
+    "customerId": "u-1001",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-107",
+    "customerId": "u-1004",
+    "type": "order",
+    "title": "Your clothes are on their way",
+    "body": "Order WB1026 is moving through our care process.",
+    "createdAt": "2026-11-02T18:05:58+05:30",
+    "read": false,
+    "orderId": "WB1026",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-108",
+    "customerId": "u-1019",
+    "type": "order",
+    "title": "Your clothes are on their way",
+    "body": "Order WB1027 is moving through our care process.",
+    "createdAt": "2026-11-02T13:20:47+05:30",
+    "read": true,
+    "orderId": "WB1027",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-3",
+    "type": "account",
+    "title": "₹200 referral reward on its way",
+    "body": "Rahul M. joined with your code. Your reward is pending.",
+    "createdAt": "2026-11-02T12:00:00+05:30",
+    "read": true,
+    "customerId": "u-1001",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-109",
+    "customerId": "u-1007",
+    "type": "order",
+    "title": "Your clothes are on their way",
+    "body": "Order WB1028 is moving through our care process.",
+    "createdAt": "2026-11-02T10:20:38+05:30",
+    "read": false,
+    "orderId": "WB1028",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-110",
+    "customerId": "u-1019",
+    "type": "order",
+    "title": "Your clothes are on their way",
+    "body": "Order WB1025 is moving through our care process.",
+    "createdAt": "2026-11-01T20:50:14+05:30",
+    "read": true,
+    "orderId": "WB1025",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-112",
+    "customerId": "u-1011",
+    "type": "delivery",
+    "title": "Order delivered",
+    "body": "Order WB1021 was delivered. Enjoy your fresh clothes!",
+    "createdAt": "2026-10-31T15:20:18+05:30",
+    "read": true,
+    "orderId": "WB1021",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-90",
+    "customerId": null,
+    "type": "account",
+    "title": "Festive pickups are open",
+    "body": "Book early for Diwali: extra morning slots are now available.",
+    "createdAt": "2026-10-28T10:00:00+05:30",
+    "read": false,
+    "sentBy": "team"
+  },
+  {
+    "id": "n-2",
+    "type": "delivery",
+    "title": "Order delivered",
+    "body": "Order WB1019 was delivered. Enjoy your fresh clothes!",
+    "createdAt": "2026-10-26T17:41:00+05:30",
+    "read": true,
+    "orderId": "WB1019",
+    "customerId": "u-1001",
+    "sentBy": "automatic"
+  },
+  {
+    "id": "n-91",
+    "customerId": null,
+    "type": "account",
+    "title": "New: Special Garment Care",
+    "body": "Bridal wear, leather and shoes now have their own careful service.",
+    "createdAt": "2026-10-09T11:30:00+05:30",
+    "read": false,
+    "sentBy": "team"
+  },
+  {
+    "id": "n-1",
+    "type": "account",
+    "title": "Welcome to Washing Basket",
+    "body": "Your account is ready. Book your first pickup any time.",
+    "createdAt": "2026-09-12T10:00:00+05:30",
+    "read": true,
+    "customerId": "u-1001",
+    "sentBy": "automatic"
+  }
+]

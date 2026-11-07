@@ -1,0 +1,12 @@
+{
+  "user": {
+    "id": "ad-1",
+    "name": "Priya Nair",
+    "role": "Store manager",
+    "email": "priya.nair@washingbasket.example"
+  },
+  "business": {
+    "name": "Washing Basket",
+    "city": "Bengaluru"
+  }
+}

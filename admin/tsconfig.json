@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": [
+      "vite/client",
+      "node"
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@customer/*": [
+        "../mobile/src/*"
+      ],
+      "@customer-assets/*": [
+        "../mobile/assets/*"
+      ]
+    },
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "src",
+    "vite.config.ts",
+    "mock-relay.ts",
+    "../mobile/src/theme/index.ts",
+    "../mobile/src/types/models.ts",
+    "../mobile/src/lib/format.ts",
+    "../mobile/src/mock/**/*.ts",
+    "../mobile/src/mock/**/*.json"
+  ]
+}

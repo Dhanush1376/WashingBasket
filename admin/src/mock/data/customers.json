@@ -1,0 +1,387 @@
+[
+  {
+    "id": "u-1001",
+    "fullName": "Dhanush Atmakuri",
+    "phone": "+91 98765 43210",
+    "email": "dhanush@example.com",
+    "customerSince": "2026-09-12",
+    "verification": {
+      "phone": true,
+      "email": false
+    },
+    "avatarUrl": "https://api.dicebear.com/9.x/avataaars/png?seed=Alexander&skinColor=ffdbb4&hairColor=2c1b18&top=shortFlat&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=collarAndSweater&clothingColor=262e33&backgroundColor=fec837",
+    "status": "active",
+    "referralCode": "WBDHAN24",
+    "referredBy": null,
+    "lastActiveAt": "2026-11-03T08:31:00+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1002",
+    "fullName": "Meera Iyer",
+    "phone": "+91 93474 89248",
+    "email": "meera.iyer@example.com",
+    "customerSince": "2026-09-02",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "WBMEER26",
+    "referredBy": null,
+    "lastActiveAt": "2026-10-06T09:12:24+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1003",
+    "fullName": "Arjun Sharma",
+    "phone": "+91 96032 45165",
+    "email": "arjun.sharma@example.com",
+    "customerSince": "2026-09-04",
+    "verification": {
+      "phone": true,
+      "email": false
+    },
+    "status": "active",
+    "referralCode": "WBARJU13",
+    "referredBy": null,
+    "lastActiveAt": "2026-10-20T17:50:10+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1004",
+    "fullName": "Kavya Nair",
+    "phone": "+91 98862 31361",
+    "email": "kavya.nair@example.com",
+    "customerSince": "2026-09-08",
+    "verification": {
+      "phone": true,
+      "email": false
+    },
+    "status": "active",
+    "referralCode": "WBKAVY33",
+    "referredBy": null,
+    "lastActiveAt": "2026-11-04T22:13:00+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1005",
+    "fullName": "Rohit Verma",
+    "phone": "+91 91765 77708",
+    "email": "rohit.verma@example.com",
+    "customerSince": "2026-09-10",
+    "verification": {
+      "phone": true,
+      "email": false
+    },
+    "status": "active",
+    "referralCode": "WBROHI65",
+    "referredBy": null,
+    "lastActiveAt": null,
+    "note": ""
+  },
+  {
+    "id": "u-1006",
+    "fullName": "Priya Shetty",
+    "phone": "+91 96684 88279",
+    "email": "priya.shetty@example.com",
+    "customerSince": "2026-09-15",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "PRIYAS10",
+    "referredBy": null,
+    "lastActiveAt": "2026-10-15T10:12:42+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1007",
+    "fullName": "Vikram Rao",
+    "phone": "+91 91899 36506",
+    "email": "vikram.rao@example.com",
+    "customerSince": "2026-09-18",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "WBVIKR75",
+    "referredBy": null,
+    "lastActiveAt": "2026-11-04T07:47:00+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1008",
+    "fullName": "Sana Khan",
+    "phone": "+91 95190 62526",
+    "email": "sana.khan@example.com",
+    "customerSince": "2026-09-22",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "WBSANA97",
+    "referredBy": null,
+    "lastActiveAt": "2026-11-04T06:43:00+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1009",
+    "fullName": "Kiran Thomas",
+    "phone": "+91 92187 21686",
+    "email": "kiran.thomas@example.com",
+    "customerSince": "2026-09-25",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "KIRAN2026",
+    "referredBy": null,
+    "lastActiveAt": "2026-11-04T10:00:47+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1010",
+    "fullName": "Aditya Kulkarni",
+    "phone": "+91 98084 48464",
+    "email": "aditya.kulkarni@example.com",
+    "customerSince": "2026-09-29",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "WBADIT26",
+    "referredBy": null,
+    "lastActiveAt": "2026-10-10T11:05:05+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1011",
+    "fullName": "Neha Gupta",
+    "phone": "+91 97031 25075",
+    "email": "neha.gupta@example.com",
+    "customerSince": "2026-10-02",
+    "verification": {
+      "phone": true,
+      "email": false
+    },
+    "status": "active",
+    "referralCode": "WBNEHA86",
+    "referredBy": null,
+    "lastActiveAt": "2026-11-03T09:34:11+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1012",
+    "fullName": "Ananya Reddy",
+    "phone": "+91 93561 97477",
+    "email": "ananya.reddy@example.com",
+    "customerSince": "2026-10-08",
+    "verification": {
+      "phone": true,
+      "email": false
+    },
+    "status": "active",
+    "referralCode": "ANANYA200",
+    "referredBy": "u-1001",
+    "lastActiveAt": "2026-10-31T17:00:29+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1013",
+    "fullName": "Farhan Ali",
+    "phone": "+91 97131 21721",
+    "email": "farhan.ali@example.com",
+    "customerSince": "2026-10-11",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "WBFARH51",
+    "referredBy": null,
+    "lastActiveAt": "2026-11-03T20:00:46+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1014",
+    "fullName": "Divya Menon",
+    "phone": "+91 99801 47443",
+    "email": "divya.menon@example.com",
+    "customerSince": "2026-10-14",
+    "verification": {
+      "phone": true,
+      "email": false
+    },
+    "status": "active",
+    "referralCode": "WBDIVY82",
+    "referredBy": "u-1005",
+    "lastActiveAt": null,
+    "note": ""
+  },
+  {
+    "id": "u-1015",
+    "fullName": "Suresh Babu",
+    "phone": "+91 95911 49552",
+    "email": "suresh.babu@example.com",
+    "customerSince": "2026-10-17",
+    "verification": {
+      "phone": true,
+      "email": false
+    },
+    "status": "paused",
+    "referralCode": "WBSURE77",
+    "referredBy": null,
+    "lastActiveAt": null,
+    "note": "Asked to pause the account while travelling."
+  },
+  {
+    "id": "u-1016",
+    "fullName": "Ishita Bose",
+    "phone": "+91 94314 93775",
+    "email": "ishita.bose@example.com",
+    "customerSince": "2026-10-20",
+    "verification": {
+      "phone": true,
+      "email": false
+    },
+    "status": "active",
+    "referralCode": "WBISHI85",
+    "referredBy": null,
+    "lastActiveAt": "2026-11-04T15:08:00+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1017",
+    "fullName": "Manoj Pillai",
+    "phone": "+91 93973 50971",
+    "email": "manoj.pillai@example.com",
+    "customerSince": "2026-10-22",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "WBMANO41",
+    "referredBy": "u-1008",
+    "lastActiveAt": null,
+    "note": ""
+  },
+  {
+    "id": "u-1018",
+    "fullName": "Pooja Hegde",
+    "phone": "+91 92515 91614",
+    "email": "pooja.hegde@example.com",
+    "customerSince": "2026-10-25",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "WBPOOJ66",
+    "referredBy": null,
+    "lastActiveAt": "2026-11-05T08:15:00+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1019",
+    "fullName": "Rahul Menon",
+    "phone": "+91 93179 63105",
+    "email": "rahul.menon@example.com",
+    "customerSince": "2026-10-30",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "RAHULM24",
+    "referredBy": "u-1001",
+    "lastActiveAt": "2026-11-02T13:20:47+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1020",
+    "fullName": "Tanvi Joshi",
+    "phone": "+91 95245 68015",
+    "email": "tanvi.joshi@example.com",
+    "customerSince": "2026-11-01",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "WBTANV88",
+    "referredBy": null,
+    "lastActiveAt": null,
+    "note": ""
+  },
+  {
+    "id": "u-1021",
+    "fullName": "Nikhil Das",
+    "phone": "+91 99990 38065",
+    "email": "nikhil.das@example.com",
+    "customerSince": "2026-11-02",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "WBNIKH91",
+    "referredBy": null,
+    "lastActiveAt": null,
+    "note": ""
+  },
+  {
+    "id": "u-1022",
+    "fullName": "Lakshmi Prasad",
+    "phone": "+91 97591 25298",
+    "email": "lakshmi.prasad@example.com",
+    "customerSince": "2026-11-03",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "WBLAKS75",
+    "referredBy": null,
+    "lastActiveAt": null,
+    "note": ""
+  },
+  {
+    "id": "u-1023",
+    "fullName": "Aman Singh",
+    "phone": "+91 96716 23770",
+    "email": "aman.singh@example.com",
+    "customerSince": "2026-11-04",
+    "verification": {
+      "phone": true,
+      "email": false
+    },
+    "status": "active",
+    "referralCode": "WBAMAN69",
+    "referredBy": null,
+    "lastActiveAt": "2026-11-04T19:50:10+05:30",
+    "note": ""
+  },
+  {
+    "id": "u-1024",
+    "fullName": "Shreya Patil",
+    "phone": "+91 98189 51523",
+    "email": "shreya.patil@example.com",
+    "customerSince": "2026-11-04",
+    "verification": {
+      "phone": true,
+      "email": true
+    },
+    "status": "active",
+    "referralCode": "WBSHRE15",
+    "referredBy": null,
+    "lastActiveAt": null,
+    "note": ""
+  }
+]

@@ -1,0 +1,89 @@
+[
+  {
+    "id": "of-5",
+    "code": "FIRSTWASH",
+    "discountBadge": "20% OFF",
+    "badgeLabel": "Limited Offer",
+    "title": "Flat 20% off",
+    "description": "On your first 3 laundry pickups.",
+    "validFrom": "2026-10-01",
+    "validUntil": "2026-12-31",
+    "eligibility": "New customers",
+    "serviceIds": "all",
+    "status": "active",
+    "discountValue": "20%",
+    "visible": true,
+    "position": 1
+  },
+  {
+    "id": "of-1",
+    "code": "FREEDEL",
+    "discountBadge": "FREE DELIVERY",
+    "badgeLabel": "Best Value",
+    "title": "Free doorstep delivery",
+    "description": "No delivery fee on any order of ₹499 or more.",
+    "validFrom": "2026-09-01",
+    "validUntil": "2026-12-31",
+    "eligibility": "All customers",
+    "serviceIds": "all",
+    "status": "active",
+    "discountValue": "FREE",
+    "visible": true,
+    "position": 2
+  },
+  {
+    "id": "of-2",
+    "code": "CLEAN15",
+    "discountBadge": "15% OFF",
+    "badgeLabel": "Popular Deal",
+    "title": "15% off dry cleaning",
+    "description": "Valid on dry cleaning orders this month.",
+    "validFrom": "2026-11-01",
+    "validUntil": "2026-11-30",
+    "eligibility": "All customers",
+    "serviceIds": [
+      "dry-clean"
+    ],
+    "status": "active",
+    "discountValue": "15%",
+    "visible": true,
+    "position": 3
+  },
+  {
+    "id": "of-3",
+    "code": "WINTER10",
+    "discountBadge": "10% OFF",
+    "badgeLabel": "Coming Soon",
+    "title": "Winter bedding care",
+    "description": "10% off blankets, quilts and woollens.",
+    "validFrom": "2026-12-01",
+    "validUntil": "2026-12-20",
+    "eligibility": "All customers",
+    "serviceIds": [
+      "premium"
+    ],
+    "status": "upcoming",
+    "discountValue": "10%",
+    "visible": true,
+    "position": 4
+  },
+  {
+    "id": "of-4",
+    "code": "MONSOON",
+    "discountBadge": "EXTRA CARE",
+    "badgeLabel": "Past Offer",
+    "title": "Monsoon fresh",
+    "description": "Extra drying care during the monsoon.",
+    "validFrom": "2026-07-01",
+    "validUntil": "2026-08-31",
+    "eligibility": "All customers",
+    "serviceIds": [
+      "wash-fold",
+      "wash-iron"
+    ],
+    "status": "expired",
+    "discountValue": "25%",
+    "visible": true,
+    "position": 5
+  }
+]

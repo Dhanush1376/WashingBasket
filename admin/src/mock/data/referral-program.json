@@ -1,0 +1,13 @@
+{
+  "rewardPerReferral": 200,
+  "welcomeReward": 100,
+  "codeLength": {
+    "min": 6,
+    "max": 12
+  },
+  "steps": [
+    "Share your code with a friend.",
+    "They sign up and book their first pickup.",
+    "You get ₹200 in your wallet once their order is delivered."
+  ]
+}

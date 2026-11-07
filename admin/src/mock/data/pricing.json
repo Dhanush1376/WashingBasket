@@ -1,0 +1,177 @@
+{
+  "currency": "INR",
+  "fees": {
+    "delivery": 49,
+    "freeDeliveryAbove": 499
+  },
+  "categories": [
+    {
+      "serviceId": "wash-fold",
+      "note": "Priced per kilogram of dry laundry.",
+      "items": [
+        {
+          "id": "wf-everyday",
+          "name": "Everyday clothes",
+          "price": 79,
+          "unit": "kg"
+        },
+        {
+          "id": "wf-mixed",
+          "name": "Mixed load",
+          "price": 89,
+          "unit": "kg"
+        },
+        {
+          "id": "wf-linen",
+          "name": "Bedsheets & towels",
+          "price": 99,
+          "unit": "kg"
+        }
+      ]
+    },
+    {
+      "serviceId": "wash-iron",
+      "note": "Priced per piece, washed and steam pressed.",
+      "items": [
+        {
+          "id": "wi-shirt",
+          "name": "Shirt / T-shirt",
+          "price": 35,
+          "unit": "piece"
+        },
+        {
+          "id": "wi-trouser",
+          "name": "Trousers / Jeans",
+          "price": 40,
+          "unit": "piece"
+        },
+        {
+          "id": "wi-kurta",
+          "name": "Kurta",
+          "price": 45,
+          "unit": "piece"
+        },
+        {
+          "id": "wi-saree",
+          "name": "Cotton saree",
+          "price": 90,
+          "unit": "piece"
+        }
+      ]
+    },
+    {
+      "serviceId": "steam-iron",
+      "note": "For clean clothes that only need pressing.",
+      "items": [
+        {
+          "id": "si-shirt",
+          "name": "Shirt / T-shirt",
+          "price": 15,
+          "unit": "piece"
+        },
+        {
+          "id": "si-trouser",
+          "name": "Trousers",
+          "price": 15,
+          "unit": "piece"
+        },
+        {
+          "id": "si-bedsheet",
+          "name": "Bedsheet",
+          "price": 40,
+          "unit": "piece"
+        },
+        {
+          "id": "si-saree",
+          "name": "Saree",
+          "price": 60,
+          "unit": "piece"
+        }
+      ]
+    },
+    {
+      "serviceId": "dry-clean",
+      "note": "Includes stain treatment and finishing.",
+      "items": [
+        {
+          "id": "dc-blazer",
+          "name": "Blazer",
+          "price": 249,
+          "unit": "piece"
+        },
+        {
+          "id": "dc-jacket",
+          "name": "Jacket",
+          "price": 299,
+          "unit": "piece"
+        },
+        {
+          "id": "dc-silk-saree",
+          "name": "Silk saree",
+          "price": 299,
+          "unit": "piece"
+        },
+        {
+          "id": "dc-suit",
+          "name": "Suit (2 piece)",
+          "price": 399,
+          "unit": "piece"
+        },
+        {
+          "id": "dc-sherwani",
+          "name": "Sherwani",
+          "price": 549,
+          "unit": "piece"
+        }
+      ]
+    },
+    {
+      "serviceId": "premium",
+      "note": "Cleaned individually, never in mixed loads.",
+      "items": [
+        {
+          "id": "pr-woollen",
+          "name": "Woollen sweater",
+          "price": 149,
+          "unit": "piece"
+        },
+        {
+          "id": "pr-curtain",
+          "name": "Curtain",
+          "price": 199,
+          "unit": "panel"
+        },
+        {
+          "id": "pr-blanket",
+          "name": "Blanket / Quilt",
+          "price": 349,
+          "unit": "piece"
+        }
+      ]
+    },
+    {
+      "serviceId": "special-care",
+      "note": "Final price confirmed after inspection at pickup.",
+      "items": [
+        {
+          "id": "sc-shoes",
+          "name": "Shoe cleaning",
+          "price": 299,
+          "unit": "pair"
+        },
+        {
+          "id": "sc-leather",
+          "name": "Leather jacket",
+          "price": 799,
+          "unit": "piece"
+        },
+        {
+          "id": "sc-bridal",
+          "name": "Bridal / Wedding wear",
+          "price": 899,
+          "unit": "piece"
+        }
+      ]
+    }
+  ]
+}

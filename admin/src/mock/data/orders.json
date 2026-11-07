@@ -1,0 +1,1003 @@
+[
+  {
+    "id": "WB1034",
+    "customerId": "u-1018",
+    "serviceId": "premium",
+    "status": "pickup_scheduled",
+    "placedAt": "2026-11-05T08:15:00+05:30",
+    "pickup": {
+      "date": "2026-11-06",
+      "slotId": "s-1",
+      "addressId": "a-26"
+    },
+    "estimatedDelivery": "2026-11-09",
+    "items": [
+      {
+        "priceItemId": "pr-woollen",
+        "qty": 5
+      },
+      {
+        "priceItemId": "pr-curtain",
+        "qty": 1
+      },
+      {
+        "priceItemId": "pr-blanket",
+        "qty": 1
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Wallet",
+      "status": "paid"
+    },
+    "requestId": "RQ2028"
+  },
+  {
+    "id": "WB1033",
+    "customerId": "u-1023",
+    "serviceId": "wash-fold",
+    "status": "pickup_scheduled",
+    "placedAt": "2026-11-04T19:50:10+05:30",
+    "pickup": {
+      "date": "2026-11-05",
+      "slotId": "s-5",
+      "addressId": "a-32"
+    },
+    "estimatedDelivery": "2026-11-07",
+    "items": [
+      {
+        "priceItemId": "wf-mixed",
+        "qty": 5
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "pending"
+    },
+    "requestId": "RQ2027"
+  },
+  {
+    "id": "WB1032",
+    "customerId": "u-1009",
+    "serviceId": "wash-iron",
+    "status": "pickup_scheduled",
+    "placedAt": "2026-11-04T10:00:47+05:30",
+    "pickup": {
+      "date": "2026-11-05",
+      "slotId": "s-5",
+      "addressId": "a-12"
+    },
+    "estimatedDelivery": "2026-11-07",
+    "items": [
+      {
+        "priceItemId": "wi-saree",
+        "qty": 6
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "pending"
+    },
+    "requestId": "RQ2026"
+  },
+  {
+    "id": "WB1029",
+    "customerId": "u-1013",
+    "serviceId": "wash-fold",
+    "status": "washing",
+    "placedAt": "2026-11-03T20:00:46+05:30",
+    "pickup": {
+      "date": "2026-11-04",
+      "slotId": "s-4",
+      "addressId": "a-19"
+    },
+    "estimatedDelivery": "2026-11-06",
+    "items": [
+      {
+        "priceItemId": "wf-everyday",
+        "qty": 5
+      },
+      {
+        "priceItemId": "wf-linen",
+        "qty": 3
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "pending"
+    },
+    "requestId": "RQ2023"
+  },
+  {
+    "id": "WB1030",
+    "customerId": "u-1011",
+    "serviceId": "steam-iron",
+    "status": "out_for_delivery",
+    "placedAt": "2026-11-03T09:34:11+05:30",
+    "pickup": {
+      "date": "2026-11-04",
+      "slotId": "s-5",
+      "addressId": "a-15"
+    },
+    "estimatedDelivery": "2026-11-05",
+    "items": [
+      {
+        "priceItemId": "si-bedsheet",
+        "qty": 8
+      },
+      {
+        "priceItemId": "si-trouser",
+        "qty": 3
+      },
+      {
+        "priceItemId": "si-saree",
+        "qty": 5
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "UPI",
+      "status": "paid"
+    },
+    "requestId": "RQ2024"
+  },
+  {
+    "id": "WB1031",
+    "customerId": "u-1013",
+    "serviceId": "dry-clean",
+    "status": "drying",
+    "placedAt": "2026-11-03T09:20:04+05:30",
+    "pickup": {
+      "date": "2026-11-04",
+      "slotId": "s-3",
+      "addressId": "a-19"
+    },
+    "estimatedDelivery": "2026-11-07",
+    "items": [
+      {
+        "priceItemId": "dc-suit",
+        "qty": 1
+      },
+      {
+        "priceItemId": "dc-silk-saree",
+        "qty": 2
+      },
+      {
+        "priceItemId": "dc-jacket",
+        "qty": 3
+      }
+    ],
+    "discount": 284,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "pending"
+    },
+    "requestId": "RQ2025"
+  },
+  {
+    "id": "WB1026",
+    "customerId": "u-1004",
+    "serviceId": "wash-fold",
+    "status": "packing",
+    "placedAt": "2026-11-02T18:05:58+05:30",
+    "pickup": {
+      "date": "2026-11-03",
+      "slotId": "s-2",
+      "addressId": "a-6"
+    },
+    "estimatedDelivery": "2026-11-05",
+    "items": [
+      {
+        "priceItemId": "wf-everyday",
+        "qty": 7
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "pending"
+    },
+    "requestId": "RQ2020"
+  },
+  {
+    "id": "WB1023",
+    "serviceId": "dry-clean",
+    "status": "pickup_scheduled",
+    "placedAt": "2026-11-02T18:05:00+05:30",
+    "pickup": {
+      "date": "2026-11-03",
+      "slotId": "s-3",
+      "addressId": "a-2"
+    },
+    "estimatedDelivery": "2026-11-06",
+    "items": [
+      {
+        "priceItemId": "dc-blazer",
+        "qty": 1
+      },
+      {
+        "priceItemId": "dc-silk-saree",
+        "qty": 1
+      }
+    ],
+    "discount": 82,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "pending"
+    },
+    "requestId": "RQ2043",
+    "customerId": "u-1001"
+  },
+  {
+    "id": "WB1027",
+    "customerId": "u-1019",
+    "serviceId": "dry-clean",
+    "status": "ironing",
+    "placedAt": "2026-11-02T13:20:47+05:30",
+    "pickup": {
+      "date": "2026-11-03",
+      "slotId": "s-4",
+      "addressId": "a-27"
+    },
+    "estimatedDelivery": "2026-11-06",
+    "items": [
+      {
+        "priceItemId": "dc-jacket",
+        "qty": 2
+      },
+      {
+        "priceItemId": "dc-suit",
+        "qty": 2
+      }
+    ],
+    "discount": 209,
+    "payment": {
+      "method": "UPI",
+      "status": "paid"
+    },
+    "requestId": "RQ2021"
+  },
+  {
+    "id": "WB1028",
+    "customerId": "u-1007",
+    "serviceId": "wash-iron",
+    "status": "out_for_delivery",
+    "placedAt": "2026-11-02T10:20:38+05:30",
+    "pickup": {
+      "date": "2026-11-03",
+      "slotId": "s-1",
+      "addressId": "a-9"
+    },
+    "estimatedDelivery": "2026-11-05",
+    "items": [
+      {
+        "priceItemId": "wi-kurta",
+        "qty": 8
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "UPI",
+      "status": "paid"
+    },
+    "requestId": "RQ2022"
+  },
+  {
+    "id": "WB1025",
+    "customerId": "u-1019",
+    "serviceId": "premium",
+    "status": "out_for_delivery",
+    "placedAt": "2026-11-01T20:50:14+05:30",
+    "pickup": {
+      "date": "2026-11-02",
+      "slotId": "s-5",
+      "addressId": "a-27"
+    },
+    "estimatedDelivery": "2026-11-05",
+    "items": [
+      {
+        "priceItemId": "pr-curtain",
+        "qty": 2
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "pending"
+    },
+    "requestId": "RQ2019"
+  },
+  {
+    "id": "WB1024",
+    "serviceId": "wash-iron",
+    "status": "washing",
+    "placedAt": "2026-11-01T10:20:00+05:30",
+    "pickup": {
+      "date": "2026-11-02",
+      "slotId": "s-2",
+      "addressId": "a-1"
+    },
+    "estimatedDelivery": "2026-11-04",
+    "items": [
+      {
+        "priceItemId": "wi-shirt",
+        "qty": 6
+      },
+      {
+        "priceItemId": "wi-trouser",
+        "qty": 3
+      },
+      {
+        "priceItemId": "wi-kurta",
+        "qty": 2
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "pending"
+    },
+    "requestId": "RQ2041",
+    "customerId": "u-1001"
+  },
+  {
+    "id": "WB1022",
+    "customerId": "u-1012",
+    "serviceId": "wash-fold",
+    "status": "delivered",
+    "placedAt": "2026-10-31T17:00:29+05:30",
+    "pickup": {
+      "date": "2026-11-01",
+      "slotId": "s-2",
+      "addressId": "a-17"
+    },
+    "estimatedDelivery": "2026-11-03",
+    "items": [
+      {
+        "priceItemId": "wf-everyday",
+        "qty": 3
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-11-03T19:20:29+05:30",
+    "requestId": "RQ2018"
+  },
+  {
+    "id": "WB1021",
+    "customerId": "u-1011",
+    "serviceId": "premium",
+    "status": "delivered",
+    "placedAt": "2026-10-28T08:50:18+05:30",
+    "pickup": {
+      "date": "2026-10-29",
+      "slotId": "s-4",
+      "addressId": "a-15"
+    },
+    "estimatedDelivery": "2026-11-01",
+    "items": [
+      {
+        "priceItemId": "pr-blanket",
+        "qty": 1
+      },
+      {
+        "priceItemId": "pr-curtain",
+        "qty": 1
+      },
+      {
+        "priceItemId": "pr-woollen",
+        "qty": 8
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-10-31T15:20:18+05:30",
+    "requestId": "RQ2017"
+  },
+  {
+    "id": "WB1020",
+    "customerId": "u-1009",
+    "serviceId": "wash-fold",
+    "status": "delivered",
+    "placedAt": "2026-10-25T08:12:21+05:30",
+    "pickup": {
+      "date": "2026-10-26",
+      "slotId": "s-2",
+      "addressId": "a-12"
+    },
+    "estimatedDelivery": "2026-10-28",
+    "items": [
+      {
+        "priceItemId": "wf-everyday",
+        "qty": 4
+      },
+      {
+        "priceItemId": "wf-linen",
+        "qty": 7
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-10-28T17:40:21+05:30",
+    "requestId": "RQ2016"
+  },
+  {
+    "id": "WB1019",
+    "serviceId": "wash-fold",
+    "status": "delivered",
+    "placedAt": "2026-10-23T09:10:00+05:30",
+    "pickup": {
+      "date": "2026-10-24",
+      "slotId": "s-1",
+      "addressId": "a-1"
+    },
+    "estimatedDelivery": "2026-10-26",
+    "deliveredAt": "2026-10-26T17:40:00+05:30",
+    "items": [
+      {
+        "priceItemId": "wf-everyday",
+        "qty": 5
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Wallet",
+      "status": "paid"
+    },
+    "customerId": "u-1001"
+  },
+  {
+    "id": "WB1018",
+    "customerId": "u-1007",
+    "serviceId": "wash-fold",
+    "status": "cancelled",
+    "placedAt": "2026-10-21T20:05:05+05:30",
+    "pickup": {
+      "date": "2026-10-22",
+      "slotId": "s-5",
+      "addressId": "a-9"
+    },
+    "estimatedDelivery": "2026-10-24",
+    "items": [
+      {
+        "priceItemId": "wf-mixed",
+        "qty": 6
+      },
+      {
+        "priceItemId": "wf-linen",
+        "qty": 4
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "not_charged"
+    },
+    "cancelReason": "No one was available at the pickup address.",
+    "requestId": "RQ2015"
+  },
+  {
+    "id": "WB1017",
+    "customerId": "u-1003",
+    "serviceId": "special-care",
+    "status": "delivered",
+    "placedAt": "2026-10-20T17:50:10+05:30",
+    "pickup": {
+      "date": "2026-10-21",
+      "slotId": "s-5",
+      "addressId": "a-5"
+    },
+    "estimatedDelivery": "2026-10-26",
+    "items": [
+      {
+        "priceItemId": "sc-bridal",
+        "qty": 2
+      },
+      {
+        "priceItemId": "sc-leather",
+        "qty": 2
+      },
+      {
+        "priceItemId": "sc-shoes",
+        "qty": 3
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-10-25T17:05:10+05:30",
+    "requestId": "RQ2014"
+  },
+  {
+    "id": "WB1016",
+    "customerId": "u-1012",
+    "serviceId": "steam-iron",
+    "status": "delivered",
+    "placedAt": "2026-10-18T11:50:49+05:30",
+    "pickup": {
+      "date": "2026-10-19",
+      "slotId": "s-4",
+      "addressId": "a-17"
+    },
+    "estimatedDelivery": "2026-10-20",
+    "items": [
+      {
+        "priceItemId": "si-trouser",
+        "qty": 4
+      },
+      {
+        "priceItemId": "si-shirt",
+        "qty": 6
+      },
+      {
+        "priceItemId": "si-bedsheet",
+        "qty": 8
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-10-20T07:50:49+05:30",
+    "requestId": "RQ2013"
+  },
+  {
+    "id": "WB1015",
+    "customerId": "u-1007",
+    "serviceId": "wash-fold",
+    "status": "delivered",
+    "placedAt": "2026-10-17T11:20:38+05:30",
+    "pickup": {
+      "date": "2026-10-18",
+      "slotId": "s-2",
+      "addressId": "a-9"
+    },
+    "estimatedDelivery": "2026-10-20",
+    "items": [
+      {
+        "priceItemId": "wf-everyday",
+        "qty": 6
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "UPI",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-10-19T11:20:38+05:30",
+    "requestId": "RQ2012"
+  },
+  {
+    "id": "WB1014",
+    "customerId": "u-1006",
+    "serviceId": "wash-fold",
+    "status": "delivered",
+    "placedAt": "2026-10-15T10:12:42+05:30",
+    "pickup": {
+      "date": "2026-10-16",
+      "slotId": "s-1",
+      "addressId": "a-8"
+    },
+    "estimatedDelivery": "2026-10-18",
+    "items": [
+      {
+        "priceItemId": "wf-mixed",
+        "qty": 4
+      },
+      {
+        "priceItemId": "wf-linen",
+        "qty": 7
+      },
+      {
+        "priceItemId": "wf-everyday",
+        "qty": 4
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "UPI",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-10-17T17:40:42+05:30",
+    "requestId": "RQ2011"
+  },
+  {
+    "id": "WB1013",
+    "customerId": "u-1007",
+    "serviceId": "dry-clean",
+    "status": "cancelled",
+    "placedAt": "2026-10-14T20:41:07+05:30",
+    "pickup": {
+      "date": "2026-10-15",
+      "slotId": "s-3",
+      "addressId": "a-9"
+    },
+    "estimatedDelivery": "2026-10-18",
+    "items": [
+      {
+        "priceItemId": "dc-silk-saree",
+        "qty": 2
+      },
+      {
+        "priceItemId": "dc-blazer",
+        "qty": 3
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "UPI",
+      "status": "not_charged"
+    },
+    "cancelReason": "Cancelled by the customer before pickup.",
+    "requestId": "RQ2010"
+  },
+  {
+    "id": "WB1012",
+    "serviceId": "steam-iron",
+    "status": "delivered",
+    "placedAt": "2026-10-12T19:30:00+05:30",
+    "pickup": {
+      "date": "2026-10-13",
+      "slotId": "s-4",
+      "addressId": "a-1"
+    },
+    "estimatedDelivery": "2026-10-14",
+    "deliveredAt": "2026-10-14T12:15:00+05:30",
+    "items": [
+      {
+        "priceItemId": "si-shirt",
+        "qty": 10
+      },
+      {
+        "priceItemId": "si-trouser",
+        "qty": 6
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "UPI",
+      "status": "paid"
+    },
+    "customerId": "u-1001"
+  },
+  {
+    "id": "WB1011",
+    "customerId": "u-1010",
+    "serviceId": "special-care",
+    "status": "cancelled",
+    "placedAt": "2026-10-10T11:05:05+05:30",
+    "pickup": {
+      "date": "2026-10-11",
+      "slotId": "s-3",
+      "addressId": "a-13"
+    },
+    "estimatedDelivery": "2026-10-16",
+    "items": [
+      {
+        "priceItemId": "sc-shoes",
+        "qty": 1
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "UPI",
+      "status": "not_charged"
+    },
+    "cancelReason": "Cancelled by the customer before pickup.",
+    "requestId": "RQ2009"
+  },
+  {
+    "id": "WB1010",
+    "customerId": "u-1003",
+    "serviceId": "premium",
+    "status": "delivered",
+    "placedAt": "2026-10-08T17:34:40+05:30",
+    "pickup": {
+      "date": "2026-10-09",
+      "slotId": "s-2",
+      "addressId": "a-5"
+    },
+    "estimatedDelivery": "2026-10-12",
+    "items": [
+      {
+        "priceItemId": "pr-blanket",
+        "qty": 2
+      },
+      {
+        "priceItemId": "pr-curtain",
+        "qty": 2
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Wallet",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-10-12T19:05:40+05:30",
+    "requestId": "RQ2008"
+  },
+  {
+    "id": "WB1009",
+    "customerId": "u-1002",
+    "serviceId": "steam-iron",
+    "status": "delivered",
+    "placedAt": "2026-10-06T09:12:24+05:30",
+    "pickup": {
+      "date": "2026-10-07",
+      "slotId": "s-4",
+      "addressId": "a-3"
+    },
+    "estimatedDelivery": "2026-10-08",
+    "items": [
+      {
+        "priceItemId": "si-trouser",
+        "qty": 8
+      },
+      {
+        "priceItemId": "si-bedsheet",
+        "qty": 7
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "UPI",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-10-08T13:05:24+05:30",
+    "requestId": "RQ2007"
+  },
+  {
+    "id": "WB1008",
+    "serviceId": "dry-clean",
+    "status": "cancelled",
+    "placedAt": "2026-10-04T11:00:00+05:30",
+    "pickup": {
+      "date": "2026-10-05",
+      "slotId": "s-2",
+      "addressId": "a-2"
+    },
+    "estimatedDelivery": "2026-10-08",
+    "items": [
+      {
+        "priceItemId": "dc-suit",
+        "qty": 1
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "not_charged"
+    },
+    "requestId": "RQ2036",
+    "cancelReason": "Cancelled by you before pickup.",
+    "customerId": "u-1001"
+  },
+  {
+    "id": "WB1007",
+    "customerId": "u-1006",
+    "serviceId": "wash-iron",
+    "status": "delivered",
+    "placedAt": "2026-10-01T19:20:47+05:30",
+    "pickup": {
+      "date": "2026-10-02",
+      "slotId": "s-4",
+      "addressId": "a-8"
+    },
+    "estimatedDelivery": "2026-10-04",
+    "items": [
+      {
+        "priceItemId": "wi-shirt",
+        "qty": 5
+      },
+      {
+        "priceItemId": "wi-saree",
+        "qty": 5
+      },
+      {
+        "priceItemId": "wi-trouser",
+        "qty": 7
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Wallet",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-10-03T15:20:47+05:30",
+    "requestId": "RQ2006"
+  },
+  {
+    "id": "WB1006",
+    "customerId": "u-1004",
+    "serviceId": "steam-iron",
+    "status": "delivered",
+    "placedAt": "2026-09-27T10:05:39+05:30",
+    "pickup": {
+      "date": "2026-09-28",
+      "slotId": "s-2",
+      "addressId": "a-6"
+    },
+    "estimatedDelivery": "2026-09-29",
+    "items": [
+      {
+        "priceItemId": "si-shirt",
+        "qty": 8
+      },
+      {
+        "priceItemId": "si-saree",
+        "qty": 5
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-09-29T06:05:39+05:30",
+    "requestId": "RQ2005"
+  },
+  {
+    "id": "WB1005",
+    "customerId": "u-1006",
+    "serviceId": "wash-fold",
+    "status": "cancelled",
+    "placedAt": "2026-09-25T18:34:37+05:30",
+    "pickup": {
+      "date": "2026-09-26",
+      "slotId": "s-5",
+      "addressId": "a-8"
+    },
+    "estimatedDelivery": "2026-09-28",
+    "items": [
+      {
+        "priceItemId": "wf-everyday",
+        "qty": 3
+      },
+      {
+        "priceItemId": "wf-mixed",
+        "qty": 4
+      },
+      {
+        "priceItemId": "wf-linen",
+        "qty": 6
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "UPI",
+      "status": "not_charged"
+    },
+    "cancelReason": "Cancelled by the customer before pickup.",
+    "requestId": "RQ2004"
+  },
+  {
+    "id": "WB1004",
+    "customerId": "u-1004",
+    "serviceId": "dry-clean",
+    "status": "delivered",
+    "placedAt": "2026-09-21T20:00:36+05:30",
+    "pickup": {
+      "date": "2026-09-22",
+      "slotId": "s-3",
+      "addressId": "a-6"
+    },
+    "estimatedDelivery": "2026-09-25",
+    "items": [
+      {
+        "priceItemId": "dc-jacket",
+        "qty": 1
+      },
+      {
+        "priceItemId": "dc-sherwani",
+        "qty": 1
+      },
+      {
+        "priceItemId": "dc-silk-saree",
+        "qty": 1
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Pay on delivery",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-09-25T17:20:36+05:30",
+    "requestId": "RQ2003"
+  },
+  {
+    "id": "WB1003",
+    "serviceId": "premium",
+    "status": "delivered",
+    "placedAt": "2026-09-19T08:45:00+05:30",
+    "pickup": {
+      "date": "2026-09-20",
+      "slotId": "s-1",
+      "addressId": "a-1"
+    },
+    "estimatedDelivery": "2026-09-23",
+    "deliveredAt": "2026-09-22T16:00:00+05:30",
+    "items": [
+      {
+        "priceItemId": "pr-blanket",
+        "qty": 2
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Card",
+      "status": "paid"
+    },
+    "customerId": "u-1001"
+  },
+  {
+    "id": "WB1002",
+    "customerId": "u-1003",
+    "serviceId": "wash-iron",
+    "status": "delivered",
+    "placedAt": "2026-09-12T08:12:53+05:30",
+    "pickup": {
+      "date": "2026-09-13",
+      "slotId": "s-2",
+      "addressId": "a-5"
+    },
+    "estimatedDelivery": "2026-09-15",
+    "items": [
+      {
+        "priceItemId": "wi-trouser",
+        "qty": 5
+      },
+      {
+        "priceItemId": "wi-shirt",
+        "qty": 3
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Wallet",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-09-14T11:05:53+05:30",
+    "requestId": "RQ2002"
+  },
+  {
+    "id": "WB1001",
+    "customerId": "u-1003",
+    "serviceId": "wash-fold",
+    "status": "delivered",
+    "placedAt": "2026-09-07T19:20:54+05:30",
+    "pickup": {
+      "date": "2026-09-08",
+      "slotId": "s-2",
+      "addressId": "a-5"
+    },
+    "estimatedDelivery": "2026-09-10",
+    "items": [
+      {
+        "priceItemId": "wf-mixed",
+        "qty": 5
+      }
+    ],
+    "discount": 0,
+    "payment": {
+      "method": "Card",
+      "status": "paid"
+    },
+    "deliveredAt": "2026-09-10T13:05:54+05:30",
+    "requestId": "RQ2001"
+  }
+]

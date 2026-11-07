@@ -1,0 +1,16 @@
+{
+  "presets": [
+    500,
+    1000,
+    2000,
+    5000
+  ],
+  "limits": {
+    "min": 100,
+    "max": 50000
+  },
+  "topUpBonus": {
+    "percent": 5,
+    "minAmount": 2000
+  }
+}

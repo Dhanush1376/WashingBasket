@@ -1,0 +1,118 @@
+{
+  "contact": {
+    "phone": "+91 80 4718 2020",
+    "email": "care@washingbasket.example",
+    "hours": "8 AM – 9 PM, every day"
+  },
+  "categories": [
+    {
+      "id": "orders",
+      "title": "Orders & delivery",
+      "icon": "bag"
+    },
+    {
+      "id": "pickups",
+      "title": "Pickups",
+      "icon": "truck"
+    },
+    {
+      "id": "payments",
+      "title": "Payments & wallet",
+      "icon": "wallet"
+    },
+    {
+      "id": "care",
+      "title": "Garment care",
+      "icon": "shirt"
+    },
+    {
+      "id": "account",
+      "title": "Account",
+      "icon": "user"
+    }
+  ],
+  "tickets": [
+    {
+      "id": "T-3119",
+      "subject": "Order taking longer than expected",
+      "categoryId": "orders",
+      "createdAt": "2026-11-04T06:30:00+05:30",
+      "status": "open",
+      "message": "My order was supposed to arrive yesterday. Any update?",
+      "customerId": "u-1003",
+      "replies": []
+    },
+    {
+      "id": "T-3121",
+      "subject": "Change pickup address",
+      "categoryId": "pickups",
+      "createdAt": "2026-11-03T08:40:00+05:30",
+      "status": "open",
+      "message": "Can the pickup for RQ2045 be from my work address instead?",
+      "customerId": "u-1001",
+      "replies": []
+    },
+    {
+      "id": "T-3116",
+      "subject": "Wallet top-up not showing",
+      "categoryId": "payments",
+      "createdAt": "2026-10-31T06:30:00+05:30",
+      "status": "open",
+      "message": "I added ₹1,000 by UPI but the balance did not change for a few minutes.",
+      "customerId": "u-1006",
+      "replies": []
+    },
+    {
+      "id": "T-3112",
+      "subject": "Stain still visible on kurta",
+      "categoryId": "care",
+      "createdAt": "2026-10-27T06:30:00+05:30",
+      "status": "resolved",
+      "message": "There is a small turmeric stain left on one kurta.",
+      "customerId": "u-1009",
+      "replies": [
+        {
+          "id": "re-12",
+          "from": "team",
+          "body": "Thanks for letting us know. This is now sorted.",
+          "at": "2026-10-27T11:30:00+05:30"
+        }
+      ]
+    },
+    {
+      "id": "T-3104",
+      "subject": "How do I change my phone number?",
+      "categoryId": "account",
+      "createdAt": "2026-10-23T06:30:00+05:30",
+      "status": "resolved",
+      "message": "I have a new number. How can I update it?",
+      "customerId": "u-1012",
+      "replies": [
+        {
+          "id": "re-13",
+          "from": "team",
+          "body": "Thanks for letting us know. This is now sorted.",
+          "at": "2026-10-23T11:30:00+05:30"
+        }
+      ]
+    },
+    {
+      "id": "T-3108",
+      "subject": "Missing button on a shirt",
+      "categoryId": "care",
+      "createdAt": "2026-10-15T10:05:00+05:30",
+      "status": "resolved",
+      "orderId": "WB1012",
+      "message": "One shirt came back with a button missing.",
+      "customerId": "u-1001",
+      "replies": [
+        {
+          "id": "re-1",
+          "from": "team",
+          "body": "Sorry about that. We have added ₹49 back to your wallet.",
+          "at": "2026-10-20T16:20:00+05:30"
+        }
+      ]
+    }
+  ]
+}
