@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production and build outputs
+dist/
+web-build/
+expo-env.d.ts
+*.tsbuildinfo
+
+# Expo & React Native
+.expo/
+/ios
+/android
+
+# Native keys and credentials
+.kotlin/
+*.orig.*
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.mobileprovision
+credentials.json
+google-services.json
+GoogleService-Info.plist
+
+# Python build & cache artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Video / animation render caches & working directories
+hero-loop/work/
+hero-loop/backup/
+brand-film/work/
+brand-film/__pycache__/
+brand-film/dist/
+
+# Development relays & mock caches
+.mock-relay/
+
+# Logs and debug files
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.metro-health-check*
+
+# Environment files (preserve templates)
+.env
+.env.*
+.env*.local
+!.env.example
+
+# Scratch and test files
+scratch*
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
