@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: mobile/package-lock.json
 
@@ -50,7 +50,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: |
             admin/package-lock.json
@@ -62,7 +62,7 @@ jobs:
 
       - name: Install admin dependencies
         working-directory: admin
-        run: npm ci
+        run: npm install --include=optional
 
       - name: Run Typecheck
         working-directory: admin

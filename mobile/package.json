@@ -47,8 +47,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "laundry:seed": "node --no-warnings scripts/laundry/generate-seed.ts",
-    "laundry:test": "node --no-warnings --test scripts/laundry/scenarios.test.ts",
+    "laundry:seed": "node --experimental-strip-types --no-warnings scripts/laundry/generate-seed.ts",
+    "laundry:test": "node --experimental-strip-types --no-warnings --test scripts/laundry/scenarios.test.ts",
     "test": "npm run laundry:test"
   },
   "private": true
