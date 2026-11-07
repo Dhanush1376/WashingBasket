@@ -10,9 +10,14 @@ A complete, modern digital laundry platform designed for university campuses (LP
 WashingBasket/
 ├── .github/workflows/      # Automated CI/CD pipeline (typecheck, lint, test, build)
 ├── admin/                  # Web operations & admin portal (React 19 + Vite 8)
-├── mobile/                 # Customer & laundry staff mobile app (React Native 0.88 + Expo SDK 58)
+├── assets/                 # Master brand assets, artwork illustrations, and avatars
+│   ├── artwork/            # Master process illustrations (1.png - 6.png)
+│   ├── avatars/            # Persona / customer avatar artwork
+│   ├── brand/              # Official brand logos and iconography
+│   └── illustrations/      # Raw stage & status concept artwork
 ├── brand-film/             # Brand animation generator scripts
 ├── hero-loop/              # 15s seamless looping hero animation renderer
+├── mobile/                 # Customer & laundry staff mobile app (React Native 0.88 + Expo SDK 58)
 └── package.json            # Monorepo root scripts & workspace orchestration
 ```
 

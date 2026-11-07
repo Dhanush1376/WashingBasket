@@ -25,7 +25,9 @@ import numpy as np
 import acts
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-ART = os.path.join(ROOT, "..")
+ART = os.path.join(ROOT, "..", "assets", "artwork")
+if not os.path.isdir(ART):
+    ART = os.path.join(ROOT, "..")
 FPS, DUR = 30, 15.0
 NFR = int(FPS * DUR)
 SCENE = 2.5

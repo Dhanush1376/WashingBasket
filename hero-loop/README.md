@@ -1,6 +1,6 @@
 # Washing Basket — hero loop
 
-A 15-second, silent, seamlessly looping hero animation made directly from `../1.png` … `../6.png`
+A 15-second, silent, seamlessly looping hero animation made directly from `../assets/artwork/1.png` … `../assets/artwork/6.png`
 (collect → wash → dry → iron → fold → deliver).
 
 ## Deliverables (`dist/`)

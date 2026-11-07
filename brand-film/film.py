@@ -24,7 +24,10 @@ from PIL import Image
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'work'))
 from rigs import FILES, RIGS  # noqa: E402
 
-SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC_DIR = os.path.join(ROOT_DIR, 'assets', 'artwork')
+if not os.path.isdir(SRC_DIR):
+    SRC_DIR = ROOT_DIR
 OUT_W, OUT_H = 1080, 1350   # 4:5 portrait canvas for the login hero
 OUT = OUT_W
 FIT = 0.94            # at zoom 1 the frame shows 94 % of the artwork's width
