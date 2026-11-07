@@ -837,21 +837,17 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
 
       {/* Opaque white fade behind checkout bar and tab bar */}
       <View pointerEvents="none" style={styles.bottomFade}>
-        {Platform.OS === 'web' ? (
-          <View style={styles.webFade} />
-        ) : (
-          <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-            <Defs>
-              <SvgLinearGradient id="bottomFadeGrad" x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0" stopColor="#FFFFFF" stopOpacity="0" />
-                <Stop offset="0.25" stopColor="#FFFFFF" stopOpacity="0.95" />
-                <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity="1" />
-                <Stop offset="1" stopColor="#FFFFFF" stopOpacity="1" />
-              </SvgLinearGradient>
-            </Defs>
-            <Rect x="0" y="0" width="100%" height="100%" fill="url(#bottomFadeGrad)" />
-          </Svg>
-        )}
+        <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+          <Defs>
+            <SvgLinearGradient id="bottomFadeGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#FFFFFF" stopOpacity="0" />
+              <Stop offset="0.25" stopColor="#FFFFFF" stopOpacity="0.95" />
+              <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity="1" />
+              <Stop offset="1" stopColor="#FFFFFF" stopOpacity="1" />
+            </SvgLinearGradient>
+          </Defs>
+          <Rect x="0" y="0" width="100%" height="100%" fill="url(#bottomFadeGrad)" />
+        </Svg>
       </View>
 
       {footer}
@@ -1209,15 +1205,6 @@ const styles = StyleSheet.create({
     height: 155,
     zIndex: 10,
   },
-  webFade: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 25%, #FFFFFF 50%, #FFFFFF 100%)',
-  } as any,
-
   footer: {
     position: 'absolute',
     left: space.lg,
