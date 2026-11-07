@@ -62,6 +62,7 @@ yarn-error.*
 
 # Scratch and test files
 scratch*
+*.bak
 
 # OS-generated files
 .DS_Store
