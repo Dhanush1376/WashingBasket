@@ -1,175 +1,882 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { ART, ART_TINT } from '@/components/domain/art';
-import { Tag } from '@/components/ui/Badge';
 import { Button, IconButton } from '@/components/ui/Button';
-import { Card, CardHeader } from '@/components/ui/Card';
+import { Column, DataTable } from '@/components/ui/DataTable';
 import { MiniSwitch } from '@/components/ui/Form';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { ConfirmDialog } from '@/components/ui/Overlay';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { QueryView } from '@/components/ui/QueryView';
 import { EmptyState, SkeletonRows } from '@/components/ui/States';
+import { FilterPills } from '@/components/ui/Toolbar';
 import { useAction } from '@/hooks/useAction';
-import { useUrlState } from '@/hooks/useUrlState';
-import { money } from '@/lib/format';
+import { useUrlState, useViewMode } from '@/hooks/useUrlState';
+import { matches, money } from '@/lib/format';
 import { useQuery } from '@/lib/query';
 import { catalogApi, type ServiceRow } from '@/services';
 import type { PriceItem, ServiceId } from '@/types';
 import { FeesCard } from './FeesCard';
 import { PriceItemModal, ServiceModal } from './ServiceModals';
 
+type Filter = 'all' | 'active' | 'paused' | 'piece' | 'kg' | 'pair' | 'panel';
+
+const GARMENT_ICONS: Record<string, IconName> = {
+  shirt: 'shirt',
+  trouser: 'bag',
+  jean: 'bag',
+  saree: 'sparkle',
+  kurta: 'shirt',
+  blazer: 'shirt',
+  jacket: 'shirt',
+  suit: 'shirt',
+  bedsheet: 'bookmark',
+  blanket: 'bookmark',
+  curtain: 'layout',
+  shoe: 'sparkle',
+  leather: 'shirt',
+  bridal: 'sparkle',
+};
+
+function getGarmentIcon(name: string): IconName {
+  const lower = name.toLowerCase();
+  for (const [key, icon] of Object.entries(GARMENT_ICONS)) {
+    if (lower.includes(key)) return icon;
+  }
+  return 'tag';
+}
+
+type FlatPriceItem = PriceItem & {
+  serviceId: ServiceId;
+  serviceName: string;
+  serviceArt: string;
+  serviceAvailable: boolean;
+};
+
 export default function ServicesPage() {
   const services = useQuery('services', catalogApi.listServices);
   const pricing = useQuery('pricing', catalogApi.getPricing);
-  const [selected, setSelected] = useUrlState<string>('service', '');
-  const { run, isBusy } = useAction();
-  const [editingService, setEditingService] = useState<ServiceRow | null>(null);
 
-  const list = services.data ?? [];
-  const current = list.find((s) => s.id === selected) ?? list[0];
+  // URL States for deep-linking & back navigation
+  const [filter, setFilter] = useUrlState<Filter>('filter', 'all');
+  const [selectedCategory, setSelectedCategory] = useUrlState<string>('cat', 'all');
+  const [q, setQ] = useUrlState('q', '');
+  const [viewMode, setViewMode] = useViewMode('view', 'grid');
+
+  // Modals
+  const [editingService, setEditingService] = useState<ServiceRow | null | 'new'>(null);
+  const [editingPriceItem, setEditingPriceItem] = useState<{ item: PriceItem | null; serviceId?: ServiceId; serviceName?: string } | null>(null);
+  const [deletingItem, setDeletingItem] = useState<PriceItem | null>(null);
+  const [showFeesModal, setShowFeesModal] = useState(false);
+
+  const { run, isBusy } = useAction();
+
+  const servicesList = services.data ?? [];
+  const pricingData = pricing.data;
+
+  // Compute stats
+  const activeCount = useMemo(() => servicesList.filter((s) => s.available).length, [servicesList]);
+  const pausedCount = useMemo(() => servicesList.filter((s) => !s.available).length, [servicesList]);
+
+  // All price items flattened for search and Master Table view
+  const allPriceItems: FlatPriceItem[] = useMemo(() => {
+    if (!pricingData) return [];
+    const result: FlatPriceItem[] = [];
+    for (const cat of pricingData.categories) {
+      const svc = servicesList.find((s) => s.id === cat.serviceId);
+      for (const item of cat.items) {
+        result.push({
+          ...item,
+          serviceId: cat.serviceId,
+          serviceName: svc?.name ?? cat.serviceId,
+          serviceArt: svc?.art ?? 'washing',
+          serviceAvailable: svc?.available ?? true,
+        });
+      }
+    }
+    return result;
+  }, [pricingData, servicesList]);
+
+  const totalItems = allPriceItems.length;
+  const deliveryFee = pricingData?.fees.delivery ?? 49;
+  const freeDeliveryAbove = pricingData?.fees.freeDeliveryAbove ?? 499;
+
+  // Filtered Services for Cards view
+  const filteredServices = useMemo(() => {
+    return servicesList.filter((s) => {
+      // Category jump filter
+      if (selectedCategory !== 'all' && s.id !== selectedCategory) return false;
+
+      // Status filter
+      if (filter === 'active' && !s.available) return false;
+      if (filter === 'paused' && s.available) return false;
+
+      // Unit filter
+      const svcItems = pricingData?.categories.find((c) => c.serviceId === s.id)?.items ?? [];
+      if (['piece', 'kg', 'pair', 'panel'].includes(filter)) {
+        if (!svcItems.some((i) => i.unit === filter)) return false;
+      }
+
+      // Search query (matches service name, tagline, description, turnaround or any garment in it)
+      if (q.trim()) {
+        const matchesService = matches(q, s.name, s.tagline, s.description, s.turnaround);
+        const matchesGarment = svcItems.some((i) => matches(q, i.name, String(i.price), i.unit));
+        if (!matchesService && !matchesGarment) return false;
+      }
+
+      return true;
+    });
+  }, [servicesList, pricingData, selectedCategory, filter, q]);
+
+  // Filtered Flat Items for Price Sheet view
+  const filteredPriceItems = useMemo(() => {
+    return allPriceItems.filter((i) => {
+      if (selectedCategory !== 'all' && i.serviceId !== selectedCategory) return false;
+      if (filter === 'active' && !i.serviceAvailable) return false;
+      if (filter === 'paused' && i.serviceAvailable) return false;
+      if (['piece', 'kg', 'pair', 'panel'].includes(filter) && i.unit !== filter) return false;
+      if (q.trim() && !matches(q, i.name, i.serviceName, String(i.price), i.unit)) return false;
+      return true;
+    });
+  }, [allPriceItems, selectedCategory, filter, q]);
+
+  const resetAll = () => {
+    setFilter('all');
+    setSelectedCategory('all');
+    setQ('');
+  };
+
+  const hasActiveFilters = filter !== 'all' || selectedCategory !== 'all' || q.trim() !== '';
+
+  const inUseCount = deletingItem ? catalogApi.priceItemInUse(deletingItem.id) : 0;
+
+  // Table Columns for Master Price Sheet
+  const tableColumns: Column<FlatPriceItem>[] = [
+    {
+      key: 'name',
+      header: 'Garment / Sub-service',
+      sortValue: (r) => r.name,
+      render: (r) => (
+        <div className="svc-table-garment-cell">
+          <span className="svc-table-garment-icon" aria-hidden>
+            <Icon name={getGarmentIcon(r.name)} size={18} />
+          </span>
+          <div className="cell-main__text">
+            <span className="cell-main__title">{r.name}</span>
+            <span className="cell-main__sub">Charged per {r.unit}</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'service',
+      header: 'Service Category',
+      sortValue: (r) => r.serviceName,
+      render: (r) => (
+        <span className="svc-table-svc-badge">
+          <img src={ART[r.serviceArt]} alt="" className="svc-table-svc-art" />
+          {r.serviceName}
+        </span>
+      ),
+    },
+    {
+      key: 'price',
+      header: 'Customer Price',
+      sortValue: (r) => r.price,
+      render: (r) => (
+        <span className="svc-table-price-badge num">{money(r.price)}</span>
+      ),
+    },
+    {
+      key: 'unit',
+      header: 'Unit',
+      sortValue: (r) => r.unit,
+      render: (r) => (
+        <span className="svc-preset-chip svc-preset-chip--sm">per {r.unit}</span>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Booking Status',
+      sortValue: (r) => (r.serviceAvailable ? 1 : 0),
+      render: (r) =>
+        r.serviceAvailable ? (
+          <span className="svc-card__status-badge svc-card__status-badge--active">
+            <Icon name="check" size={12} /> Live
+          </span>
+        ) : (
+          <span className="svc-card__status-badge svc-card__status-badge--paused">
+            Paused
+          </span>
+        ),
+    },
+    {
+      key: 'actions',
+      header: '',
+      align: 'right',
+      render: (r) => (
+        <div className="svc-garment-tile__actions">
+          <IconButton
+            icon="edit"
+            label={`Edit price for ${r.name}`}
+            size={34}
+            onClick={() => setEditingPriceItem({ item: r, serviceId: r.serviceId, serviceName: r.serviceName })}
+          />
+          <IconButton
+            icon="trash"
+            tone="danger"
+            label={`Remove ${r.name}`}
+            size={34}
+            onClick={() => setDeletingItem(r)}
+          />
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div className="page">
+    <div className="page customers-page services-page">
+      {/* ── 1. Page Header with Customers Page Single-Line Stats Bar ── */}
       <PageHeader
-        icon="list"
-        title="Services & prices"
-        description="Manage the services, availability and pricing customers can book."
+        title="Services & Prices"
+        description={
+          <div className="customers-header-desc">
+            <span className="customers-header-stat customers-header-stat--main">
+              <strong>{servicesList.length}</strong> Total Services
+            </span>
+            <span className="customers-header-stat customers-header-stat--green">
+              <span className="customers-stats-dot customers-stats-dot--green" />
+              <strong>{activeCount}</strong> Live & Bookable
+            </span>
+            {pausedCount > 0 ? (
+              <span className="customers-header-stat customers-header-stat--orange">
+                <span className="customers-stats-dot customers-stats-dot--orange" />
+                <strong>{pausedCount}</strong> Paused
+              </span>
+            ) : null}
+            <span className="customers-header-stat customers-header-stat--blue">
+              <span className="customers-stats-dot customers-stats-dot--blue" />
+              <strong>{totalItems}</strong> Priced Garments
+            </span>
+            <span className="customers-header-stat">
+              Free Delivery above <strong>{money(freeDeliveryAbove)}</strong>
+            </span>
+          </div>
+        }
+        actions={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Button
+              variant="outline"
+              icon="truck"
+              onClick={() => setShowFeesModal(true)}
+              title="Configure delivery fees"
+            >
+              Delivery Charges
+            </Button>
+            <Button
+              variant="outline"
+              icon="plus"
+              onClick={() => setEditingPriceItem({ item: null })}
+              title="Add a garment to any service"
+            >
+              Add Garment
+            </Button>
+            <Button
+              variant="accent"
+              icon="plus"
+              onClick={() => setEditingService('new')}
+              title="Create a new service category"
+            >
+              Add Service
+            </Button>
+          </div>
+        }
       />
 
-      <div className="services-split">
-        <Card aria-labelledby="svc-title">
-          <CardHeader id="svc-title" title="Services" hint="Shown in this order on Home and when booking." />
-          <QueryView query={services}>
-            {() => (
-              <ol className="svc-list">
-                {list.map((s, i) => (
-                  <li key={s.id}>
-                    <div className={`svc-row${current?.id === s.id ? ' svc-row--on' : ''}${s.available ? '' : ' svc-row--off'}`}>
-                      <button type="button" className="svc-row__main" onClick={() => setSelected(s.id)} aria-pressed={current?.id === s.id}>
-                        <span className="svc-row__art" style={{ background: ART_TINT[s.art] ?? '#F4F5F7' }}>
-                          <img src={ART[s.art]} alt="" />
-                        </span>
-                        <span className="grow">
-                          <strong className="block">{s.name}</strong>
-                          <span className="muted small">
-                            {s.startingPrice ? `from ${money(s.startingPrice.price)} / ${s.startingPrice.unit}` : 'No prices yet'} · {s.turnaround}
-                          </span>
-                        </span>
-                        {!s.available ? <Tag tone="orange">Paused</Tag> : null}
-                      </button>
-                      <span className="svc-row__controls">
-                        <IconButton icon="arrowUp" label={`Move ${s.name} up`} size={32} disabled={i === 0} onClick={() => run('mv', () => catalogApi.moveService(s.id, -1), 'Order updated')} />
-                        <IconButton icon="arrowDown" label={`Move ${s.name} down`} size={32} disabled={i === list.length - 1} onClick={() => run('mv', () => catalogApi.moveService(s.id, 1), 'Order updated')} />
-                        <MiniSwitch
-                          checked={s.available}
-                          label={s.available ? `Pause ${s.name}` : `Make ${s.name} bookable`}
-                          disabled={isBusy(`av-${s.id}`)}
-                          onChange={(v) => run(`av-${s.id}`, () => catalogApi.setServiceAvailable(s.id, v), v ? `${s.name} can be booked` : `${s.name} paused`, v ? undefined : 'It stays on the price list but customers can’t book it.')}
-                        />
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </QueryView>
-        </Card>
+      {/* ── 2. Unified 4-Tile KPI Summary Bar (1:1 with Customers Page) ── */}
+      <div className="customers-stats-bar" role="region" aria-label="Services overview statistics bar">
+        {/* Segment 1: Dark Navy - Active Services */}
+        <button
+          type="button"
+          className={`customers-stats-bar__item customers-stats-bar__item--dark${filter === 'active' ? ' is-active' : ''}`}
+          onClick={() => setFilter(filter === 'active' ? 'all' : 'active')}
+          title="Filter live services"
+        >
+          <div className="overview-sub-card__top">
+            <span className="overview-tag overview-tag--dark">
+              <span className="overview-tag__dot overview-tag__dot--green" />
+              Live on App
+            </span>
+            <span className="overview-sub-card__icon-squircle overview-sub-card__icon-squircle--dark" aria-hidden>
+              <Icon name="sparkle" size={17} />
+            </span>
+          </div>
+          <div className="overview-sub-card__bottom">
+            <span className="overview-sub-card__value">
+              {activeCount} of {servicesList.length}
+            </span>
+            <span className="overview-sub-card__caption">
+              {pausedCount === 0 ? 'All services taking bookings' : `${pausedCount} service currently paused`}
+            </span>
+          </div>
+        </button>
 
-        <div className="stack">
-          {current ? (
-            <PriceListCard service={current} items={pricing.data?.categories.find((c) => c.serviceId === current.id)?.items ?? []} note={pricing.data?.categories.find((c) => c.serviceId === current.id)?.note ?? ''} loading={!pricing.data} onEditService={() => setEditingService(current)} />
-          ) : (
-            <Card>
-              <SkeletonRows rows={4} />
-            </Card>
-          )}
-          <FeesCard />
+        {/* Segment 2: Vibrant Orange - Total Priced Items */}
+        <button
+          type="button"
+          className={`customers-stats-bar__item customers-stats-bar__item--orange${viewMode === 'table' ? ' is-active' : ''}`}
+          onClick={() => setViewMode(viewMode === 'table' ? 'grid' : 'table')}
+          title="Toggle between Cards and Master Price Sheet"
+        >
+          <div className="overview-sub-card__top">
+            <span className="overview-tag overview-tag--orange">Priced Garments</span>
+            <span className="overview-sub-card__icon-circle" aria-hidden>
+              <Icon name="tag" size={16} />
+            </span>
+          </div>
+          <div className="overview-sub-card__bottom">
+            <span className="overview-sub-card__value">{totalItems} Items</span>
+            <span className="overview-sub-card__caption">
+              {viewMode === 'table' ? 'Viewing master price sheet' : 'Click to view master price sheet'}
+            </span>
+          </div>
+        </button>
+
+        {/* Segment 3: Light - Turnaround Promise */}
+        <div className="customers-stats-bar__item customers-stats-bar__item--light">
+          <div className="overview-sub-card__top">
+            <span className="overview-tag overview-tag--light">
+              <span className="overview-tag__dot overview-tag__dot--blue" />
+              Turnaround Speed
+            </span>
+            <span className="overview-sub-card__icon-squircle" aria-hidden>
+              <Icon name="clock" size={17} />
+            </span>
+          </div>
+          <div className="overview-sub-card__bottom">
+            <span className="overview-sub-card__value">24h – 5 days</span>
+            <span className="overview-sub-card__caption">Fastest: Steam Ironing (24 hrs)</span>
+          </div>
+        </div>
+
+        {/* Segment 4: Light/Accent - Delivery Policy */}
+        <button
+          type="button"
+          className="customers-stats-bar__item customers-stats-bar__item--light"
+          onClick={() => setShowFeesModal(true)}
+          title="Change delivery charges and free delivery threshold"
+        >
+          <div className="overview-sub-card__top">
+            <span className="overview-tag overview-tag--success">
+              <span className="overview-tag__dot overview-tag__dot--green" />
+              Delivery Policy
+            </span>
+            <span className="overview-sub-card__icon-squircle" aria-hidden>
+              <Icon name="truck" size={17} />
+            </span>
+          </div>
+          <div className="overview-sub-card__bottom">
+            <span className="overview-sub-card__value">
+              {money(deliveryFee)} / Free {money(freeDeliveryAbove)}+
+            </span>
+            <span className="overview-sub-card__caption">Click to update delivery policy</span>
+          </div>
+        </button>
+      </div>
+
+      {/* ── 3. Sticky Action & Search Card (1:1 with Customers & Offers Page) ── */}
+      <div className="customers-sticky-bar-wrapper">
+        <div className="customers-action-card">
+          <div className="customers-action-bar">
+            {/* Search Input */}
+            <div className="customers-search-box">
+              <Icon name="search" size={17} className="customers-search-icon" />
+              <input
+                type="search"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search services or garments (e.g. Shirt, Saree, Blazer, ₹35, 24h)..."
+                className="customers-search-input"
+                aria-label="Search services and pricing"
+              />
+              {q ? (
+                <button
+                  type="button"
+                  className="customers-search-clear"
+                  onClick={() => setQ('')}
+                  aria-label="Clear search"
+                >
+                  <Icon name="x" size={13} />
+                </button>
+              ) : null}
+            </div>
+
+            {/* Controls */}
+            <div className="customers-action-controls">
+              <FilterPills<Filter>
+                label="Filter by status and charging unit"
+                value={filter}
+                onChange={setFilter}
+                options={[
+                  { value: 'all', label: 'All Services', count: servicesList.length },
+                  { value: 'active', label: 'Live & Bookable', count: activeCount },
+                  { value: 'paused', label: 'Paused', count: pausedCount },
+                  { value: 'piece', label: 'Per Piece' },
+                  { value: 'kg', label: 'Per Kg' },
+                  { value: 'pair', label: 'Per Pair' },
+                ]}
+              />
+
+              {/* View Switcher: Cards vs Price Sheet Table */}
+              <div className="customers-view-toggle" role="group" aria-label="View layout">
+                <button
+                  type="button"
+                  className={`customers-view-toggle__btn${viewMode === 'grid' ? ' is-active' : ''}`}
+                  onClick={() => setViewMode('grid')}
+                  title="Service cards view"
+                  aria-pressed={viewMode === 'grid'}
+                >
+                  <Icon name="grid" size={15} />
+                  <span className="customers-view-toggle__label">Cards</span>
+                </button>
+                <button
+                  type="button"
+                  className={`customers-view-toggle__btn${viewMode === 'table' ? ' is-active' : ''}`}
+                  onClick={() => setViewMode('table')}
+                  title="Master price sheet table"
+                  aria-pressed={viewMode === 'table'}
+                >
+                  <Icon name="list" size={15} />
+                  <span className="customers-view-toggle__label">Price Sheet</span>
+                </button>
+              </div>
+
+              {hasActiveFilters ? (
+                <button
+                  type="button"
+                  className="btn btn--subtle btn--sm"
+                  onClick={resetAll}
+                  style={{ flexShrink: 0 }}
+                >
+                  <Icon name="x" size={13} /> Reset
+                </button>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Category Quick Jump Pills */}
+          <div className="svc-preset-row" style={{ padding: '4px 20px 14px', borderTop: '1px solid var(--hairline)' }}>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', marginRight: 4 }}>
+              Jump to Category:
+            </span>
+            <button
+              type="button"
+              className={`svc-preset-chip${selectedCategory === 'all' ? ' svc-preset-chip--active' : ''}`}
+              onClick={() => setSelectedCategory('all')}
+            >
+              All Categories ({servicesList.length})
+            </button>
+            {servicesList.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className={`svc-preset-chip${selectedCategory === s.id ? ' svc-preset-chip--active' : ''}`}
+                onClick={() => setSelectedCategory(s.id)}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {editingService ? <ServiceModal service={editingService} note={pricing.data?.categories.find((c) => c.serviceId === editingService.id)?.note ?? ''} onClose={() => setEditingService(null)} /> : null}
+      {/* ── 4. Main Body: Cards View OR Master Price Sheet View ── */}
+      <QueryView query={services} skeleton={<SkeletonRows rows={4} height={180} />}>
+        {() => (
+          <>
+            {viewMode === 'table' ? (
+              /* Master Price Sheet (Table View) */
+              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <DataTable<FlatPriceItem>
+                  caption="Master price catalog of all garments and sub-services"
+                  rows={filteredPriceItems}
+                  columns={tableColumns}
+                  rowKey={(r) => r.id}
+                  pageSize={15}
+                  empty={
+                    <EmptyState
+                      compact
+                      icon="search"
+                      title="No garments match your filters"
+                      message="Try adjusting your search keywords or clear filters to see all prices."
+                      action={
+                        <Button variant="outline" size="sm" onClick={resetAll}>
+                          Clear all filters
+                        </Button>
+                      }
+                    />
+                  }
+                  mobileCard={(r) => (
+                    <div className="svc-garment-tile">
+                      <div className="svc-garment-tile__lead">
+                        <span className="svc-garment-tile__icon">
+                          <Icon name={getGarmentIcon(r.name)} size={16} />
+                        </span>
+                        <div className="svc-garment-tile__info">
+                          <span className="svc-garment-tile__name">{r.name}</span>
+                          <span className="svc-garment-tile__unit">
+                            {r.serviceName} · per {r.unit}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="svc-garment-tile__tail">
+                        <span className="svc-garment-tile__price num">{money(r.price)}</span>
+                        <IconButton
+                          icon="edit"
+                          size={32}
+                          label={`Edit price for ${r.name}`}
+                          onClick={() => setEditingPriceItem({ item: r, serviceId: r.serviceId, serviceName: r.serviceName })}
+                        />
+                      </div>
+                    </div>
+                  )}
+                />
+              </div>
+            ) : (
+              /* Service Cards View */
+              <div className="svc-cards-stack">
+                {filteredServices.length ? (
+                  filteredServices.map((service, index) => {
+                    const catData = pricingData?.categories.find((c) => c.serviceId === service.id);
+                    const items = catData?.items ?? [];
+                    const note = catData?.note ?? '';
+
+                    return (
+                      <ServiceCard
+                        key={service.id}
+                        service={service}
+                        items={items}
+                        note={note}
+                        isFirst={index === 0}
+                        isLast={index === filteredServices.length - 1}
+                        onEditService={() => setEditingService(service)}
+                        onAddItem={() => setEditingPriceItem({ item: null, serviceId: service.id as ServiceId, serviceName: service.name })}
+                        onEditItem={(item) => setEditingPriceItem({ item, serviceId: service.id as ServiceId, serviceName: service.name })}
+                        onDeleteItem={(item) => setDeletingItem(item)}
+                        searchFilter={q}
+                      />
+                    );
+                  })
+                ) : (
+                  <EmptyState
+                    icon="search"
+                    title="No services match your search"
+                    message="Try clearing your search query or filters to see all available services."
+                    action={
+                      <Button variant="outline" onClick={resetAll}>
+                        Clear search & filters
+                      </Button>
+                    }
+                  />
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </QueryView>
+
+      {/* ── 5. Delivery Policy Card at Page Bottom ── */}
+      <FeesCard />
+
+      {/* ── 6. Modals & Dialogs ── */}
+      {editingService ? (
+        <ServiceModal
+          service={editingService === 'new' ? null : editingService}
+          note={editingService === 'new' ? '' : pricingData?.categories.find((c) => c.serviceId === editingService.id)?.note ?? ''}
+          onClose={() => setEditingService(null)}
+        />
+      ) : null}
+
+      {editingPriceItem ? (
+        <PriceItemModal
+          serviceId={editingPriceItem.serviceId}
+          serviceName={editingPriceItem.serviceName}
+          servicesList={servicesList}
+          item={editingPriceItem.item}
+          onClose={() => setEditingPriceItem(null)}
+        />
+      ) : null}
+
+      {showFeesModal ? <FeesCard asModal onClose={() => setShowFeesModal(false)} /> : null}
+
+      <ConfirmDialog
+        open={!!deletingItem}
+        onClose={() => setDeletingItem(null)}
+        title={`Remove ${deletingItem?.name ?? 'item'} from price list?`}
+        message={
+          inUseCount > 0 ? (
+            <>
+              <strong>
+                {inUseCount} active {inUseCount === 1 ? 'order uses' : 'orders use'} this garment item.
+              </strong>{' '}
+              Removing it drops this line from their breakdown. Only remove it if you no longer provide this service;
+              otherwise change the price instead.
+            </>
+          ) : (
+            <>This item will disappear from the customer app and booking price catalog immediately.</>
+          )
+        }
+        confirmLabel="Remove Item"
+        loading={isBusy('del-item')}
+        onConfirm={async () => {
+          if (!deletingItem) return;
+          await run('del-item', () => catalogApi.deletePriceItem(deletingItem.id), `${deletingItem.name} removed`);
+          setDeletingItem(null);
+        }}
+      />
     </div>
   );
 }
 
-function PriceListCard({ service, items, note, loading, onEditService }: { service: ServiceRow; items: PriceItem[]; note: string; loading: boolean; onEditService: () => void }) {
+function ServiceCard({
+  service,
+  items,
+  note,
+  isFirst,
+  isLast,
+  onEditService,
+  onAddItem,
+  onEditItem,
+  onDeleteItem,
+  searchFilter,
+}: {
+  service: ServiceRow;
+  items: PriceItem[];
+  note: string;
+  isFirst: boolean;
+  isLast: boolean;
+  onEditService: () => void;
+  onAddItem: () => void;
+  onEditItem: (item: PriceItem) => void;
+  onDeleteItem: (item: PriceItem) => void;
+  searchFilter: string;
+}) {
   const { run, isBusy } = useAction();
-  const [editing, setEditing] = useState<PriceItem | 'new' | null>(null);
-  const [deleting, setDeleting] = useState<PriceItem | null>(null);
-  const inUse = deleting ? catalogApi.priceItemInUse(deleting.id) : 0;
+
+  // Instant quick adjustment (+₹5 / -₹5)
+  const quickNudgePrice = async (item: PriceItem, delta: number) => {
+    const nextPrice = Math.max(1, item.price + delta);
+    await run(
+      `nudge-${item.id}`,
+      () => catalogApi.updatePriceItem(item.id, { name: item.name, price: nextPrice, unit: item.unit }),
+      `${item.name} updated to ${money(nextPrice)}`,
+    );
+  };
+
+  const startingPrice = service.startingPrice;
+
+  // Filter items matching search if query is active
+  const visibleItems = useMemo(() => {
+    if (!searchFilter.trim()) return items;
+    return items.filter((i) => matches(searchFilter, i.name, String(i.price), i.unit));
+  }, [items, searchFilter]);
 
   return (
-    <Card aria-labelledby="price-title">
-      <div className="svc-head">
-        <span className="svc-head__art" style={{ background: ART_TINT[service.art] ?? '#F4F5F7' }}>
-          <img src={ART[service.art]} alt="" />
-        </span>
-        <div className="grow">
-          <h2 className="svc-head__title" id="price-title">
-            {service.name}
-          </h2>
-          <p className="soft">{service.tagline}</p>
-          <p className="muted small">
-            Ready in {service.turnaround} · {service.ordersLast30} orders in the last 30 days
-          </p>
-        </div>
-        <Button size="sm" icon="edit" onClick={onEditService}>
-          Edit service
-        </Button>
-      </div>
+    <article className={`svc-card${service.available ? '' : ' svc-card--off'}`} aria-label={service.name}>
+      {/* Top Banner */}
+      <div className="svc-card__top">
+        <div className="svc-card__lead">
+          <span className="svc-card__art" style={{ background: ART_TINT[service.art] ?? '#F4F5F7' }}>
+            <img src={ART[service.art]} alt="" />
+          </span>
 
-      <div className="price-head">
-        <div>
-          <h3 className="form-section__title">Price list</h3>
-          {note ? <p className="muted small">“{note}”</p> : null}
-        </div>
-        <Button size="sm" variant="accent" icon="plus" onClick={() => setEditing('new')}>
-          Add item
-        </Button>
-      </div>
+          <div className="svc-card__body">
+            <div className="svc-card__title-row">
+              <h2 className="svc-card__title">{service.name}</h2>
+              {service.available ? (
+                <span className="svc-card__status-badge svc-card__status-badge--active">
+                  <Icon name="check" size={12} /> Live & Bookable
+                </span>
+              ) : (
+                <span className="svc-card__status-badge svc-card__status-badge--paused">
+                  Paused on App
+                </span>
+              )}
+            </div>
 
-      {loading ? (
-        <SkeletonRows rows={3} height={48} />
-      ) : items.length ? (
-        <ul className="price-list">
-          {items.map((i) => (
-            <li key={i.id} className="price-row">
-              <span className="grow">
-                <strong>{i.name}</strong>
-                <span className="muted small block">per {i.unit}</span>
+            <p className="svc-card__tagline">{service.tagline}</p>
+            {service.description ? <p className="svc-card__desc">{service.description}</p> : null}
+
+            <div className="svc-card__meta-bar">
+              <span className="svc-card__meta-chip svc-card__meta-chip--accent">
+                <Icon name="clock" size={13} /> Ready in {service.turnaround}
               </span>
-              <span className="price-row__price num">{money(i.price)}</span>
-              <IconButton icon="edit" label={`Edit ${i.name}`} size={34} onClick={() => setEditing(i)} />
-              <IconButton icon="trash" tone="danger" label={`Remove ${i.name}`} size={34} onClick={() => setDeleting(i)} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <EmptyState compact icon="list" title="No prices yet" message="Add the first item so customers can see what this service costs." />
-      )}
+              {startingPrice ? (
+                <span className="svc-card__meta-chip svc-card__meta-chip--warm">
+                  Starts from {money(startingPrice.price)} / {startingPrice.unit}
+                </span>
+              ) : (
+                <span className="svc-card__meta-chip">No prices configured</span>
+              )}
+              <span className="svc-card__meta-chip">
+                🔥 {service.ordersLast30} orders in last 30 days
+              </span>
+              <span className="svc-card__meta-chip">
+                🏷️ {items.length} garments priced
+              </span>
+            </div>
+          </div>
+        </div>
 
-      {editing ? <PriceItemModal serviceId={service.id as ServiceId} serviceName={service.name} item={editing === 'new' ? null : editing} onClose={() => setEditing(null)} /> : null}
-      <ConfirmDialog
-        open={!!deleting}
-        onClose={() => setDeleting(null)}
-        title={`Remove ${deleting?.name ?? 'item'}?`}
-        message={
-          inUse ? (
-            <>
-              <strong>{inUse} {inUse === 1 ? 'order uses' : 'orders use'} this item.</strong> Their totals will drop this line. Only remove it if you’re sure; otherwise change the price instead.
-            </>
-          ) : (
-            <>It will disappear from the customer app’s price list.</>
-          )
-        }
-        confirmLabel="Remove item"
-        loading={isBusy('del')}
-        onConfirm={async () => {
-          if (!deleting) return;
-          await run('del', () => catalogApi.deletePriceItem(deleting.id), `${deleting.name} removed`);
-          setDeleting(null);
-        }}
-      />
-    </Card>
+        {/* Controls */}
+        <div className="svc-card__controls">
+          <div className="svc-card__reorder-group" aria-label="Reorder service on home screen">
+            <IconButton
+              icon="arrowUp"
+              size={32}
+              label={`Move ${service.name} up`}
+              disabled={isFirst}
+              onClick={() => run('mv', () => catalogApi.moveService(service.id, -1), 'Position moved up')}
+            />
+            <IconButton
+              icon="arrowDown"
+              size={32}
+              label={`Move ${service.name} down`}
+              disabled={isLast}
+              onClick={() => run('mv', () => catalogApi.moveService(service.id, 1), 'Position moved down')}
+            />
+          </div>
+
+          {/* Big, Plain-English Status Toggle */}
+          <div className="svc-card__toggle-box">
+            <span className={`svc-card__toggle-label ${service.available ? 'svc-card__toggle-label--active' : 'svc-card__toggle-label--paused'}`}>
+              {service.available ? 'Taking Orders' : 'Paused'}
+            </span>
+            <MiniSwitch
+              checked={service.available}
+              label={service.available ? `Pause ${service.name}` : `Make ${service.name} bookable`}
+              disabled={isBusy(`toggle-${service.id}`)}
+              onChange={(v) =>
+                run(
+                  `toggle-${service.id}`,
+                  () => catalogApi.setServiceAvailable(service.id, v),
+                  v ? `${service.name} is now taking orders!` : `${service.name} paused`,
+                  v ? 'Customers can book this immediately.' : 'Hidden from new bookings; ongoing orders continue.',
+                )
+              }
+            />
+          </div>
+
+          <Button size="sm" variant="outline" icon="edit" onClick={onEditService}>
+            Edit Service
+          </Button>
+        </div>
+      </div>
+
+      {/* Customer Note Callout (if any) */}
+      {note ? (
+        <div className="svc-card__note-callout">
+          <Icon name="info" size={15} />
+          <span>
+            <strong>Note shown to customer:</strong> “{note}”
+          </span>
+        </div>
+      ) : null}
+
+      {/* Sub-Services / Garment Items Section */}
+      <div className="svc-card__garments-section">
+        <div className="svc-card__garments-head">
+          <div className="svc-card__garments-title">
+            <Icon name="tag" size={16} />
+            <span>Priced Garments & Sub-services</span>
+            <span className="svc-card__garments-count">{items.length}</span>
+          </div>
+          <Button size="sm" variant="accent" icon="plus" onClick={onAddItem}>
+            Add Garment / Item
+          </Button>
+        </div>
+
+        {visibleItems.length ? (
+          <div className="svc-garment-grid">
+            {visibleItems.map((item) => (
+              <div key={item.id} className="svc-garment-tile">
+                <div className="svc-garment-tile__lead">
+                  <span className="svc-garment-tile__icon" aria-hidden>
+                    <Icon name={getGarmentIcon(item.name)} size={16} />
+                  </span>
+                  <div className="svc-garment-tile__info">
+                    <strong className="svc-garment-tile__name" title={item.name}>
+                      {item.name}
+                    </strong>
+                    <span className="svc-garment-tile__unit">per {item.unit}</span>
+                  </div>
+                </div>
+
+                <div className="svc-garment-tile__tail">
+                  <div className="svc-garment-tile__price-block">
+                    <span className="svc-garment-tile__price num">{money(item.price)}</span>
+                  </div>
+
+                  {/* 1-Click Quick Price Nudge Buttons (-₹5 / +₹5) */}
+                  <div className="svc-garment-tile__quick-stepper" title="Quickly adjust price by ₹5">
+                    <button
+                      type="button"
+                      className="svc-garment-tile__quick-btn"
+                      onClick={() => quickNudgePrice(item, -5)}
+                      disabled={isBusy(`nudge-${item.id}`) || item.price <= 5}
+                    >
+                      -5
+                    </button>
+                    <button
+                      type="button"
+                      className="svc-garment-tile__quick-btn"
+                      onClick={() => quickNudgePrice(item, 5)}
+                      disabled={isBusy(`nudge-${item.id}`)}
+                    >
+                      +5
+                    </button>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="svc-garment-tile__actions">
+                    <IconButton
+                      icon="edit"
+                      size={30}
+                      label={`Edit ${item.name}`}
+                      onClick={() => onEditItem(item)}
+                    />
+                    <IconButton
+                      icon="trash"
+                      size={30}
+                      tone="danger"
+                      label={`Remove ${item.name}`}
+                      onClick={() => onDeleteItem(item)}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            compact
+            icon="list"
+            title={searchFilter ? 'No matching garments in this service' : 'No garments priced yet'}
+            message={
+              searchFilter
+                ? 'Try a different keyword or clear search.'
+                : 'Add the first item so customers can see what this service costs.'
+            }
+            action={
+              !searchFilter ? (
+                <Button size="sm" variant="accent" icon="plus" onClick={onAddItem}>
+                  Add First Garment
+                </Button>
+              ) : undefined
+            }
+          />
+        )}
+      </div>
+    </article>
   );
 }

@@ -94,21 +94,25 @@ export function ReferCard({
       accessibilityLabel={`Refer and earn. Give ₹${friendReward}, get ₹${reward}`}
       style={({ pressed }) => [styles.card, liftShadow, webCursor, pressed && { transform: [{ scale: 0.99 }] }]}
     >
-      {/* ── Top Header Row: Gift badge on left, Arrow button on right ── */}
+      {/* ── Top Header Row: Gift badge + Value Proposition side-by-side on left, Arrow button on right ── */}
       <View style={styles.headTop}>
-        <View style={styles.tileIcon}>
-          <Icon name="gift" size={19} color={brand.navy} strokeWidth={2.2} />
+        <View style={styles.headLeft}>
+          <View style={styles.tileIcon}>
+            <Icon name="gift" size={19} color={brand.navy} strokeWidth={2.2} />
+          </View>
+          <View style={styles.heroWrap}>
+            <Text style={styles.kicker}>REFER & EARN</Text>
+            <Text style={styles.title} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
+              Give ₹{friendReward}, get ₹{reward}
+            </Text>
+            <Text style={styles.sub} numberOfLines={1}>
+              Earn instant wallet cash for every friend who joins
+            </Text>
+          </View>
         </View>
         <View style={styles.goBtn}>
           <Icon name="arrowUpRight" size={15} color={colors.ink} strokeWidth={2.2} />
         </View>
-      </View>
-
-      {/* ── Value Proposition: Category Kicker, Hero Headline, Subtitle ── */}
-      <View style={styles.heroWrap}>
-        <Text style={styles.kicker}>REFER & EARN</Text>
-        <Text style={styles.title}>Give ₹{friendReward}, get ₹{reward}</Text>
-        <Text style={styles.sub}>Earn instant wallet cash for every friend who joins</Text>
       </View>
 
       {/* ── Code & Action Bar ── */}
@@ -223,17 +227,26 @@ const styles = StyleSheet.create({
   },
   headTop: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    gap: 10,
+    marginBottom: 14,
+  },
+  headLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    flex: 1,
+    minWidth: 0,
   },
   tileIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: colors.navyTint,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 2,
   },
   goBtn: {
     width: 32,
@@ -242,11 +255,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4F2EE',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 2,
     ...(Platform.OS === 'web'
       ? ({ boxShadow: '0 1px 3px rgba(10, 28, 62, 0.06)' } as object)
       : { shadowColor: INK, shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3, elevation: 1 }),
   },
   heroWrap: {
+    flex: 1,
+    minWidth: 0,
     gap: 2,
   },
   kicker: {
@@ -258,17 +274,17 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: fonts.extrabold,
-    fontSize: 22,
-    lineHeight: 28,
-    letterSpacing: -0.6,
+    fontSize: 20,
+    lineHeight: 25,
+    letterSpacing: -0.5,
     color: INK,
   },
   sub: {
     fontFamily: fonts.regular,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12.5,
+    lineHeight: 17,
     color: '#64748B',
-    marginTop: 2,
+    marginTop: 1,
   },
 
   codeRow: {

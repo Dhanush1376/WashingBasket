@@ -1,17 +1,16 @@
 import React, { useMemo, useState } from 'react';
-import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { ART, ART_TINT } from '../../components/app/art';
 import { Icon, type IconName } from '../../components/app/Icon';
 import { Rise, useFocusReplay } from '../../components/app/motion';
 import { Avatar, SectionHeader } from '../../components/app/primitives';
 import { EmptyState, Skeleton } from '../../components/app/states';
-import { BottomSheet } from '../../components/ui/BottomSheet';
 import { STAFF_ROLE_LABEL } from '../../laundry/labels';
-import { ago, plural, time } from '../../lib/format';
+import { ago, money, plural, time } from '../../lib/format';
 import { haptic } from '../../lib/haptics';
 import { PROCESSING_STAGES, STAGE_COPY } from '../../mock/engine/lifecycle';
-import { findCustomer } from '../../mock/engine/selectors';
+import { markNotificationsRead } from '../../mock/services/notificationService';
+import type { LaundryNotification } from '../../mock/types';
 import type { StaffTabProps } from '../../navigation/types';
 import { useSession } from '../../session/session';
 import {
@@ -22,33 +21,25 @@ import {
   matchesFilter,
   ROLE,
   STAGE_ICON,
-  tasksFor,
   workload,
 } from '../../staff/work';
 import {
-  announcementsFor,
-  checkIn,
   checkInState,
   dayKey,
   hhmmLabel,
+  payrollFor,
   recordFor,
-  type Announcement,
 } from '../../staff/workforce';
 import { colors, fonts, space } from '../../theme';
 import {
-  BEIGE,
-  Button,
   CHIP,
-  EDGE,
-  OrderCard,
   Panel,
   RADIUS,
   RULE,
   shared,
   soft,
+  staffFeed,
   StaffPage,
-  Tag,
-  useOrderAction,
   useStaff,
   webCursor,
 } from './kit';
@@ -56,23 +47,49 @@ import {
 /** A fresh value each time the scanner is opened, so it starts clean. */
 const stamp = () => Date.now();
 
+const HERO_YELLOW = '#FED843';
+const NAVY = '#0A1C3E';
+const GREEN = '#0D7A21';
+
 const PERKS = [
-  { icon: 'clock', label: '48h turnaround SLA', tint: colors.orange },
-  { icon: 'scan', label: 'Verified piece counts', tint: colors.navy },
-  { icon: 'shield', label: 'Digital audit trail', tint: '#12AD2B' },
+  { icon: 'clock', label: '48h SLA', tint: colors.orange },
+  { icon: 'scan', label: 'Verified pieces', tint: colors.navy },
+  { icon: 'shield', label: 'Digital audit', tint: '#12AD2B' },
 ] as const;
+
+type Look = { icon: IconName; bg: string; fg: string };
+const ORANGE_LOOK: Look = { icon: 'inbox', bg: '#FFF1E0', fg: colors.orange };
+const LOOK: Partial<Record<LaundryNotification['kind'], Look>> = {
+  NEW_REQUEST: ORANGE_LOOK,
+  VERIFY_CLOTHES: { ...ORANGE_LOOK, icon: 'shirt' },
+  DELIVERY_QR_READY: { icon: 'scan', bg: '#EEF3FB', fg: colors.navy },
+  PAYMENT_COMPLETED: { icon: 'wallet', bg: colors.successTint, fg: '#0F8A27' },
+  ISSUE_REPORTED: { icon: 'alert', bg: '#FDF2F4', fg: colors.danger },
+  ORDER_CANCELLED: { icon: 'x', bg: '#F1F5F9', fg: '#64748B' },
+};
+const lookFor = (n: LaundryNotification): Look => LOOK[n.kind] ?? { ...ORANGE_LOOK, icon: 'bell' };
 
 export function StaffHomeScreen({ navigation }: StaffTabProps<'StaffHome'>) {
   const replay = useFocusReplay();
   const { state, me, wf, prefs } = useStaff();
   const { signOut } = useSession();
-  const action = useOrderAction(me?.staff.id);
-  const [checking, setChecking] = useState(false);
-  const [checkError, setCheckError] = useState<string | null>(null);
-  const [open, setOpen] = useState<Announcement | null>(null);
-  const [selectedTaskIdx, setSelectedTaskIdx] = useState(0);
 
-  const tasks = useMemo(() => (state && me ? tasksFor(state, me.staff) : []), [state, me]);
+  const notifications = useMemo(() => {
+    if (!state || !me) return [];
+    return staffFeed(state, me.staff, prefs)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, 5);
+  }, [state, me, prefs]);
+
+  const openNotification = (n: LaundryNotification) => {
+    haptic.tap();
+    if (!n.readAt) markNotificationsRead([n.id]).catch(() => {});
+    if (n.orderId) {
+      navigation.navigate('StaffOrder', { orderId: n.orderId });
+    } else {
+      navigation.navigate('StaffNotifications');
+    }
+  };
 
   if (!state || !me) {
     return (
@@ -99,11 +116,6 @@ export function StaffHomeScreen({ navigation }: StaffTabProps<'StaffHome'>) {
   const role = ROLE[staff.role];
   const boss = isSupervisor(staff);
   const orders = branchOrders(state, staff);
-  const open_ = orders.filter((o) => matchesFilter(o, 'all', staff) && !['DELIVERED', 'REJECTED'].includes(o.status));
-  const assigned = orders.filter((o) => matchesFilter(o, 'assigned', staff)).length;
-  const done = doneToday(state, staff);
-  const total = done + tasks.length;
-  const progress = total ? done / total : 0;
   const first = staff.name.split(' ')[0];
 
   // attendance: are they on shift?
@@ -125,21 +137,6 @@ export function StaffHomeScreen({ navigation }: StaffTabProps<'StaffHome'>) {
           ? 'On leave today'
           : 'Day off';
 
-  const doCheckIn = async () => {
-    setChecking(true);
-    setCheckError(null);
-    try {
-      await checkIn(staff);
-      haptic.success();
-    } catch (e) {
-      haptic.error();
-      setCheckError(e instanceof Error ? e.message : 'Couldn’t check in.');
-    } finally {
-      setChecking(false);
-    }
-  };
-
-  const news = prefs.announcements ? announcementsFor(staff).slice(0, 2) : [];
   const stageCounts = PROCESSING_STAGES.map((s) => ({
     s,
     n: orders.filter((o) => o.status === 'PROCESSING' && (o.processingStage ?? 'WASHING') === s).length,
@@ -148,40 +145,21 @@ export function StaffHomeScreen({ navigation }: StaffTabProps<'StaffHome'>) {
   const exc = boss ? exceptions(state, staff) : null;
   const team = boss ? workload(state, staff).filter((w) => w.staff.id !== staff.id) : [];
 
-  const activeTaskIdx = Math.max(0, Math.min(selectedTaskIdx, Math.max(0, tasks.length - 1)));
-  const currentTask = tasks[activeTaskIdx];
-  const currentCustomer = currentTask ? findCustomer(state, currentTask.order.customerId) : null;
+  // salary & earnings (wallet card)
+  const pay = staff ? payrollFor(staff.id) : undefined;
+  const statements = pay?.statements ?? [];
+  const lastPaid = statements.find((s) => s.status === 'PAID');
+  const salaryVal = lastPaid ? lastPaid.net : (pay?.salary.monthlyGross ?? 24000);
+  const salaryFormatted = money(salaryVal);
 
-  const TOOLS = [
-    {
-      art: 'collecting',
-      tint: ART_TINT.collecting,
-      title: 'Intake Scanner',
-      meta: 'Drop-off & tag',
-      onPress: () => navigation.navigate('StaffScan', { intent: 'INTAKE', nonce: stamp() }),
-    },
-    {
-      art: 'washing',
-      tint: ART_TINT.washing,
-      title: 'Wash Floor',
-      meta: `${stageCounts.reduce((acc, c) => acc + c.n, 0)} orders cycling`,
-      onPress: () => navigation.navigate('StaffScan', { intent: 'ANY', nonce: stamp() }),
-    },
-    {
-      art: 'ironing',
-      tint: ART_TINT.ironing,
-      title: 'Press & Pack',
-      meta: 'Steam & verify',
-      onPress: () => navigation.navigate('StaffScan', { intent: 'ANY', nonce: stamp() }),
-    },
-    {
-      art: 'delivery',
-      tint: ART_TINT.delivery,
-      title: 'Handover QR',
-      meta: 'Customer pickup',
-      onPress: () => navigation.navigate('StaffScan', { intent: 'DELIVERY', nonce: stamp() }),
-    },
-  ];
+  // number of scans (matching StaffScanScreen's allScanRows count)
+  const totalScans = useMemo(() => {
+    if (!state || !me) return 4;
+    const actual = state.qrTokens
+      .flatMap((q) => q.scans.filter((s) => s.staffId === me.staff.id && s.result !== 'CONSUMED'))
+      .length;
+    return actual + 4;
+  }, [state, me]);
 
   return (
     <StaffPage
@@ -208,231 +186,107 @@ export function StaffHomeScreen({ navigation }: StaffTabProps<'StaffHome'>) {
         </View>
       </Rise>
 
-      {/* ── Check-in banner (when working today but not checked in) ── */}
-      {plan?.kind === 'WORK' && !rec ? (
-        <Rise replay={replay} delay={40} distance={10}>
-          <View style={styles.checkIn}>
-            <View style={styles.checkIcon}>
-              <Icon name="clock" size={18} color={colors.ink} />
-            </View>
+      {/* ── Yellow Scan QR Hero Box (Signature Staff Scanner Hero) ── */}
+      <Rise replay={replay} delay={40} distance={12} scale={0.98}>
+        <View style={styles.scanHero}>
+          <View style={styles.scanHeroTop}>
+            <Pressable
+              onPress={() => navigation.navigate('StaffScan', { intent: 'ANY', nonce: stamp() })}
+              accessibilityRole="button"
+              accessibilityLabel="Open camera to scan QR code"
+              style={({ pressed }) => [styles.scanTile, webCursor, pressed && { opacity: 0.94, transform: [{ scale: 0.96 }] }]}
+            >
+              <View style={styles.scanAim}>
+                {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
+                  <View key={c} style={[styles.scanCorner, styles[c]]} />
+                ))}
+                <View style={styles.scanAimIcon}>
+                  <Icon name="scan" size={20} color={NAVY} strokeWidth={2.2} />
+                </View>
+              </View>
+            </Pressable>
             <View style={styles.flex}>
-              <Text style={shared.strong}>You haven’t checked in</Text>
-              <Text style={shared.caption}>
-                {checkError ?? (shift?.can ? `${plan.shift.label} · ${hhmmLabel(plan.shift.start)} – ${hhmmLabel(plan.shift.end)}` : shift?.reason)}
+              <View style={styles.scanRow}>
+                <View style={styles.scanLiveDot} />
+                <Text style={styles.scanHeroTitle}>Scan to accept</Text>
+              </View>
+              <Text style={styles.scanHeroSub} numberOfLines={1}>
+                Drop-off, pickup and delivery codes
               </Text>
             </View>
+          </View>
+
+          <View style={styles.scanBtnRow}>
             <Pressable
-              onPress={doCheckIn}
-              disabled={checking || !shift?.can}
+              onPress={() => navigation.navigate('StaffScan', { intent: 'ANY', nonce: stamp() })}
               accessibilityRole="button"
-              accessibilityLabel="Check in"
-              style={({ pressed }) => [styles.checkBtn, !shift?.can && { opacity: 0.45 }, webCursor, pressed && { transform: [{ scale: 0.96 }] }]}
+              accessibilityLabel="Open camera"
+              style={({ pressed }) => [styles.scanOpenBtn, webCursor, pressed && { transform: [{ scale: 0.97 }] }]}
             >
-              <Text style={styles.checkBtnText}>{checking ? '…' : 'Check in'}</Text>
+              <Icon name="scan" size={15} color="#FFFFFF" strokeWidth={2.2} />
+              <Text style={styles.scanOpenBtnText} numberOfLines={1}>Open camera</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => navigation.navigate('StaffScan', { intent: 'ANY', nonce: stamp() })}
+              accessibilityRole="button"
+              accessibilityLabel="Type code"
+              style={({ pressed }) => [styles.scanTypeBtn, webCursor, pressed && { transform: [{ scale: 0.97 }] }]}
+            >
+              <Icon name="edit" size={15} color={NAVY} strokeWidth={2.2} />
+              <Text style={styles.scanTypeBtnText} numberOfLines={1}>Type code</Text>
             </Pressable>
           </View>
-        </Rise>
-      ) : null}
+        </View>
+      </Rise>
 
-      {/* ── 4-Card Overview Hub (Customer OverviewGrid layout) ── */}
+      {/* ── Overview Tiles (Salary & Scans Pair) ── */}
       <Rise replay={replay} delay={70} distance={16} scale={0.97}>
         <View style={styles.gridWrap}>
-          {/* Navy #0A1C3E Lead Card */}
-          <View style={styles.heroCard}>
-            <View style={styles.topRow}>
-              <View style={styles.tagBadge}>
-                <View
-                  style={[
-                    styles.tagDot,
-                    { backgroundColor: tasks.length ? colors.orange : '#12AD2B' },
-                  ]}
-                />
-                <Text style={styles.tagText}>
-                  {tasks.length ? 'Pending actions' : 'Shift active'}
-                </Text>
-              </View>
-
-              {/* Multi-task tab switcher */}
-              {tasks.length > 1 ? (
-                <View style={styles.tabsRow}>
-                  {tasks.slice(0, 3).map((t, idx) => {
-                    const isSelected = idx === activeTaskIdx;
-                    return (
-                      <Pressable
-                        key={t.order.id}
-                        onPress={() => {
-                          haptic.tap();
-                          setSelectedTaskIdx(idx);
-                        }}
-                        accessibilityRole="tab"
-                        accessibilityState={{ selected: isSelected }}
-                        accessibilityLabel={`Switch to task for order ${t.order.id}`}
-                        style={[styles.taskTab, isSelected && styles.taskTabActive, webCursor]}
-                      >
-                        <View
-                          style={[
-                            styles.tabDot,
-                            { backgroundColor: isSelected ? '#FFFFFF' : 'rgba(255,255,255,0.4)' },
-                          ]}
-                        />
-                        <Text style={[styles.taskTabText, isSelected && styles.taskTabTextActive]}>
-                          #{t.order.id.slice(-4)}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              ) : null}
-            </View>
-
-            {/* Hero Body */}
-            {currentTask ? (
-              <View style={styles.heroBody}>
-                <Pressable
-                  onPress={() => navigation.navigate('StaffScan', { intent: 'ANY', nonce: stamp() })}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${tasks.length} pending actions. Open scanner`}
-                  hitSlop={8}
-                  style={webCursor}
-                >
-                  <Text style={styles.bigNum}>{tasks.length}</Text>
-                  <Text style={styles.bigCaption}>
-                    {tasks.length === 1 ? 'Pending action' : 'Pending actions'}
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  onPress={() => {
-                    if (currentTask.action.kind.startsWith('scan')) {
-                      navigation.navigate('StaffScan', {
-                        intent: currentTask.action.kind === 'scan-intake' ? 'INTAKE' : 'DELIVERY',
-                        orderId: currentTask.order.id,
-                        nonce: stamp(),
-                      });
-                    } else {
-                      navigation.navigate('StaffOrder', { orderId: currentTask.order.id });
-                    }
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${currentTask.action.label}. Order ${currentTask.order.id}`}
-                  style={[styles.leadTask, webCursor]}
-                >
-                  <View style={styles.leadTop}>
-                    <View style={styles.leadText}>
-                      <Text style={styles.leadSub} numberOfLines={1}>
-                        #{currentTask.order.id} · {currentCustomer?.name ? currentCustomer.name.split(' ')[0] : 'Customer'}
-                      </Text>
-                      <Text style={styles.leadTitle} numberOfLines={1} adjustsFontSizeToFit>
-                        {currentTask.action.label}
-                      </Text>
-                    </View>
-                    <View style={[styles.leadActionBtn, currentTask.urgent && styles.leadActionBtnUrgent]}>
-                      <Icon
-                        name={currentTask.action.icon ?? 'arrowUpRight'}
-                        size={17}
-                        color="#FFFFFF"
-                        strokeWidth={2.2}
-                      />
-                    </View>
-                  </View>
-
-                  {/* Segmented stage progress line */}
-                  <View style={styles.segTrack} accessibilityElementsHidden>
-                    {[0, 1, 2, 3, 4].map((stepIdx) => {
-                      const stageNow =
-                        currentTask.order.status === 'PROCESSING'
-                          ? 2
-                          : currentTask.order.status === 'READY_FOR_DELIVERY'
-                            ? 3
-                            : currentTask.order.status === 'ACCEPTED'
-                              ? 1
-                              : 0;
-                      return (
-                        <View
-                          key={stepIdx}
-                          style={[
-                            styles.segBar,
-                            stepIdx === stageNow && styles.segBarCurrent,
-                            {
-                              backgroundColor:
-                                stepIdx < stageNow
-                                  ? colors.orange
-                                  : stepIdx === stageNow
-                                    ? '#FFFFFF'
-                                    : 'rgba(255,255,255,0.22)',
-                            },
-                          ]}
-                        />
-                      );
-                    })}
-                  </View>
-                </Pressable>
-              </View>
-            ) : (
-              <View style={styles.emptyHeroRow}>
-                <View>
-                  <Text style={styles.bigNum}>0</Text>
-                  <Text style={styles.bigCaption}>Pending actions</Text>
-                </View>
-                <View style={styles.allCaughtUpBadge}>
-                  <Icon name="check" size={16} color="#12AD2B" strokeWidth={2.4} />
-                  <Text style={styles.allCaughtUpText}>All caught up</Text>
-                </View>
-              </View>
-            )}
-          </View>
-
-          {/* Bottom Pair: Completed Today & Branch Floor Queue */}
+          {/* Pair: Left = Salary (Wallet Orange), Right = Number of Scans */}
           <View style={styles.pairRow}>
-            {/* Completed Today Tile */}
+            {/* Left Tile: Salary in Wallet Orange */}
             <Tile
-              onPress={() => haptic.tap()}
-              label={`Completed today: ${done} orders`}
-              style={styles.pairTile}
+              onPress={() => (navigation as any).navigate('StaffSalary')}
+              label={`My salary: ${salaryFormatted}`}
+              style={[styles.pairTile, styles.salaryTile]}
             >
               <View style={styles.pairTop}>
-                <View style={styles.pairTag}>
-                  <View style={[styles.tagDot, { backgroundColor: '#12AD2B' }]} />
-                  <Text style={styles.pairTagText}>Completed</Text>
+                <View style={styles.salaryTag}>
+                  <Text style={styles.salaryTagText}>Salary</Text>
                 </View>
-                <View style={styles.pairIconDot}>
-                  <Icon name="check" size={13} color="#12AD2B" strokeWidth={2.4} />
+                <View style={styles.salaryGoDot}>
+                  <Icon name="arrowUpRight" size={13} color="#FFFFFF" strokeWidth={2.4} />
                 </View>
               </View>
               <View>
-                <Text style={styles.pairNum}>{done}</Text>
-                <View
-                  style={styles.pairMiniTrack}
-                  accessibilityRole="progressbar"
-                  accessibilityValue={{ min: 0, max: total || 1, now: done }}
-                >
-                  <View style={[styles.pairMiniFill, { width: `${Math.round(progress * 100)}%` }]} />
-                </View>
-                <Text style={styles.pairCaption} numberOfLines={1}>
-                  {total ? `${done} of ${total} done` : 'Shift in progress'}
+                <Text style={styles.salaryNum} numberOfLines={1} adjustsFontSizeToFit>
+                  {salaryFormatted}
+                </Text>
+                <Text style={styles.salaryCaption} numberOfLines={1}>
+                  {lastPaid?.paidOn ? 'Paid this month' : 'Monthly gross'}
                 </Text>
               </View>
             </Tile>
 
-            {/* Branch Floor Queue Tile */}
+            {/* Right Tile: Number of Scans */}
             <Tile
-              onPress={() => haptic.tap()}
-              label={`Branch floor queue: ${open_.length} orders`}
+              onPress={() => navigation.navigate('StaffScan', { intent: 'ANY', nonce: stamp() })}
+              label={`My scans: ${totalScans} scans`}
               style={styles.pairTile}
             >
               <View style={styles.pairTop}>
                 <View style={styles.pairTag}>
                   <View style={[styles.tagDot, { backgroundColor: colors.navy }]} />
-                  <Text style={styles.pairTagText}>Branch Floor</Text>
+                  <Text style={styles.pairTagText}>My Scans</Text>
                 </View>
                 <View style={styles.pairIconDot}>
-                  <Icon name="inbox" size={13} color={colors.inkSoft} strokeWidth={2} />
+                  <Icon name="scan" size={13} color={colors.inkSoft} strokeWidth={2.2} />
                 </View>
               </View>
               <View>
-                <Text style={styles.pairNum}>{open_.length}</Text>
+                <Text style={styles.pairNum}>{totalScans}</Text>
                 <Text style={styles.pairCaption} numberOfLines={1}>
-                  {waitingFloor ? `${waitingFloor} waiting floor` : `${assigned} assigned to you`}
+                  {totalScans === 1 ? '1 scan recorded' : `${totalScans} scans recorded`}
                 </Text>
               </View>
             </Tile>
@@ -440,148 +294,82 @@ export function StaffHomeScreen({ navigation }: StaffTabProps<'StaffHome'>) {
         </View>
       </Rise>
 
-      {/* ── Perks Bar (Customer style 3-point divider row) ── */}
+      {/* ── Perks Bar (Strictly 1 single line) ── */}
       <Rise replay={replay} delay={140} distance={8}>
         <View
           style={styles.perks}
           accessibilityRole="text"
-          accessibilityLabel="48 hour turnaround SLA, verified piece count, digital audit trail"
+          accessibilityLabel="48h SLA, verified pieces, digital audit"
         >
           {PERKS.map((k, i) => (
             <React.Fragment key={k.label}>
               {i ? <View style={styles.perkSep} /> : null}
               <View style={styles.perk}>
-                <Icon name={k.icon} size={15} color={k.tint} strokeWidth={2} />
-                <Text style={styles.perkText}>{k.label}</Text>
+                <Icon name={k.icon} size={14} color={k.tint} strokeWidth={2} />
+                <Text style={styles.perkText} numberOfLines={1}>
+                  {k.label}
+                </Text>
               </View>
             </React.Fragment>
           ))}
         </View>
       </Rise>
 
-      {/* ── Quick QR Intake Hero Card (Customer "Fresh clothes" booking card style) ── */}
-      <Rise replay={replay} delay={190} distance={16} scale={0.98}>
-        <Pressable
-          onPress={() => navigation.navigate('StaffScan', { intent: 'ANY', nonce: stamp() })}
-          accessibilityRole="button"
-          accessibilityLabel="Counter & Intake. Scan QR code, verify and bag. Open scanner"
-          style={({ pressed }) => [
-            styles.bookingCard,
-            webCursor,
-            pressed && { opacity: 0.94, transform: [{ scale: 0.985 }] },
-          ]}
-        >
-          <View style={styles.bookingHalo} />
-          <Image
-            source={ART.steam}
-            style={styles.bookingArt}
-            resizeMode="contain"
-            accessibilityIgnoresInvertColors
-          />
-          <View style={styles.bookingBody}>
-            <View style={styles.bookingKicker}>
-              <View style={styles.bookingDot} />
-              <Text style={styles.bookingKickerText}>Counter & Intake</Text>
-            </View>
-            <Text style={styles.bookingTitle}>
-              Scan QR code,{'\n'}verify & bag
-            </Text>
-            <View style={styles.bookingCta}>
-              <Text style={styles.bookingCtaText}>Open scanner</Text>
-              <Icon name="arrowRight" size={14} color="#FFFFFF" strokeWidth={2.2} />
-            </View>
-          </View>
-        </Pressable>
-      </Rise>
-
-      {/* ── Tools & Shortcuts Strip (Customer servicesRow horizontal scroll) ── */}
-      <Rise replay={replay} delay={240} distance={16}>
+      {/* ── Notifications ── */}
+      <Rise replay={replay} delay={180} distance={16}>
         <SectionHeader
-          title="Staff shortcuts"
-          action="Scanner"
-          onAction={() => navigation.navigate('StaffScan', { intent: 'ANY', nonce: stamp() })}
+          style={{ marginTop: space.xl }}
+          title="Notifications"
+          action={notifications.length > 0 ? 'View all' : undefined}
+          onAction={() => navigation.navigate('StaffNotifications')}
         />
-      </Rise>
-
-      <Rise replay={replay} delay={280} distance={16}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.toolsRow}
-        >
-          {TOOLS.map((t) => (
-            <Pressable
-              key={t.title}
-              onPress={t.onPress}
-              accessibilityRole="button"
-              accessibilityLabel={`${t.title}, ${t.meta}`}
-              style={({ pressed }) => [
-                styles.toolCard,
-                webCursor,
-                pressed && { transform: [{ scale: 0.98 }] },
-              ]}
-            >
-              <View style={[styles.toolArt, { backgroundColor: t.tint }]}>
-                <Image source={ART[t.art]} style={styles.fill} resizeMode="cover" />
-              </View>
-              <Text style={styles.toolName} numberOfLines={1}>
-                {t.title}
-              </Text>
-              <Text style={styles.toolMeta} numberOfLines={1}>
-                {t.meta}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </Rise>
-
-      {/* ── My Tasks (Customer Recent Orders style) ── */}
-      <Rise replay={replay} delay={320} distance={16}>
-        <SectionHeader
-          style={{ marginTop: space.sm }}
-          title="My tasks"
-          action={tasks.length > 3 ? `${tasks.length} total` : undefined}
-          onAction={() => navigation.navigate('StaffScan', { intent: 'ANY', nonce: stamp() })}
-        />
-        {action.error ? (
-          <Text style={[shared.error, { marginTop: space.sm }]} accessibilityRole="alert">
-            {action.error.message}
-          </Text>
-        ) : null}
-        <View style={{ gap: space.md, marginTop: space.md }}>
-          {tasks.length ? (
-            tasks.slice(0, 3).map((t) => (
-              <OrderCard
-                key={t.order.id}
-                order={t.order}
-                state={state}
-                me={staff}
-                due={t.due}
-                urgent={t.urgent}
-                busy={action.busy === t.order.id}
-                onOpen={() => navigation.navigate('StaffOrder', { orderId: t.order.id })}
-                onAction={(a) => action.run(t.order, a)}
-              />
-            ))
+        <Panel style={{ marginTop: space.sm, paddingVertical: space.xs }}>
+          {notifications.length ? (
+            notifications.map((n, i) => {
+              const look = lookFor(n);
+              return (
+                <Pressable
+                  key={n.id}
+                  onPress={() => openNotification(n)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${n.title}. ${n.body}`}
+                  style={({ pressed }) => [
+                    styles.notifRow,
+                    i > 0 && styles.memberRule,
+                    webCursor,
+                    pressed && { opacity: 0.7 },
+                  ]}
+                >
+                  <View style={[styles.notifIcon, { backgroundColor: look.bg }]}>
+                    <Icon name={look.icon} size={16} color={look.fg} />
+                  </View>
+                  <View style={styles.flex}>
+                    <View style={styles.notifTitleRow}>
+                      <Text style={[shared.strong, !n.readAt && styles.unreadText]} numberOfLines={1}>
+                        {n.title}
+                      </Text>
+                      {!n.readAt ? <View style={styles.unreadDot} /> : null}
+                    </View>
+                    <Text style={shared.caption} numberOfLines={1}>
+                      {n.body} · {ago(n.createdAt)}
+                    </Text>
+                  </View>
+                  <Icon name="chevronRight" size={16} color={colors.inkMuted} />
+                </Pressable>
+              );
+            })
           ) : (
-            <Panel>
-              <EmptyState
-                icon="check"
-                title="You’re all caught up"
-                message={
-                  staff.role === 'PROCESSING_STAFF'
-                    ? 'New orders appear here as soon as the counter accepts them.'
-                    : 'New orders and handovers for you will appear here.'
-                }
-              />
-            </Panel>
+            <View style={styles.notifEmpty}>
+              <Icon name="bell" size={24} color={colors.inkMuted} />
+              <Text style={[shared.caption, { marginTop: 6 }]}>All caught up on notifications</Text>
+            </View>
           )}
-        </View>
+        </Panel>
       </Rise>
 
       {/* ── On the wash floor (for Processing Staff or Supervisor) ── */}
       {staff.role === 'PROCESSING_STAFF' || boss ? (
-        <Rise replay={replay} delay={360} distance={14}>
+        <Rise replay={replay} delay={220} distance={14}>
           <SectionHeader
             style={{ marginTop: space.xl }}
             title="On the wash floor"
@@ -609,7 +397,7 @@ export function StaffHomeScreen({ navigation }: StaffTabProps<'StaffHome'>) {
 
       {/* ── Supervisor: Needs attention ── */}
       {exc && (exc.issues.length || exc.overdue.length || exc.refused.length) ? (
-        <Rise replay={replay} delay={400} distance={14}>
+        <Rise replay={replay} delay={260} distance={14}>
           <SectionHeader style={{ marginTop: space.xl }} title="Needs attention" />
           <Panel style={{ marginTop: space.sm, paddingVertical: space.xs }}>
             {exc.issues.map((i, n) => (
@@ -650,7 +438,7 @@ export function StaffHomeScreen({ navigation }: StaffTabProps<'StaffHome'>) {
 
       {/* ── Supervisor: Team workload ── */}
       {boss && team.length ? (
-        <Rise replay={replay} delay={440} distance={16}>
+        <Rise replay={replay} delay={300} distance={16}>
           <SectionHeader style={{ marginTop: space.xl }} title="Team workload" />
           <Panel style={{ marginTop: space.sm, paddingVertical: space.xs }}>
             {team.map((w, i) => (
@@ -672,50 +460,6 @@ export function StaffHomeScreen({ navigation }: StaffTabProps<'StaffHome'>) {
           </Text>
         </Rise>
       ) : null}
-
-      {/* ── Announcements ── */}
-      {news.length ? (
-        <Rise replay={replay} delay={480} distance={16}>
-          <SectionHeader style={{ marginTop: space.xl }} title="Announcements" />
-          <Panel style={{ marginTop: space.sm, paddingVertical: space.xs }}>
-            {news.map((a, i) => (
-              <Pressable
-                key={a.id}
-                onPress={() => setOpen(a)}
-                accessibilityRole="button"
-                style={({ pressed }) => [styles.news, i > 0 && styles.memberRule, webCursor, pressed && { opacity: 0.7 }]}
-              >
-                <View style={styles.newsIcon}>
-                  <Icon name="megaphone" size={16} color={a.pinned ? colors.orange : colors.ink} />
-                </View>
-                <View style={styles.flex}>
-                  <Text style={shared.strong} numberOfLines={1}>
-                    {a.title}
-                  </Text>
-                  <Text style={shared.caption} numberOfLines={1}>
-                    {a.kind === 'branch' ? location.shortName : 'Washing Basket'} · {ago(a.publishedAt)}
-                  </Text>
-                </View>
-                <Icon name="chevronRight" size={16} color={colors.inkMuted} />
-              </Pressable>
-            ))}
-          </Panel>
-        </Rise>
-      ) : null}
-
-      <BottomSheet visible={!!open} onClose={() => setOpen(null)}>
-        {open ? (
-          <View>
-            <Tag label={open.kind === 'branch' ? `${location.shortName} branch` : 'Company'} tone={open.kind === 'branch' ? 'navy' : 'chip'} />
-            <Text style={[shared.h1, { marginTop: space.md }]}>{open.title}</Text>
-            <Text style={[shared.caption, { marginTop: 4 }]}>
-              {open.author} · {ago(open.publishedAt)}
-            </Text>
-            <Text style={[shared.body, { marginTop: space.lg }]}>{open.body}</Text>
-            <Button label="Done" variant="dark" onPress={() => setOpen(null)} style={{ marginTop: space.xl }} />
-          </View>
-        ) : null}
-      </BottomSheet>
     </StaffPage>
   );
 }
@@ -762,9 +506,8 @@ function AttentionRow({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      style={({ pressed }) => [styles.news, divider && styles.memberRule, webCursor, pressed && { opacity: 0.7 }]}
-    >
-      <View style={[styles.newsIcon, { backgroundColor: tone === 'danger' ? colors.dangerTint : '#FFF4D9' }]}>
+      style={({ pressed }) => [styles.notifRow, divider && styles.memberRule, webCursor, pressed && { opacity: 0.7 }]}>
+      <View style={[styles.notifIcon, { backgroundColor: tone === 'danger' ? colors.dangerTint : '#FFF4D9' }]}>
         <Icon name={icon} size={16} color={tone === 'danger' ? colors.danger : '#B97800'} />
       </View>
       <View style={styles.flex}>
@@ -782,7 +525,6 @@ function AttentionRow({
 
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
-  fill: { width: '100%', height: '100%' },
 
   greeting: {
     marginTop: space.lg,
@@ -810,22 +552,72 @@ const styles = StyleSheet.create({
   shiftLabel: { fontFamily: fonts.medium, fontSize: 12, lineHeight: 16, color: colors.inkSoft },
   shiftText: { fontFamily: fonts.bold, fontSize: 14, lineHeight: 19, letterSpacing: -0.3, color: colors.ink },
 
-  checkIn: {
+  /* ── Yellow Scan QR Hero Box ── */
+  scanHero: {
+    backgroundColor: HERO_YELLOW,
+    borderRadius: 24,
+    padding: 16,
+    marginBottom: space.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(10, 28, 62, 0.12)',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 2px 10px rgba(230, 140, 20, 0.12)' } as object)
+      : { shadowColor: '#E68C14', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 }),
+  },
+  scanHeroTop: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  scanTile: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(10, 28, 62, 0.08)',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 2px 6px rgba(10, 28, 62, 0.04)' } as object)
+      : { shadowColor: '#0A1C3E', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 }),
+  },
+  scanAim: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  scanCorner: { position: 'absolute', width: 11, height: 11, borderColor: colors.orange },
+  tl: { top: 0, left: 0, borderTopWidth: 2.5, borderLeftWidth: 2.5, borderTopLeftRadius: 4 },
+  tr: { top: 0, right: 0, borderTopWidth: 2.5, borderRightWidth: 2.5, borderTopRightRadius: 4 },
+  bl: { bottom: 0, left: 0, borderBottomWidth: 2.5, borderLeftWidth: 2.5, borderBottomLeftRadius: 4 },
+  br: { bottom: 0, right: 0, borderBottomWidth: 2.5, borderRightWidth: 2.5, borderBottomRightRadius: 4 },
+  scanAimIcon: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#FFF6D6', alignItems: 'center', justifyContent: 'center' },
+  scanRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  scanLiveDot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: GREEN },
+  scanHeroTitle: { fontFamily: fonts.extrabold, fontSize: 16.5, lineHeight: 21, letterSpacing: -0.3, color: NAVY },
+  scanHeroSub: { fontFamily: fonts.medium, fontSize: 12.5, lineHeight: 17, color: 'rgba(10, 28, 62, 0.72)', marginTop: 3 },
+  scanBtnRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 14 },
+  scanOpenBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.md,
-    padding: space.md,
-    paddingLeft: space.lg,
+    justifyContent: 'center',
+    gap: 7,
+    height: 44,
+    paddingHorizontal: 12,
+    borderRadius: 22,
+    backgroundColor: NAVY,
+    ...(Platform.OS === 'web' ? ({ boxShadow: '0 2px 8px rgba(10, 28, 62, 0.25)' } as object) : null),
+  },
+  scanOpenBtnText: { fontFamily: fonts.bold, fontSize: 13.5, letterSpacing: -0.1, color: '#FFFFFF' },
+  scanTypeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    height: 44,
+    paddingHorizontal: 12,
     borderRadius: 22,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: EDGE,
-    marginBottom: space.lg,
-    ...soft,
+    borderColor: 'rgba(10, 28, 62, 0.1)',
+    ...(Platform.OS === 'web' ? ({ boxShadow: '0 1px 4px rgba(10, 28, 62, 0.05)' } as object) : null),
   },
-  checkIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF1DF', alignItems: 'center', justifyContent: 'center' },
-  checkBtn: { height: 40, paddingHorizontal: 18, borderRadius: 20, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
-  checkBtnText: { fontFamily: fonts.semibold, fontSize: 13.5, color: '#FFFFFF' },
+  scanTypeBtnText: { fontFamily: fonts.bold, fontSize: 13.5, letterSpacing: -0.1, color: NAVY },
 
   /* 4-card Overview Hub */
   gridWrap: { gap: 9, marginBottom: space.sm },
@@ -930,24 +722,66 @@ const styles = StyleSheet.create({
   pairIconDot: { width: 26, height: 26, borderRadius: 13, backgroundColor: '#F4F2EE', alignItems: 'center', justifyContent: 'center' },
   pairNum: { fontFamily: fonts.bold, fontSize: 22, lineHeight: 26, letterSpacing: -0.6, color: colors.ink, fontVariant: ['tabular-nums'] },
   pairCaption: { fontFamily: fonts.medium, fontSize: 11.5, color: colors.inkSoft, marginTop: 2 },
-  pairMiniTrack: { height: 4, borderRadius: 2, backgroundColor: '#EFECE6', overflow: 'hidden', marginTop: 4, width: '100%' },
-  pairMiniFill: { height: 4, borderRadius: 2, backgroundColor: '#12AD2B' },
 
-  /* Perks */
+  /* ── Salary Tile (Wallet Orange) ── */
+  salaryTile: {
+    backgroundColor: '#FFA742',
+    borderWidth: 0,
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 2px 8px rgba(240, 130, 20, 0.18)' } as object)
+      : { shadowColor: '#FFA742', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.18, shadowRadius: 8, elevation: 2 }),
+  },
+  salaryTag: {
+    height: 24,
+    paddingHorizontal: 9,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  salaryTagText: {
+    fontFamily: fonts.bold,
+    fontSize: 11,
+    color: colors.ink,
+  },
+  salaryGoDot: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#0A1C3E',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  salaryNum: {
+    fontFamily: fonts.bold,
+    fontSize: 22,
+    lineHeight: 26,
+    letterSpacing: -0.6,
+    color: colors.ink,
+    fontVariant: ['tabular-nums'],
+  },
+  salaryCaption: {
+    fontFamily: fonts.medium,
+    fontSize: 11.5,
+    color: 'rgba(10, 28, 62, 0.72)',
+    marginTop: 2,
+  },
+
+  /* Perks - strictly 1 line */
   perks: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    flexWrap: 'wrap',
-    gap: 10,
+    flexWrap: 'nowrap',
+    gap: 8,
     marginTop: space.sm,
     marginBottom: space.lg,
   },
-  perk: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  perk: { flexDirection: 'row', alignItems: 'center', gap: 5, flexShrink: 0 },
   perkText: {
     fontFamily: fonts.medium,
-    fontSize: 12.5,
-    letterSpacing: -0.1,
+    fontSize: 12,
+    letterSpacing: -0.2,
     color: colors.inkSoft,
   },
   perkSep: {
@@ -957,118 +791,40 @@ const styles = StyleSheet.create({
     backgroundColor: '#CFC8BA',
   },
 
-  /* Counter & Intake Booking-style Hero Card */
-  bookingCard: {
-    height: 172,
-    borderRadius: 24,
-    backgroundColor: '#F1EDE4',
-    borderWidth: 1,
-    borderColor: '#E3DDD0',
-    overflow: 'hidden',
-    marginBottom: space.xl,
-  },
-  bookingHalo: {
-    position: 'absolute',
-    right: -44,
-    bottom: -58,
-    width: 252,
-    height: 252,
-    borderRadius: 126,
-    backgroundColor: '#FFFFFF',
-  },
-  bookingArt: {
-    position: 'absolute',
-    right: -10,
-    bottom: -6,
-    height: 152,
-    width: 152 * (721 / 586),
-    mixBlendMode: 'multiply',
-  },
-  bookingBody: {
-    flex: 1,
-    justifyContent: 'space-between',
-    padding: space.lg,
-    maxWidth: '58%',
-  },
-  bookingKicker: {
+  /* Notifications */
+  notifRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: 6,
-    height: 26,
-    paddingHorizontal: 10,
-    borderRadius: 13,
-    backgroundColor: '#FFFFFF',
+    gap: space.md,
+    paddingVertical: space.md,
+    paddingHorizontal: space.sm,
   },
-  bookingDot: {
+  notifIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notifTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  unreadText: {
+    fontFamily: fonts.bold,
+    color: colors.ink,
+  },
+  unreadDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
     backgroundColor: colors.orange,
   },
-  bookingKickerText: {
-    fontFamily: fonts.semibold,
-    fontSize: 11.5,
-    color: colors.ink,
-  },
-  bookingTitle: {
-    fontFamily: fonts.extrabold,
-    fontSize: 22,
-    lineHeight: 26,
-    letterSpacing: -0.8,
-    color: colors.ink,
-  },
-  bookingCta: {
-    flexDirection: 'row',
+  notifEmpty: {
+    paddingVertical: space.xl,
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: 6,
-    height: 36,
-    paddingHorizontal: 16,
-    borderRadius: 18,
-    backgroundColor: '#0A1C3E',
-  },
-  bookingCtaText: {
-    fontFamily: fonts.semibold,
-    fontSize: 13,
-    color: '#FFFFFF',
-  },
-
-  /* Tools & Shortcuts */
-  toolsRow: {
-    paddingRight: space.lg,
-    gap: space.md,
-    paddingVertical: space.xs,
-    paddingBottom: space.lg,
-  },
-  toolCard: {
-    width: 140,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 8,
-    paddingBottom: 12,
-    borderWidth: 1,
-    borderColor: EDGE,
-    ...soft,
-  },
-  toolArt: {
-    height: 100,
-    borderRadius: 14,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  toolName: {
-    fontFamily: fonts.semibold,
-    fontSize: 13.5,
-    color: colors.ink,
-    paddingHorizontal: 2,
-  },
-  toolMeta: {
-    fontFamily: fonts.regular,
-    fontSize: 11.5,
-    color: colors.inkSoft,
-    paddingHorizontal: 2,
-    marginTop: 1,
+    justifyContent: 'center',
   },
 
   /* Wash Floor */
@@ -1084,8 +840,4 @@ const styles = StyleSheet.create({
   memberCount: { alignItems: 'flex-end' },
   memberNum: { fontFamily: fonts.bold, fontSize: 17, color: colors.ink, fontVariant: ['tabular-nums'] },
   memberUnit: { fontFamily: fonts.regular, fontSize: 11.5, color: colors.inkMuted },
-
-  /* Announcements */
-  news: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md },
-  newsIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: CHIP, alignItems: 'center', justifyContent: 'center' },
 });

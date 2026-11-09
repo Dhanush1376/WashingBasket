@@ -421,7 +421,7 @@ function DaySheet({
     );
   }
   return (
-    <View>
+    <View style={styles.dayCardsWrap}>
       {events.map((e, i) => {
         const look = EVENT_LOOK[e.type];
         const isFutureDelivery = e.type === 'scheduled_pickup' && !!e.order?.pickedUpAt;
@@ -430,7 +430,7 @@ function DaySheet({
         const status = e.order ? ORDER_STATUS[e.order.status] : null;
         const meta = [e.order?.service, `#${e.orderId}`, e.order?.itemsLabel].filter(Boolean).join('  ·  ');
         return (
-          <View key={e.id} style={[styles.dayRow, i > 0 && styles.dayRowRule]}>
+          <View key={e.id} style={[styles.dayCard, i > 0 && { marginTop: 8 }]}>
             <View style={styles.dayTop}>
               <View style={[styles.dayDot, { backgroundColor: look.color }]} />
               <Text style={styles.dayTitle} numberOfLines={1}>
@@ -612,21 +612,53 @@ const styles = StyleSheet.create({
   menuCard: { borderRadius: RADIUS, backgroundColor: '#FFFFFF', paddingVertical: space.xs, paddingHorizontal: space.sm, ...soft, ...hairline },
 
   // the calendar's date card: every line starts on the same edge, just right of the dot
+  dayCardsWrap: {
+    marginTop: 6,
+  },
+  dayCard: {
+    backgroundColor: '#F8F6F1',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#EAE6DF',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
   dayRow: { paddingVertical: 12 },
   dayRowRule: { borderTopWidth: 1, borderTopColor: '#F0EDE7' },
   dayTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   dayDot: { width: 8, height: 8, borderRadius: 4 },
-  dayTitle: { flex: 1, fontFamily: fonts.semibold, fontSize: 14.5, color: colors.ink },
-  dayTime: { fontFamily: fonts.medium, fontSize: 12.5, color: colors.inkSoft, fontVariant: ['tabular-nums'] },
-  dayMeta: { fontFamily: fonts.regular, fontSize: 12.5, color: colors.inkMuted, marginTop: 3, paddingLeft: 18 },
+  dayTitle: { flex: 1, fontFamily: fonts.bold, fontSize: 14.5, color: colors.ink, letterSpacing: -0.2 },
+  dayTime: { fontFamily: fonts.semibold, fontSize: 12.5, color: colors.inkSoft, fontVariant: ['tabular-nums'] },
+  dayMeta: { fontFamily: fonts.medium, fontSize: 12.5, color: colors.inkMuted, marginTop: 4, paddingLeft: 18 },
   dayFoot: { flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingLeft: 18 },
   dayNow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
   dayNowDot: { width: 5, height: 5, borderRadius: 3 },
   dayNowText: { fontFamily: fonts.medium, fontSize: 12, color: colors.inkSoft },
-  dayLink: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 28, paddingHorizontal: 12, borderRadius: 14, backgroundColor: '#F4F2EE' },
+  dayLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    height: 30,
+    paddingHorizontal: 12,
+    borderRadius: 15,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E1D8',
+    ...(Platform.OS === 'web' ? ({ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' } as object) : null),
+  },
   dayLinkText: { fontFamily: fonts.semibold, fontSize: 12, color: colors.ink },
-  dayEmpty: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingTop: 8, paddingBottom: 14 },
-  dayEmptyIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F4F2EE', alignItems: 'center', justifyContent: 'center' },
+  dayEmpty: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: '#F8F6F1',
+    borderWidth: 1,
+    borderColor: '#EAE6DF',
+    marginTop: 6,
+  },
+  dayEmptyIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
   dayEmptyTitle: { fontFamily: fonts.semibold, fontSize: 14.5, color: colors.ink },
   dayEmptyText: { fontFamily: fonts.regular, fontSize: 12.5, color: colors.inkMuted, marginTop: 2 },
   dayBook: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 32, paddingHorizontal: 14, borderRadius: 16, backgroundColor: '#0A1C3E' },

@@ -21,7 +21,7 @@
     "tagline": "Machine, hand or deep clean",
     "description": "Shoes, bags and soft toys cleaned by machine, by hand, or with a dry or deep clean.",
     "turnaround": "72 hours",
-    "art": "collecting"
+    "art": "shoesBags"
   },
   {
     "id": "stain",
@@ -29,7 +29,7 @@
     "tagline": "For whites and colours",
     "description": "Targeted treatment for stubborn stains, priced per piece.",
     "turnaround": "72 hours",
-    "art": "steam"
+    "art": "stainTreatment"
   },
   {
     "id": "dye",
@@ -37,7 +37,7 @@
     "tagline": "Bring faded clothes back",
     "description": "Basic or premium dyeing, priced per piece.",
     "turnaround": "5 days",
-    "art": "drying"
+    "art": "colorDye"
   },
   {
     "id": "dry-clean",
@@ -45,7 +45,7 @@
     "tagline": "For suits, silks and occasion wear",
     "description": "Basic or premium dry cleaning for delicate fabrics, priced per piece.",
     "turnaround": "72 hours",
-    "art": "packing"
+    "art": "dryClean"
   },
   {
     "id": "blanket",
@@ -53,6 +53,6 @@
     "tagline": "Single and double blankets",
     "description": "Normal, organic or Ezee wash, or dry clean, for single and double blankets.",
     "turnaround": "72 hours",
-    "art": "delivery"
+    "art": "blanket"
   }
 ]

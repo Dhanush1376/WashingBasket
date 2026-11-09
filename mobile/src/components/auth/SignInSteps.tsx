@@ -549,7 +549,9 @@ export function PincodeStep({
             autoComplete="postal-code"
             textContentType="postalCode"
             maxLength={6}
-            returnKeyType="done"
+            // while the "not here yet" drawer is up the field can't take focus back (iOS would otherwise
+            // raise the keyboard over a drawer that has nothing to type into)
+            editable={status !== 'unavailable'}
             onSubmitEditing={() => check()}
             busy={status === 'checking' || status === 'available'}
             invalid={!!message}

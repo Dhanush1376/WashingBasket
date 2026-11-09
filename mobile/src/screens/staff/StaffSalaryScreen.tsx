@@ -14,7 +14,7 @@ import { BottomSheet } from '../../components/ui/BottomSheet';
 import { haptic } from '../../lib/haptics';
 import { date, money } from '../../lib/format';
 import { useWebDrag } from '../../lib/useWebDrag';
-import type { ScreenProps } from '../../navigation/types';
+import type { StaffTabProps } from '../../navigation/types';
 import { PAY_DAY_NOTE, payrollFor, profileWithEdits, type Payroll, type SalaryStatement } from '../../staff/workforce';
 import { app, colors, fonts, space, text } from '../../theme';
 import { useStaff } from './kit';
@@ -34,7 +34,7 @@ const paidDate = (d: string) => date(`${d}T00:00:00`);
  * statements in a white sheet that rises over them, and the latest payslip button fixed at the bottom. It shows the
  * signed-in person's own pay record only.
  */
-export function StaffSalaryScreen({ navigation }: ScreenProps<'StaffSalary'>) {
+export function StaffSalaryScreen({ navigation }: StaffTabProps<'StaffSalary'>) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const compact = height < 740;
@@ -97,7 +97,7 @@ export function StaffSalaryScreen({ navigation }: ScreenProps<'StaffSalary'>) {
     haptic.tap();
     settle(pos.value > 0.5 ? 0 : 1);
   };
-  const bottomGap = Math.max(insets.bottom, 12) + 4; // no tab bar on this page
+  const bottomGap = Math.max(insets.bottom, 12) + 68; // clear of the floating tab bar
   const listY = useRef(0);
 
   useEffect(() => {
@@ -126,8 +126,8 @@ export function StaffSalaryScreen({ navigation }: ScreenProps<'StaffSalary'>) {
         <Rise distance={8}>
           <TopBar
             padded={false}
-            title="Salary"
-            onHome={() => navigation.navigate('StaffTabs', { screen: 'StaffHome' })}
+            title="Wallet"
+            onHome={() => navigation.navigate('StaffHome')}
             unread={unread}
             onBell={() => navigation.navigate('StaffNotifications')}
           />

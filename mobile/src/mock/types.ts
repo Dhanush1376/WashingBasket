@@ -52,6 +52,12 @@ export type GarmentIcon =
   | 'pillow'
   | 'jacket'
   | 'saree'
+  | 'dress'
+  | 'sweater'
+  | 'innerwear'
+  | 'socks'
+  | 'curtain'
+  | 'toy'
   | 'blanket'
   | 'shoe'
   | 'bag'
@@ -146,6 +152,15 @@ export type ProcessingStage = 'SORTING' | 'WASHING' | 'DRYING' | 'IRONING' | 'QU
 
 export type PaymentStatus = 'REQUIRED' | 'COMPLETED' | 'FAILED' | 'REVERSED';
 
+/** One kind of garment inside an order line, e.g. 3 shirts sent for "Wash & iron · Normal wash". */
+export type OrderGarment = {
+  garmentId: string;
+  name: string;
+  icon: GarmentIcon;
+  groupId: string;
+  qty: number;
+};
+
 export type OrderLine = {
   itemId: string;
   name: string;
@@ -156,6 +171,8 @@ export type OrderLine = {
   unitPrice: number;
   qty: number;
   amount: number;
+  /** The clothes the customer listed for this service. For a per-kg service `qty` is the estimated weight. */
+  garments?: OrderGarment[];
 };
 
 export type PickupDetails = {

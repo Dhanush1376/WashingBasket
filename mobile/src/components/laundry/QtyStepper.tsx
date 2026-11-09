@@ -9,9 +9,26 @@ import { Icon } from '../app/Icon';
 const webCursor = Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null;
 
 /** − count + with the count announced. The minus disappears at zero so an empty row reads as "Add". */
-export function QtyStepper({ value, onChange, max = 50, label, compact }: { value: number; onChange: (n: number) => void; max?: number; label: string; compact?: boolean }) {
-  const size = compact ? 30 : 34;
-  const width = compact ? 76 : 84;
+export function QtyStepper({
+  value,
+  onChange,
+  max = 50,
+  label,
+  compact,
+  large,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  max?: number;
+  label: string;
+  compact?: boolean;
+  /** Big thumb-sized buttons, for lists where people tap a lot (the garment picker). */
+  large?: boolean;
+}) {
+  const size = large ? 34 : compact ? 28 : 32;
+  const width = large ? 94 : compact ? 74 : 84;
+  const btn = large ? { width: 26, height: 26, borderRadius: 13 } : null;
+  const glyph = large ? 13 : 11;
   const set = (n: number) => {
     const next = Math.max(0, Math.min(max, n));
     if (next !== value) {
@@ -29,8 +46,8 @@ export function QtyStepper({ value, onChange, max = 50, label, compact }: { valu
           hitSlop={6}
           style={({ pressed }) => [styles.add, { height: size, width }, webCursor, pressed && { opacity: 0.85 }]}
         >
-          <Icon name="plus" size={13} color={colors.ink} strokeWidth={2.4} />
-          <Text style={styles.addText}>Add</Text>
+          <Icon name="plus" size={large ? 15 : 13} color={colors.ink} strokeWidth={2.4} />
+          <Text style={[styles.addText, large && styles.addTextLarge]}>Add</Text>
         </Pressable>
       </Animated.View>
     );
@@ -51,12 +68,12 @@ export function QtyStepper({ value, onChange, max = 50, label, compact }: { valu
         accessibilityRole="button"
         accessibilityLabel={`Remove one ${label}`}
         hitSlop={6}
-        style={({ pressed }) => [styles.btn, styles.btnMinus, webCursor, pressed && { opacity: 0.7 }]}
+        style={({ pressed }) => [styles.btn, btn, styles.btnMinus, webCursor, pressed && { opacity: 0.7 }]}
       >
-        <Icon name="minus" size={12} color={colors.ink} strokeWidth={2.4} />
+        <Icon name="minus" size={glyph} color={colors.ink} strokeWidth={2.4} />
       </Pressable>
       {/* the number slides in fresh each time it changes */}
-      <Animated.Text key={value} entering={FadeInDown.duration(140)} style={styles.value}>
+      <Animated.Text key={value} entering={FadeInDown.duration(140)} style={[styles.value, large && styles.valueLarge]}>
         {value}
       </Animated.Text>
       <Pressable
@@ -67,13 +84,14 @@ export function QtyStepper({ value, onChange, max = 50, label, compact }: { valu
         hitSlop={6}
         style={({ pressed }) => [
           styles.btn,
+          btn,
           styles.btnPlus,
           value >= max && { opacity: 0.35 },
           webCursor,
           pressed && { opacity: 0.7 },
         ]}
       >
-        <Icon name="plus" size={12} color="#FFFFFF" strokeWidth={2.4} />
+        <Icon name="plus" size={glyph} color="#FFFFFF" strokeWidth={2.4} />
       </Pressable>
     </Animated.View>
   );
@@ -86,20 +104,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 4,
     borderRadius: 999,
-    borderWidth: 1.25,
+    borderWidth: 1.2,
     borderColor: colors.ink,
     backgroundColor: '#FFFFFF',
   },
-  addText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.ink },
+  addText: { fontFamily: fonts.semibold, fontSize: 12.5, color: colors.ink },
+  addTextLarge: { fontSize: 13 },
+  valueLarge: { fontSize: 14.5 },
   stepper: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderRadius: 999,
-    borderWidth: 1.25,
+    borderWidth: 1.2,
     borderColor: colors.ink,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 4,
+    paddingHorizontal: 3,
   },
   btn: {
     width: 24,

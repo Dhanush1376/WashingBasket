@@ -102,9 +102,8 @@ export function PincodeScreen({ navigation }: ScreenProps<'Pincode'>) {
             autoComplete="postal-code"
             textContentType="postalCode"
             maxLength={6}
-            returnKeyType="done"
             onSubmitEditing={() => check()}
-            editable={status !== 'checking' && !done}
+            editable={status !== 'checking' && status !== 'unavailable' && !done}
             error={message}
             autoFocus
             // digits are spaced for reading; the placeholder stays normal

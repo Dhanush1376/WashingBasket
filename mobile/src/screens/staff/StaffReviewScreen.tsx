@@ -5,6 +5,8 @@ import { Icon } from '../../components/app/Icon';
 import { Rise } from '../../components/app/motion';
 import { EmptyState } from '../../components/app/states';
 import { GarmentIcon } from '../../components/laundry/GarmentIcon';
+import { LineGarments } from '../../components/laundry/LineGarments';
+import { lineQtyLabel, piecesToCount } from '../../mock/engine/garments';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 import { PillTextArea } from '../../components/ui/SheetForm';
 import { haptic } from '../../lib/haptics';
@@ -184,19 +186,22 @@ export function StaffReviewScreen({ navigation, route }: ScreenProps<'StaffRevie
         <Panel>
           <View style={styles.headRow}>
             <Text style={shared.h2}>Count the clothes</Text>
-            <Text style={styles.pieces}>{plural(order.pieces, 'piece')}</Text>
+            <Text style={styles.pieces}>{plural(piecesToCount(order.lines) || order.pieces, 'piece')}</Text>
           </View>
           {order.lines.map((l) => (
-            <View key={l.itemId} style={styles.line}>
-              <View style={styles.art}>
-                <GarmentIcon name={l.icon} size={30} />
+            <React.Fragment key={l.itemId}>
+              <View style={styles.line}>
+                <View style={styles.art}>
+                  <GarmentIcon name={l.icon} size={30} />
+                </View>
+                <View style={styles.flex}>
+                  <Text style={shared.strong}>{l.name}</Text>
+                  <Text style={shared.caption}>{l.categoryName}</Text>
+                </View>
+                <Text style={styles.qty}>{lineQtyLabel(l)}</Text>
               </View>
-              <View style={styles.flex}>
-                <Text style={shared.strong}>{l.name}</Text>
-                <Text style={shared.caption}>{l.categoryName}</Text>
-              </View>
-              <Text style={styles.qty}>× {l.qty}</Text>
-            </View>
+              <LineGarments line={l} />
+            </React.Fragment>
           ))}
           <View style={shared.rule} />
           <Line label="Total paid" value={money(order.total)} strong />

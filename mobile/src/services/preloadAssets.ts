@@ -18,6 +18,11 @@ const PRELOAD_IMAGES: number[] = [
   require('../../assets/scenes/ironing.jpg'),
   require('../../assets/scenes/packing.jpg'),
   require('../../assets/scenes/delivery.jpg'),
+  require('../../assets/services/blanket.png'),
+  require('../../assets/services/color dye.png'),
+  require('../../assets/services/dry clean.png'),
+  require('../../assets/services/shoes, bags and soft toys.png'),
+  require('../../assets/services/stain treatment.png'),
   require('../../assets/logos/lpu.png'),
   require('../../assets/logos/nitj.png'),
 ];

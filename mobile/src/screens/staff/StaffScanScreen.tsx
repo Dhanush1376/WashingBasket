@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '../../components/app/Icon';
 import { Pop, Rise } from '../../components/app/motion';
 import { GarmentIcon } from '../../components/laundry/GarmentIcon';
+import { LineGarments } from '../../components/laundry/LineGarments';
+import { lineQtyLabel, piecesToCount } from '../../mock/engine/garments';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 import { PillField, PillTextArea } from '../../components/ui/SheetForm';
 import { haptic } from '../../lib/haptics';
@@ -808,20 +810,23 @@ export function StaffScanScreen({ navigation, route }: StaffTabProps<'StaffScan'
               <View style={styles.sectionHead}>
                 <Text style={styles.sectionTitle}>Items</Text>
                 <View style={styles.pill}>
-                  <Text style={styles.pillText}>{plural(order.pieces, 'piece')}</Text>
+                  <Text style={styles.pillText}>{plural(piecesToCount(order.lines) || order.pieces, 'piece')}</Text>
                 </View>
               </View>
               {order.lines.map((l, i) => (
-                <View key={l.itemId} style={[styles.line, i > 0 && styles.lineRule]}>
-                  <GarmentIcon name={l.icon} size={38} />
-                  <View style={styles.flex}>
-                    <Text style={styles.lineName}>{l.name}</Text>
-                    <Text style={styles.lineMeta}>
-                      {l.categoryName} · {l.qty} × {money(l.unitPrice)}
-                    </Text>
+                <React.Fragment key={l.itemId}>
+                  <View style={[styles.line, i > 0 && styles.lineRule]}>
+                    <GarmentIcon name={l.icon} size={38} />
+                    <View style={styles.flex}>
+                      <Text style={styles.lineName}>{l.name}</Text>
+                      <Text style={styles.lineMeta}>
+                        {l.categoryName} · {l.unit === 'kg' ? `~${l.qty} kg` : l.qty} × {money(l.unitPrice)}
+                      </Text>
+                    </View>
+                    <Text style={styles.lineAmount}>{lineQtyLabel(l)}</Text>
                   </View>
-                  <Text style={styles.lineAmount}>× {l.qty}</Text>
-                </View>
+                  <LineGarments line={l} indent={50} />
+                </React.Fragment>
               ))}
               <View style={styles.totals}>
                 <View style={styles.totalLine}>

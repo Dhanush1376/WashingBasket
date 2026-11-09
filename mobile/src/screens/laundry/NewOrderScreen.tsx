@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Rect, Stop } from 'react-native-svg';
 import Animated, {
+  Easing,
   FadeIn,
   FadeInLeft,
   FadeInRight,
@@ -11,6 +12,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '../../components/app/Icon';
@@ -20,15 +22,16 @@ import { TopBar } from '../../components/app/TopBar';
 import { KeyValue } from '../../components/app/primitives';
 import { ListSkeleton } from '../../components/app/states';
 import { BASKET_PEEK, BasketCard } from '../../components/laundry/BasketCard';
-import { QtyStepper } from '../../components/laundry/QtyStepper';
+import { GarmentIcon } from '../../components/laundry/GarmentIcon';
+import { GarmentPicker, picksOf, type GarmentCounts, type PickerService } from '../../components/laundry/GarmentPicker';
 import { PillField, PillTextArea } from '../../components/ui/SheetForm';
 import { useAppUser } from '../../hooks/useAppUser';
 import { useCurrentCustomer, useLaundryState, usePincodeLocation } from '../../laundry/hooks';
 import { getCampusLogo } from '../../laundry/campusLogos';
 import { haptic } from '../../lib/haptics';
 import { money } from '../../lib/format';
+import { billedQty, garmentCount, orderGarments } from '../../mock/engine/garments';
 import { MODE_COPY } from '../../mock/engine/lifecycle';
-import { MAX_QTY_PER_ITEM } from '../../mock/engine/ops';
 import { priceBasket } from '../../mock/engine/selectors';
 import { phoneDigits, slotStarted } from '../../mock/engine/util';
 import priceMenu from '../../mock-data/price-menu.json';
@@ -106,9 +109,12 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
   const [step, setStep] = useState<Step>('items');
   const [pickedLocation] = useState<string | null>(null);
   const [pickedMode] = useState<ServiceMode>('OFFICE_DROP_OFF');
-  const [, setCategory] = useState<string | null>(null);
+  const [focusCategory, setCategory] = useState<string | null>(null);
   const [seenService, setSeenService] = useState<ServiceId | undefined>(undefined);
-  const [qty, setQty] = useState<Record<string, number>>({});
+  /** The clothes listed for each service, by price-list item id, then garment id. */
+  const [garments, setGarments] = useState<Record<string, GarmentCounts>>({});
+  const [pickerFor, setPickerFor] = useState<string | null>(null);
+  const catY = useRef<Record<string, number>>({});
   const [address, setAddress] = useState('');
   const [landmark, setLandmark] = useState('');
   const [typedContact, setContact] = useState<string | null>(null);
@@ -139,6 +145,21 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
   const scrollRef = useRef<any>(null);
   const scrollY = useSharedValue(0);
 
+  // a service picked on Home scrolls its card into view and outlines it for a moment
+  const ready = !!state;
+  useEffect(() => {
+    if (!focusCategory || step !== 'items' || !ready) return;
+    const go = setTimeout(() => {
+      const y = catY.current[focusCategory];
+      if (y !== undefined) scrollRef.current?.scrollTo?.({ y: Math.max(0, y - 8), animated: true });
+    }, 380);
+    const done = setTimeout(() => setCategory(null), 2600);
+    return () => {
+      clearTimeout(go);
+      clearTimeout(done);
+    };
+  }, [focusCategory, step, ready]);
+
   const onListScroll = useAnimatedScrollHandler({
     onScroll: (e) => {
       'worklet';
@@ -146,15 +167,22 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
     },
   });
 
+  const entranceT = useSharedValue(0);
+  useEffect(() => {
+    entranceT.value = 0;
+    entranceT.value = withTiming(1, { duration: 460, easing: Easing.bezier(0.18, 1, 0.28, 1) });
+  }, [replay, entranceT]);
+
   const orangeCardStyle = useAnimatedStyle(() => {
     const y = Math.max(0, scrollY.value);
+    const entranceOffset = (1 - entranceT.value) * 60;
     return {
       transform: [
         {
-          translateY: interpolate(y, [0, 36], [0, 42], 'clamp'),
+          translateY: interpolate(y, [0, 36], [0, 42], 'clamp') + entranceOffset,
         },
       ],
-      opacity: interpolate(y, [0, 24], [1, 0], 'clamp'),
+      opacity: interpolate(y, [0, 24], [1, 0], 'clamp') * entranceT.value,
     };
   });
 
@@ -165,12 +193,14 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
   const sheetStyle = useAnimatedStyle(() => {
     const y = Math.max(0, scrollY.value);
     const progress = interpolate(y, [0, 60], [0, 1], 'clamp');
+    const entranceOffset = (1 - entranceT.value) * 80;
     return {
       transform: [
         {
-          translateY: -progress * lift,
+          translateY: -progress * lift + entranceOffset,
         },
       ],
+      opacity: interpolate(entranceT.value, [0, 0.25, 1], [0, 0.85, 1], 'clamp'),
       borderTopLeftRadius: interpolate(progress, [0, 1], [28, 0]),
       borderTopRightRadius: interpolate(progress, [0, 1], [28, 0]),
     };
@@ -199,9 +229,24 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
   }
 
   const catalog = (state?.catalog?.categories?.some((c) => c.id === 'only-wash') ? state.catalog : null) ?? fallbackCatalog;
-  const basket = Object.entries(qty).map(([itemId, q]) => ({ itemId, qty: q })).filter((b) => b.qty > 0);
-  const totalItemsCount = basket.reduce((sum, b) => sum + b.qty, 0);
+  // every service in the basket is billed from its garment list (pieces, or estimated kg)
+  const unitOf = (itemId: string) => catalog.categories.flatMap((c) => c.items).find((i) => i.id === itemId)?.unit ?? 'piece';
+  const basket = Object.entries(garments)
+    .map(([itemId, counts]) => {
+      const picks = picksOf(counts);
+      return { itemId, qty: billedQty(unitOf(itemId), picks), garments: picks };
+    })
+    .filter((b) => b.qty > 0);
+  const totalItemsCount = basket.reduce((sum, b) => sum + garmentCount(b.garments), 0);
   const priced = priceBasket(state, mode, basket);
+  const pickerService: PickerService | null = (() => {
+    if (!pickerFor) return null;
+    for (const c of catalog.categories) {
+      const item = c.items.find((i) => i.id === pickerFor);
+      if (item) return { item, categoryId: c.id, categoryName: c.name, ...lookOf(c.id) };
+    }
+    return null;
+  })();
   const charge = catalog.serviceCharges[mode];
   const isHome = mode === 'HOME_PICKUP';
 
@@ -223,7 +268,7 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
   const slotId = pickedSlot && day && slotDefs.some((sl) => sl.id === pickedSlot && !slotStarted(sl, day)) ? pickedSlot : null;
 
   const pickupValid = !isHome || (address.trim().length >= 8 && phoneDigits(contact).length === 10 && !!day && !!slotId);
-  const canNext = step === 'items' ? priced.pieces > 0 : step === 'pickup' ? pickupValid : true;
+  const canNext = step === 'items' ? totalItemsCount > 0 : step === 'pickup' ? pickupValid : true;
 
   const go = (to: Step) => {
     setError(null);
@@ -239,7 +284,7 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
 
   const reset = () => {
     setStep('items');
-    setQty({});
+    setGarments({});
     setNotes('');
     setDay(null);
     setSlotId(null);
@@ -284,12 +329,14 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
     }
   }
 
-  const ctaLabel =
-    step === 'review'
-      ? guest
-        ? 'Sign in to order'
-        : `Unlock QR · Pay ${money(priced.total)}`
-      : 'Continue';
+  /** "3 Shirt · 2 Jeans · +2 more" for a service row. */
+  const listSummary = (counts: GarmentCounts | undefined) => {
+    const list = orderGarments(picksOf(counts));
+    const head = list.slice(0, 2).map((g) => `${g.qty} ${g.name}`);
+    return list.length > 2 ? `${head.join(' · ')} · +${list.length - 2} more` : head.join(' · ');
+  };
+
+  const ctaLabel = guest && step === 'review' ? 'Sign in to order' : 'Continue';
 
   // the checkout bar: dark, floating just above the tab bar, with the total in yellow
   const ctaOff = !canNext || (!guest && step === 'review' && !customer);
@@ -386,7 +433,7 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
           <View style={styles.sheetHead}>
             <View style={styles.sheetTitleGroup}>
               <Text style={styles.sheetTitle}>
-                {step === 'items' ? 'All services' : step === 'pickup' ? 'Pickup details' : 'Order review'}
+                {step === 'items' ? 'Pick a service' : step === 'pickup' ? 'Pickup details' : 'Order review'}
               </Text>
               {step === 'review' ? (
                 <Text style={styles.sheetCount}>{totalItemsCount} {totalItemsCount === 1 ? 'item' : 'items'}</Text>
@@ -434,11 +481,16 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
           <Animated.ScrollView
             ref={scrollRef}
             style={styles.sheetScroll}
-            contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 12) + 160 }]}
+            contentContainerStyle={[
+              styles.scrollContent,
+              { paddingBottom: step === 'review' ? Math.max(insets.bottom, 12) + 126 : Math.max(insets.bottom, 12) + 136 },
+            ]}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             onScroll={onListScroll}
             scrollEventThrottle={16}
+            alwaysBounceVertical={true}
+            bounces={true}
           >
             {step === 'items' ? (
               <Animated.View key="items" entering={enter}>
@@ -446,8 +498,14 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
               const look = lookOf(c.id);
               const unit = UNIT_LABEL[c.id] ?? (c.items[0]?.unit === 'kg' ? 'PER KG' : c.items[0]?.unit === 'pair' ? 'PER PAIR' : 'PER PIECE');
               return (
-                <View key={c.id} style={[styles.catSection, catIdx > 0 && styles.catSectionNext]}>
-                  <View style={[styles.catCard, soft]}>
+                <View
+                  key={c.id}
+                  style={[styles.catSection, catIdx > 0 && styles.catSectionNext]}
+                  onLayout={(e) => {
+                    catY.current[c.id] = e.nativeEvent.layout.y;
+                  }}
+                >
+                  <View style={[styles.catCard, soft, focusCategory === c.id && { borderColor: look.color, borderWidth: 2 }]}>
                     <View style={styles.cardHead}>
                       <View style={[styles.ribbon, { backgroundColor: look.color }]}>
                         <Icon name={look.icon} size={14} color="#FFFFFF" strokeWidth={2.2} />
@@ -463,8 +521,19 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
                     <View style={styles.catItems}>
                       {c.items.map((item, i) => {
                         const [baseName, variant] = item.name.includes(' · ') ? item.name.split(' · ') : [item.name, null];
+                        const picks = picksOf(garments[item.id]);
+                        const count = garmentCount(picks);
                         return (
-                          <View key={item.id} style={[styles.itemRow, i > 0 && styles.itemDivider]}>
+                          <Pressable
+                            key={item.id}
+                            onPress={() => {
+                              haptic.tap();
+                              setPickerFor(item.id);
+                            }}
+                            accessibilityRole="button"
+                            accessibilityLabel={`${item.name}, ${money(item.price)} per ${item.unit}. ${count ? `${count} clothes added. Edit list` : 'Choose clothes'}`}
+                            style={({ pressed }) => [styles.itemRow, i > 0 && styles.itemDivider, webCursor, pressed && { opacity: 0.75 }]}
+                          >
                             <View style={styles.flex}>
                               <View style={styles.itemNameRow}>
                                 <Text style={styles.itemName} numberOfLines={1}>{baseName}</Text>
@@ -480,14 +549,27 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
                                 <Text style={styles.itemPrice}>{money(item.price)}</Text>
                                 <Text style={styles.itemUnit}> / {item.unit}</Text>
                               </View>
+                              {count ? (
+                                <Animated.View entering={FadeIn.duration(200)} style={styles.pickedRow}>
+                                  <Text style={styles.pickedText} numberOfLines={1}>
+                                    {listSummary(garments[item.id])}
+                                  </Text>
+                                </Animated.View>
+                              ) : null}
                             </View>
-                            <QtyStepper
-                              value={qty[item.id] ?? 0}
-                              max={MAX_QTY_PER_ITEM}
-                              label={item.name}
-                              onChange={(n) => setQty((q) => ({ ...q, [item.id]: n }))}
-                            />
-                          </View>
+                            {count ? (
+                              <View style={styles.pickedPill}>
+                                <Text style={styles.pickedPillCount}>{count}</Text>
+                                <Text style={styles.pickedPillLabel}>{count === 1 ? 'piece' : 'pieces'}</Text>
+                                <Icon name="edit" size={11} color="#FFFFFF" strokeWidth={2.2} />
+                              </View>
+                            ) : (
+                              <View style={styles.choose}>
+                                <Icon name="plus" size={12} color={colors.ink} strokeWidth={2.4} />
+                                <Text style={styles.chooseText}>Clothes</Text>
+                              </View>
+                            )}
+                          </Pressable>
                         );
                       })}
                     </View>
@@ -615,16 +697,36 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
                 </Pressable>
               </View>
               {priced.lines.map((l, idx) => (
-                <View key={l.item.id} style={[styles.line, idx > 0 && styles.reviewItemDivider]}>
-                  <View style={styles.flex}>
-                    <Text style={text.bodyStrong}>{l.item.name}</Text>
-                    <Text style={text.caption}>
-                      {l.categoryName} · {l.qty} × {money(l.item.price)}
-                    </Text>
+                <View key={l.item.id} style={[styles.reviewLine, idx > 0 && styles.reviewItemDivider]}>
+                  <Pressable
+                    onPress={() => setPickerFor(l.item.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Edit clothes for ${l.item.name}`}
+                    style={[styles.line, webCursor]}
+                  >
+                    <View style={styles.flex}>
+                      <Text style={text.bodyStrong}>{l.item.name}</Text>
+                      <Text style={text.caption}>
+                        {l.categoryName} · {l.item.unit === 'kg' ? `~${l.qty} kg` : l.qty} × {money(l.item.price)}
+                      </Text>
+                    </View>
+                    <Text style={styles.lineAmount}>{money(l.amount)}</Text>
+                  </Pressable>
+                  <View style={styles.garmentChips}>
+                    {orderGarments(picksOf(garments[l.item.id])).map((g) => (
+                      <View key={g.garmentId} style={styles.garmentChip}>
+                        <GarmentIcon name={g.icon} size={22} />
+                        <Text style={styles.garmentChipText}>
+                          {g.name} <Text style={styles.garmentChipQty}>× {g.qty}</Text>
+                        </Text>
+                      </View>
+                    ))}
                   </View>
-                  <Text style={styles.lineAmount}>{money(l.amount)}</Text>
                 </View>
               ))}
+              {priced.lines.some((l) => l.item.unit === 'kg') ? (
+                <Text style={styles.kgNote}>Per-kg services are estimated from typical weights. Staff weigh your clothes at the counter.</Text>
+              ) : null}
             </View>
 
 
@@ -661,6 +763,14 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
       </View>
 
       {footer}
+
+      <GarmentPicker
+        visible={!!pickerService}
+        service={pickerService}
+        counts={(pickerFor && garments[pickerFor]) || {}}
+        onChange={(next) => pickerFor && setGarments((g) => ({ ...g, [pickerFor]: next }))}
+        onClose={() => setPickerFor(null)}
+      />
     </View>
   );
 }
@@ -687,6 +797,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E8E4DA',
     zIndex: 5,
+    overflow: 'hidden',
     ...(Platform.OS === 'web'
       ? ({ boxShadow: '0 -6px 24px rgba(10, 28, 62, 0.08)' } as object)
       : {
@@ -702,6 +813,8 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     flex: 1,
+    minHeight: 0,
+    overflow: 'hidden',
   },
   handleHit: {
     alignSelf: 'center',
@@ -812,6 +925,8 @@ const styles = StyleSheet.create({
   },
   sheetScroll: {
     flex: 1,
+    minHeight: 0,
+    ...(Platform.OS === 'web' ? ({ overflowY: 'auto' } as object) : null),
   },
   scrollContent: {
     paddingHorizontal: space.lg,
@@ -1056,6 +1171,38 @@ const styles = StyleSheet.create({
   },
   ctaOff: { opacity: 0.45 },
   ctaText: { fontFamily: fonts.bold, fontSize: 14, color: '#FFFFFF' },
+  pickedRow: { marginTop: 4 },
+  pickedText: { fontFamily: fonts.medium, fontSize: 12.5, color: colors.inkSoft },
+  pickedPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    height: 32,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    backgroundColor: INK,
+  },
+  pickedPillCount: { fontFamily: fonts.bold, fontSize: 13, color: '#FFFFFF', fontVariant: ['tabular-nums'] },
+  pickedPillLabel: { fontFamily: fonts.semibold, fontSize: 11.5, color: '#FFFFFF' },
+  choose: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    height: 32,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    borderWidth: 1.2,
+    borderColor: colors.ink,
+    backgroundColor: '#FFFFFF',
+  },
+  chooseText: { fontFamily: fonts.semibold, fontSize: 12.5, color: colors.ink },
+  reviewLine: { paddingBottom: space.sm },
+  garmentChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  garmentChip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 30, paddingLeft: 4, paddingRight: 10, borderRadius: 15, backgroundColor: '#F6F4EE' },
+  garmentChipText: { fontFamily: fonts.medium, fontSize: 12.5, color: colors.ink },
+  garmentChipQty: { fontFamily: fonts.bold },
+  kgNote: { fontFamily: fonts.regular, fontSize: 12, lineHeight: 17, color: colors.inkMuted, marginTop: space.sm },
+
   error: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: space.sm, padding: space.sm, backgroundColor: '#FDECEE', borderRadius: 8 },
   errorText: { fontFamily: fonts.medium, fontSize: 12, color: colors.danger },
 

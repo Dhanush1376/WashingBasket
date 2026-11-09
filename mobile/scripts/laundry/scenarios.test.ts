@@ -419,3 +419,33 @@ describe('Staff roles and the wash floor', () => {
     assert.equal(findOrder(s, o.id)!.status, 'AWAITING_CUSTOMER_VERIFICATION');
   });
 });
+
+describe('garment lists', () => {
+  it('bills a per-kg service from estimated weight and a per-piece service from the piece count', () => {
+    const cust = newCustomer('Garment Tester', '9000000077');
+    const o = ops.submitOrder(s, ctx(), {
+      customerId: cust,
+      locationId: 'loc-lpu',
+      serviceMode: 'OFFICE_DROP_OFF',
+      basket: [
+        // 4 shirts (1.0 kg) + 2 jeans (1.3 kg) = 2.3 kg → billed as 2 kg
+        { itemId: 'ow-normal', qty: 0, garments: [{ garmentId: 'shirt', qty: 4 }, { garmentId: 'jeans', qty: 2 }] },
+        { itemId: 'dc-basic', qty: 0, garments: [{ garmentId: 'blazer', qty: 1 }, { garmentId: 'saree', qty: 2 }] },
+      ],
+    });
+    const wash = o.lines.find((l) => l.itemId === 'ow-normal')!;
+    assert.equal(wash.qty, 2);
+    assert.deepEqual(wash.garments?.map((g) => [g.garmentId, g.qty]), [['shirt', 4], ['jeans', 2]]);
+    const dry = o.lines.find((l) => l.itemId === 'dc-basic')!;
+    assert.equal(dry.qty, 3);
+    assert.equal(dry.amount, 3 * dry.unitPrice);
+  });
+
+  it('refuses a garment the service does not take', () => {
+    const cust = newCustomer('Garment Tester', '9000000078');
+    rejects(
+      () => ops.submitOrder(s, ctx(), { customerId: cust, locationId: 'loc-lpu', serviceMode: 'OFFICE_DROP_OFF', basket: [{ itemId: 'wi-normal', qty: 0, garments: [{ garmentId: 'sneakers', qty: 1 }] }] }),
+      'BAD_GARMENT',
+    );
+  });
+});

@@ -21,7 +21,6 @@ import { StaffDeliveryScreen } from '../screens/staff/StaffDeliveryScreen';
 import { StaffNotificationsScreen } from '../screens/staff/StaffNotificationsScreen';
 import { StaffOrderScreen } from '../screens/staff/StaffOrderScreen';
 import { StaffReviewScreen } from '../screens/staff/StaffReviewScreen';
-import { StaffSalaryScreen } from '../screens/staff/StaffSalaryScreen';
 import { LaundryBridge } from '../laundry/LaundryBridge';
 import { useSession } from '../session/session';
 import { app, colors } from '../theme';
@@ -68,7 +67,6 @@ export function RootNavigator() {
               <Stack.Screen name="StaffReview" component={StaffReviewScreen} options={{ gestureEnabled: false }} />
               <Stack.Screen name="StaffDelivery" component={StaffDeliveryScreen} options={{ gestureEnabled: false }} />
               <Stack.Screen name="StaffNotifications" component={StaffNotificationsScreen} />
-              <Stack.Screen name="StaffSalary" component={StaffSalaryScreen} />
             </Stack.Group>
           ) : (session && session.role !== 'staff' && stage === 'ONBOARDING_COMPLETED') || (!session && guest) ? (
             // the customer app: tabs, plus the screens pushed over them

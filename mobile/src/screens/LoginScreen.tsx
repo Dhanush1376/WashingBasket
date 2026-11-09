@@ -98,6 +98,7 @@ export function LoginScreen() {
   const DRAWER_OUT_MS = 320;
   const showUnavailable = (pin: string, active: Location[]) => {
     if (Platform.OS === 'web' || !keyboardUp.current) {
+      Keyboard.dismiss();
       setUnavailable({ pin, active });
       return;
     }
@@ -107,6 +108,7 @@ export function LoginScreen() {
       done = true;
       sub.remove();
       clearTimeout(fallback);
+      Keyboard.dismiss(); // nothing in this drawer takes typing
       setUnavailable({ pin, active });
     };
     const sub = Keyboard.addListener('keyboardDidHide', open);

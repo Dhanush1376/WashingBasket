@@ -68,6 +68,9 @@ export const fonts = {
   displayBold: 'PlusJakartaSans_700Bold',
   /** Rounded, heavy: echoes the logo's rounded cloth ends. Brand wordmark only. */
   wordmark: 'Nunito_900Black',
+  /** Courier Prime: the typewriter print on the laundry slip. */
+  mono: 'CourierPrime_400Regular',
+  monoBold: 'CourierPrime_700Bold',
 } as const;
 
 /** Fields and buttons share one soft corner; the sign-in sheet is rounder. */

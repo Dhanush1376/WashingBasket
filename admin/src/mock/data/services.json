@@ -25,7 +25,7 @@
     "tagline": "For suits, silks and occasion wear",
     "description": "Solvent cleaning for delicate fabrics, with stain treatment and careful finishing.",
     "turnaround": "72 hours",
-    "art": "collecting",
+    "art": "dryClean",
     "available": true,
     "position": 3
   },
@@ -45,7 +45,7 @@
     "tagline": "Woollens, blankets and curtains",
     "description": "Individual care for heavy and delicate household fabrics.",
     "turnaround": "72 hours",
-    "art": "packing",
+    "art": "blanket",
     "available": true,
     "position": 5
   },
@@ -55,7 +55,7 @@
     "tagline": "Bridal wear, leather and shoes",
     "description": "Hand-finished cleaning for your most precious pieces, assessed item by item.",
     "turnaround": "5 days",
-    "art": "drying",
+    "art": "shoesBags",
     "available": true,
     "position": 6
   }

@@ -34,7 +34,8 @@ export type RootStackParamList = {
   AddAddress: undefined;
   Intro: undefined;
   // laundry orders (customer)
-  LaundryOrder: { orderId: string };
+  /** `pay` opens the pay & unlock QR drawer straight away (right after confirming the laundry slip). */
+  LaundryOrder: { orderId: string; pay?: boolean };
   Receipt: { orderId: string };
   VerifyClothes: { orderId: string };
   // staff (signed in with the demo staff number)
@@ -43,14 +44,15 @@ export type RootStackParamList = {
   StaffOrder: { orderId: string };
   StaffDelivery: { orderId: string; qrId: string };
   StaffNotifications: undefined;
-  StaffSalary: undefined;
 };
 
-/** The staff app's three tabs: Home, Scan and Profile. */
+/** The staff app's five tabs: Home, Wallet (Salary), Scan, Support and Profile. */
 export type StaffTabParamList = {
   StaffHome: undefined;
+  StaffSalary: undefined;
   /** `orderId` + `intent` when started from an order: a code for another order or purpose is refused. */
   StaffScan: { intent?: 'ANY' | 'INTAKE' | 'DELIVERY'; orderId?: string; nonce?: number } | undefined;
+  StaffSupport: undefined;
   StaffProfile: undefined;
 };
 

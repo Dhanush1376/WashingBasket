@@ -6,6 +6,8 @@ import { Rise } from '../../components/app/motion';
 import { Avatar } from '../../components/app/primitives';
 import { EmptyState } from '../../components/app/states';
 import { GarmentIcon } from '../../components/laundry/GarmentIcon';
+import { LineGarments } from '../../components/laundry/LineGarments';
+import { lineQtyLabel, piecesToCount } from '../../mock/engine/garments';
 import { OrderTimeline } from '../../components/laundry/OrderTimeline';
 import { QtyStepper } from '../../components/laundry/QtyStepper';
 import { BottomSheet } from '../../components/ui/BottomSheet';
@@ -234,21 +236,24 @@ export function StaffOrderScreen({ navigation, route }: ScreenProps<'StaffOrder'
       <Panel>
         <View style={styles.headRow}>
           <Text style={shared.h2}>Items</Text>
-          <Text style={styles.pieces}>{plural(order.pieces, 'piece')}</Text>
+          <Text style={styles.pieces}>{plural(piecesToCount(order.lines) || order.pieces, 'piece')}</Text>
         </View>
         {order.lines.map((l) => (
-          <View key={l.itemId} style={styles.item}>
-            <View style={styles.itemArt}>
-              <GarmentIcon name={l.icon} size={30} />
+          <React.Fragment key={l.itemId}>
+            <View style={styles.item}>
+              <View style={styles.itemArt}>
+                <GarmentIcon name={l.icon} size={30} />
+              </View>
+              <View style={styles.flex}>
+                <Text style={shared.strong}>{l.name}</Text>
+                <Text style={shared.caption}>
+                  {l.categoryName} · {money(l.unitPrice)} / {l.unit}
+                </Text>
+              </View>
+              <Text style={styles.qty}>{lineQtyLabel(l)}</Text>
             </View>
-            <View style={styles.flex}>
-              <Text style={shared.strong}>{l.name}</Text>
-              <Text style={shared.caption}>
-                {l.categoryName} · {money(l.unitPrice)} / {l.unit}
-              </Text>
-            </View>
-            <Text style={styles.qty}>× {l.qty}</Text>
-          </View>
+            <LineGarments line={l} />
+          </React.Fragment>
         ))}
         <View style={shared.rule} />
         <Line label="Items" value={money(order.subtotal)} />

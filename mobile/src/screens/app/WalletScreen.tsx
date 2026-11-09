@@ -34,6 +34,7 @@ import { TopBar } from "../../components/app/TopBar";
 import { Button } from "../../components/app/primitives";
 import { EmptyState, ErrorState, Skeleton } from "../../components/app/states";
 import { BottomSheet } from "../../components/ui/BottomSheet";
+import { celebratePayment, paymentFailed } from "../../components/app/PaymentCelebration";
 import { haptic } from "../../lib/haptics";
 import { money, monthLabel, when } from "../../lib/format";
 import { invalidate, keys, triggerAppRefresh, useQuery } from "../../lib/query";
@@ -88,10 +89,26 @@ export function WalletScreen({ navigation }: any) {
 
   const submitTopUp = async (amount: number) => {
     setAdding(true);
-    await demoTopUp(amount);
-    haptic.success();
+    try {
+      await demoTopUp(amount);
+    } catch {
+      setAdding(false);
+      paymentFailed({ amount: 'Nothing was charged' });
+      return;
+    }
     setAdding(false);
     setTopUpOpen(false);
+    const bonus = wallet.data?.config ? topUpBonusFor(amount, wallet.data.config) : 0;
+    setTimeout(
+      () =>
+        celebratePayment({
+          title: 'Money added',
+          toast: 'Payment successful',
+          amount: `${money(amount)} added`,
+          detail: bonus > 0 ? `Plus ${money(bonus)} bonus in your wallet` : 'Your wallet is topped up',
+        }),
+      340,
+    );
     // refresh once the drawer has slid away, so the balance is seen rolling up
     setTimeout(() => invalidate(keys.wallet), 280);
   };

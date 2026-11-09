@@ -16,6 +16,8 @@ import { Pop, Rise, useFocusReplay } from '../../components/app/motion';
 import { Button } from '../../components/app/primitives';
 import { EmptyState, ListSkeleton } from '../../components/app/states';
 import { GarmentIcon } from '../../components/laundry/GarmentIcon';
+import { LaundrySlip } from '../../components/laundry/LaundrySlip';
+import { SlipPrinter } from '../../components/laundry/SlipPrinter';
 import { get5StepJourney, OrderTimeline } from '../../components/laundry/OrderTimeline';
 import { formatCardDate, getOrderTheme, getStatusDot } from '../../components/app/orders';
 import { QrCode, QrFrame } from '../../components/laundry/QrCode';
@@ -25,10 +27,11 @@ import { useCurrentCustomer, useLaundryState } from '../../laundry/hooks';
 import { TONE } from '../../laundry/labels';
 import { haptic } from '../../lib/haptics';
 import { date, money, plural, when } from '../../lib/format';
-import { PAYMENT_COPY, STATUS_COPY } from '../../mock/engine/lifecycle';
+import { MODE_COPY, PAYMENT_COPY, STATUS_COPY } from '../../mock/engine/lifecycle';
 import { findLocation, findQr, findReceipt, findStaff, openIssueFor, qrState, walletBalance } from '../../mock/engine/selectors';
 import { cancelOrder } from '../../mock/services/orderService';
 import { payOrder } from '../../mock/services/paymentService';
+import { celebratePayment, paymentFailed } from '../../components/app/PaymentCelebration';
 import { qrPayload, refreshQr, shortCode } from '../../mock/services/qrService';
 import { topUp } from '../../mock/services/walletService';
 import type { LaundryOrder, QrToken } from '../../mock/types';
@@ -211,13 +214,21 @@ function AnimatedTicketCard({
  */
 export function LaundryOrderScreen({ navigation, route }: ScreenProps<'LaundryOrder'>) {
   const { orderId } = route.params;
+  const insets = useSafeAreaInsets();
   const state = useLaundryState();
   const customer = useCurrentCustomer();
   const now = useNow();
   const replay = useFocusReplay();
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
-  const [payDrawerOpen, setPayDrawerOpen] = useState(false);
+  const [payDrawerOpen, setPayDrawerOpen] = useState(!!route.params.pay);
+  // arriving again with `pay` (another order confirmed from its slip) opens the drawer again
+  const payFor = route.params.pay ? orderId : null;
+  const [seenPayFor, setSeenPayFor] = useState(payFor);
+  if (payFor !== seenPayFor) {
+    setSeenPayFor(payFor);
+    if (payFor) setPayDrawerOpen(true);
+  }
   const [refreshing, setRefreshing] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
@@ -225,6 +236,7 @@ export function LaundryOrderScreen({ navigation, route }: ScreenProps<'LaundryOr
   const [copied, setCopied] = useState(false);
   const [toppingUp, setToppingUp] = useState(false);
   const [zoomQrPayload, setZoomQrPayload] = useState<string | null>(null);
+  const [slipOpen, setSlipOpen] = useState(false);
 
   const [appliedOffer, setAppliedOffer] = useState<Offer | null>(null);
   const [showOffersPicker, setShowOffersPicker] = useState(true);
@@ -362,15 +374,21 @@ export function LaundryOrderScreen({ navigation, route }: ScreenProps<'LaundryOr
         appliedOffer ? { code: appliedOffer.code ?? 'OFFER', discount: discountAmount } : undefined
       );
       if (r.ok) {
-        haptic.success();
         setPayDrawerOpen(false);
+        // once the drawer has slid away: toast at the top and a confetti blast
+        // then the laundry slip prints, now that there's a paid order to print
+        const paid = money(payableTotal);
+        setTimeout(() => {
+          celebratePayment({ amount: `${paid} paid` });
+          setSlipOpen(true);
+        }, 340);
       }
       else {
-        haptic.error();
+        paymentFailed({ amount: `${money(r.shortfall)} short` });
         setPayError(`Your wallet balance is ${money(r.balance)}, ${money(r.shortfall)} short. Nothing was charged.`);
       }
     } catch (e) {
-      haptic.error();
+      paymentFailed();
       setPayError(e instanceof Error ? e.message : 'Payment didn’t go through. Try again.');
     } finally {
       setPaying(false);
@@ -697,6 +715,13 @@ export function LaundryOrderScreen({ navigation, route }: ScreenProps<'LaundryOr
   const canCancel = !isPaid && order.status === 'PAYMENT_PENDING';
   const stopped = order.status === 'REJECTED' || order.status === 'CANCELLED';
   const progress = get5StepJourney(order, state);
+  const slipQr = intake
+    ? {
+        payload: qrPayload(intake),
+        code: shortCode(intake.token),
+        locked: !isPaid || intake.status === 'LOCKED',
+      }
+    : undefined;
 
   return (
     <AppScreen title={`Order ${order.id}`} subtitle="Order details" leading="back" background={BG}>
@@ -720,7 +745,7 @@ export function LaundryOrderScreen({ navigation, route }: ScreenProps<'LaundryOr
         </Rise>
 
         {receipt ? (
-          <Rise replay={replay} delay={190} distance={18} scale={0.97}>
+          <Rise replay={replay} delay={170} distance={18} scale={0.97}>
             <Pressable
               onPress={() => navigation.navigate('Receipt', { orderId: order.id })}
               accessibilityRole="button"
@@ -739,6 +764,31 @@ export function LaundryOrderScreen({ navigation, route }: ScreenProps<'LaundryOr
               </View>
             </Pressable>
           </Rise>
+        ) : null}
+
+        {/* ── Laundry slip: counter drop-off manifest & item breakdown (only once the order is paid) ── */}
+        {isPaid ? (
+        <Rise replay={replay} delay={receipt ? 200 : 180} distance={18} scale={0.97}>
+          <Pressable
+            onPress={() => {
+              haptic.tap();
+              setSlipOpen(true);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="View laundry slip"
+            style={({ pressed }) => [styles.slipCardDark, styles.linkCard, webCursor, pressed && { transform: [{ scale: 0.98 }], opacity: 0.94 }]}
+          >
+            <View style={[styles.bubble, styles.bubbleLg, styles.slipCardBubble]}>
+              <Icon name="receipt" size={18} color="#FFFFFF" strokeWidth={2.2} />
+            </View>
+            <View style={styles.flex}>
+              <Text style={styles.slipCardTitle}>Laundry slip</Text>
+            </View>
+            <View style={styles.arrowGlass}>
+              <Icon name="arrowUpRight" size={16} color="#FFFFFF" strokeWidth={2.4} />
+            </View>
+          </Pressable>
+        </Rise>
         ) : null}
 
         {/* ── the journey ── */}
@@ -1103,6 +1153,55 @@ export function LaundryOrderScreen({ navigation, route }: ScreenProps<'LaundryOr
         value={zoomQrPayload}
         onClose={() => setZoomQrPayload(null)}
       />
+
+      {/* ── Authentic Laundry Slip Modal ── */}
+      <BottomSheet visible={slipOpen && isPaid} onClose={() => setSlipOpen(false)}>
+          <View style={styles.sheetHeader}>
+            <View style={styles.flex}>
+              <Text style={styles.sheetTitle}>Laundry slip</Text>
+              <Text style={styles.sheetSubtitle}>Order #{order.id} · show it at the counter</Text>
+            </View>
+            <View style={styles.slipHeaderActions}>
+              {Platform.OS === 'web' ? (
+                <Pressable
+                  onPress={() => {
+                    haptic.tap();
+                    if (typeof window !== 'undefined') window.print();
+                  }}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Print slip"
+                  style={({ pressed }) => [styles.slipHeaderBtn, webCursor, pressed && { opacity: 0.7 }]}
+                >
+                  <Icon name="copy" size={16} color={colors.ink} strokeWidth={2} />
+                </Pressable>
+              ) : null}
+              <Pressable
+                onPress={() => setSlipOpen(false)}
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel="Close slip"
+                style={({ pressed }) => [styles.sheetCloseBtn, webCursor, pressed && { opacity: 0.7 }]}
+              >
+                <Icon name="x" size={16} color={colors.ink} strokeWidth={2.4} />
+              </Pressable>
+            </View>
+          </View>
+          <View style={styles.slipWrap}>
+            <SlipPrinter>
+              <View style={styles.slipPaper}>
+                <LaundrySlip
+                  order={order}
+                  placeName={location?.name}
+                  customerName={customer?.name}
+                  modeLabel={MODE_COPY[order.serviceMode]?.label}
+                  chargeLabel={order.serviceCharge ? `${money(order.serviceCharge)} charge` : 'Free'}
+                  qr={slipQr}
+                />
+              </View>
+            </SlipPrinter>
+          </View>
+      </BottomSheet>
     </AppScreen>
   );
 }
@@ -2443,5 +2542,69 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#71717A',
     textDecorationLine: 'line-through',
+  },
+  slipWrap: {
+    width: '100%',
+    maxWidth: 380,
+    alignSelf: 'center',
+    marginTop: space.md,
+  },
+  slipHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+  },
+  slipHeaderBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: CHIP,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  slipPaper: {
+    ...(Platform.OS === 'web'
+      ? ({ filter: 'drop-shadow(0 2px 2px rgba(40, 28, 8, 0.18)) drop-shadow(0 10px 14px rgba(40, 28, 8, 0.22))' } as object)
+      : { shadowColor: '#28190A', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.26, shadowRadius: 12 }),
+  },
+  slipCardDark: {
+    backgroundColor: NAVY,
+    borderRadius: RADIUS,
+    borderWidth: 1.2,
+    borderColor: '#06132D',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 8px 24px rgba(10, 28, 62, 0.28)' } as object)
+      : {
+          shadowColor: NAVY,
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.28,
+          shadowRadius: 14,
+          elevation: 5,
+        }),
+  },
+  slipCardTitle: {
+    fontFamily: fonts.bold,
+    fontSize: 15.5,
+    color: '#FFFFFF',
+    letterSpacing: -0.2,
+  },
+  slipCardSub: {
+    fontFamily: fonts.regular,
+    fontSize: 12.5,
+    color: 'rgba(255, 255, 255, 0.72)',
+    marginTop: 2,
+  },
+  slipCardBubble: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+  },
+  arrowGlass: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

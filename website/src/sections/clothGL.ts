@@ -237,45 +237,50 @@ vec3 bubble(vec3 col, vec2 d, float r, float under) {
 }
 
 // ---- what the basket comes in with: stains thrown onto it as it is collected ------------------------------
-// where each lands (uv), its size (of the shorter side), when in the throw it lands (of uStain)
-const vec4 SP[6] = vec4[6](
-  vec4(0.57, 0.40, 0.105, 0.05),
-  vec4(0.30, 0.64, 0.095, 0.21),
-  vec4(0.69, 0.60, 0.072, 0.37),
-  vec4(0.47, 0.20, 0.060, 0.52),
-  vec4(0.42, 0.80, 0.062, 0.66),
-  vec4(0.83, 0.31, 0.056, 0.80));
-// the way it was thrown, what it is (coffee, mud, ink, turmeric, red wine, grass), a seed
-const vec4 SD[6] = vec4[6](
-  vec4(0.94, 0.34, 0.0, 1.3),
-  vec4(-0.66, 0.75, 1.0, 4.1),
-  vec4(-0.89, -0.45, 2.0, 7.7),
-  vec4(0.40, 0.92, 3.0, 2.9),
-  vec4(0.98, -0.22, 4.0, 5.6),
-  vec4(-0.32, 0.95, 5.0, 8.8));
-// what each does to the cotton (it darkens it, so a multiply)
+// Each happens as it would: a glass of coffee flung at it, mud sprayed up by a car through a puddle, ink
+// flicked from a pen being shaken, then a splash of wine and one of turmeric. Each is set by uStain: it begins
+// at its own point of the throw and plays out over its own stretch of it, so the scroll scrubs through it.
+float gS; // the stains' scale: the shorter side of the stage, more or less (set in main)
+
+// where it lands, in px: on a tall screen, in the clear band between the title and the step
+bool tall() { return uRes.y > uRes.x * 1.2; }
+vec2 stainAt(vec2 uv) {
+  if (tall()) uv.y = 0.34 + (uv.y - 0.2) * 0.62;
+  return uv * uRes;
+}
+// what each does to the cotton (it darkens it, so a multiply): coffee, mud, ink, turmeric, red wine
 vec3 stainTint(float k) {
-  return k < 0.5 ? vec3(0.60, 0.40, 0.24)
-       : k < 1.5 ? vec3(0.52, 0.42, 0.31)
-       : k < 2.5 ? vec3(0.22, 0.27, 0.52)
+  return k < 0.5 ? vec3(0.58, 0.38, 0.22)
+       : k < 1.5 ? vec3(0.50, 0.41, 0.31)
+       : k < 2.5 ? vec3(0.20, 0.25, 0.52)
        : k < 3.5 ? vec3(0.99, 0.76, 0.24)
-       : k < 4.5 ? vec3(0.64, 0.22, 0.32)
-       :           vec3(0.52, 0.65, 0.32);
+       :           vec3(0.64, 0.22, 0.32);
 }
 // how strongly, and the stretch of the wash over which it comes out (mud first, ink last)
 vec3 stainLift(float k) {
-  return k < 0.5 ? vec3(0.78, 0.15, 0.70)
-       : k < 1.5 ? vec3(0.88, 0.00, 0.55)
-       : k < 2.5 ? vec3(0.92, 0.32, 0.98)
+  return k < 0.5 ? vec3(0.80, 0.15, 0.72)
+       : k < 1.5 ? vec3(0.90, 0.00, 0.55)
+       : k < 2.5 ? vec3(0.94, 0.32, 0.98)
        : k < 3.5 ? vec3(0.80, 0.22, 0.85)
-       : k < 4.5 ? vec3(0.74, 0.18, 0.80)
-       :           vec3(0.72, 0.10, 0.75);
+       :           vec3(0.74, 0.18, 0.80);
 }
-// where it lands, in px: on a tall screen, in the clear band between the title and the step
-vec2 stainAt(vec2 uv) {
-  if (uRes.y > uRes.x * 1.2) uv.y = 0.34 + (uv.y - 0.2) * 0.62;
-  return uv * uRes;
+
+// one drop's mark: a round mark of radius r drawn out e times along u (the way it was flying), and, for one
+// that struck at a slant, a thin spike running on ahead of it, tl long
+float dropMark(vec2 d, vec2 u, float r, float e, float tl) {
+  vec2 l = vec2(dot(d, u), dot(d, vec2(-u.y, u.x)));
+  float cov = 1.0 - smoothstep(-0.9, 0.9, length(vec2(l.x / e, l.y)) - r);
+  if (tl > 0.0) {
+    float x0 = r * e * 0.55;
+    float x = (l.x - x0) / tl;
+    if (x > 0.0 && x < 1.0) {
+      float w = r * 0.45 * (1.0 - x) + 0.4;
+      cov = max(cov, 1.0 - smoothstep(w - 0.7, w + 0.7, abs(l.y)));
+    }
+  }
+  return cov;
 }
+
 // one splash at d (px from where it struck), thrown along dir, of size R, spread g (0..1).
 // Returns its cover; rim = how near its edge (a drop that dries leaves its edge darker)
 float splat(vec2 d, vec2 dir, float R, float g, float seed, out float rim) {
@@ -310,11 +315,253 @@ float splat(vec2 d, vec2 dir, float R, float g, float seed, out float rim) {
   return cov;
 }
 
+// -- coffee: a glass of it flung across the cloth. The coffee leaves the glass as a slug that stretches into a
+// ribbon; it lands along a sweep from where the throw began to where it ended, the bulk of it in one heavy
+// splash with fingers thrown forward, drops flung off either side, and then, as a shirt would, it runs: a few
+// drips crawl down from the foot of the splash, each with a bead at its end
+const float TC = 0.02, DC = 0.40;
+void coffeePath(out vec2 A, out vec2 u, out vec2 n, out float L, out float R) {
+  A = stainAt(vec2(0.38, 0.27));
+  vec2 B = stainAt(vec2(0.80, 0.45));
+  L = length(B - A);
+  u = (B - A) / L;
+  n = vec2(-u.y, u.x);
+  R = 0.105 * gS;
+}
+vec2 coffeeAt(vec2 A, vec2 u, vec2 n, float L, float sj) {
+  return A + u * sj * L + n * sin(PI * clamp(sj, 0.0, 1.0)) * 0.06 * L;
+}
+float coffeeFront(float tc) { return smoothstep(0.0, 0.3, tc) * 1.12; }
+
+// the splash: as the bulk of it strikes (at tc = TSPL) a crown of coffee is thrown up round where it hit,
+// leaning outward, and drops fly off its rim on arcs, rise, fall and land; a jet bounces up in the middle.
+// Its time ts runs 0 → 1 over SPL of the coffee's own time
+const float TSPL = 0.13, SPL = 0.45;
+const int NSPL = 24;
+// drop i: which way it flies, from how far out on the rim, how far it travels, how high, when it leaves, its size
+void splashDrop(int i, vec2 u, float R, out vec2 dir, out float r0, out float v, out float w, out float t0, out float sz) {
+  vec2 h = hash2(vec2(float(i) * 1.37 + 0.5, 61.0));
+  float h3 = hash(vec2(float(i) + 0.3, 7.7));
+  // most go on the way it was thrown, some every way round
+  float spread = h3 > 0.62 ? PI : 0.85;
+  float ang = atan(u.y, u.x) + (h.x - 0.5) * 2.0 * spread;
+  dir = vec2(cos(ang), sin(ang));
+  r0 = R * (0.5 + 0.25 * h.y);
+  v = R * (0.9 + 2.4 * pow(fract(h3 * 3.7 + h.x), 0.8)) * (spread > 1.0 ? 0.6 : 1.0);
+  w = 0.45 + 0.9 * h.y;
+  t0 = 0.04 + 0.3 * hash(h + 3.0);
+  sz = R * (0.028 + 0.075 * pow(hash(h + 5.0), 2.2));
+}
+float splashFlight(float w) { return 0.32 + 0.22 * w; }
+// a drop's mark as a distance (px, below 0 inside): drawn out e times along u, a spike tl long ahead of it
+float dropSD(vec2 d, vec2 u, float r, float e, float tl) {
+  vec2 l = vec2(dot(d, u), dot(d, vec2(-u.y, u.x)));
+  float sd = (length(vec2(l.x / e, l.y)) - r) * min(e, 1.4);
+  if (tl > 0.0) {
+    float x0 = r * e * 0.55;
+    float x = (l.x - x0) / tl;
+    if (x > -0.05 && x < 1.0) sd = min(sd, abs(l.y) - (r * 0.45 * (1.0 - clamp(x, 0.0, 1.0)) + 0.4));
+  }
+  return sd;
+}
+// the heavy splash as a distance: a ragged body carried forward, fingers ahead, droplets round it
+float splatSD(vec2 d, vec2 dir, float R, float g, float seed) {
+  vec2 side = vec2(-dir.y, dir.x);
+  vec2 l = vec2(dot(d, dir), dot(d, side)) / R;
+  if (dot(l, l) > 11.0) return 1e4;
+  vec2 m = vec2((l.x - 0.28 * g) / (1.0 + 0.4 * g), l.y);
+  float a = atan(m.y, m.x);
+  float fwd = max(cos(a), 0.0);
+  float e = 0.8 + 0.5 * (fbm3(vec2(cos(a), sin(a)) * 1.7 + seed) - 0.5);
+  e += pow(vnoise(vec2(a * 7.0, seed * 3.1)), 3.0) * 0.75 * fwd * fwd * fwd;
+  float sd = (length(m) - e * g) * R;
+  float gs = smoothstep(0.0, 1.0, g * 1.2 - 0.1);
+  for (int j = 0; j < 7; j++) {
+    vec2 h = hash2(vec2(seed * 13.0, float(j) + 0.5));
+    float sa = (h.x - 0.5) * 1.6;
+    vec2 u = vec2(cos(sa), sin(sa));
+    vec2 o = l - u * (1.15 + 1.75 * h.y) * gs;
+    float sr = (0.045 + 0.10 * hash(h * 7.0 + 1.0)) * min(1.0, g * 2.5);
+    float dl = length(vec2(dot(o, u) * (0.55 + 0.4 * h.x), dot(o, vec2(-u.y, u.x))));
+    sd = min(sd, (dl - sr) * R);
+  }
+  return sd;
+}
+// all of the coffee as one distance (px, below 0 where it is on the cloth), so it can be shaded as coffee
+// dries: by how far each point is from its edge
+float coffeeSD(vec2 q, float tc) {
+  vec2 A, u, n; float L, R;
+  coffeePath(A, u, n, L, R);
+  vec2 P0 = coffeeAt(A, u, n, L, 0.45);
+  vec2 d = q - A;
+  float s = dot(d, u) / L;
+  float w = dot(d, n) - sin(PI * clamp(s, 0.0, 1.0)) * 0.06 * L;
+  vec2 dp = q - P0;
+  float sd = 1e4;
+  // where the splash's drops came down
+  float ts = (tc - TSPL) / SPL;
+  if (ts > 0.0 && dot(dp, dp) < R * R * 22.0) {
+    for (int i = 0; i < NSPL; i++) {
+      vec2 dir; float r0, v, w2, t0, sz;
+      splashDrop(i, u, R, dir, r0, v, w2, t0, sz);
+      if (ts < t0 + splashFlight(w2)) continue;
+      sd = min(sd, dropSD(q - P0 - dir * (r0 + v), dir, sz, 1.35, sz > R * 0.05 ? sz * 1.8 : 0.0));
+    }
+  }
+  if ((s < -0.2 || s > 1.25 || abs(w) > R * 1.6) && (abs(dp.x) > R * 2.2 || dp.y < -R * 1.8 || dp.y > R * 3.2)) return sd;
+  float front = coffeeFront(tc);
+  // the sweep it landed along: thin where the throw began and ended, broad where the bulk came down
+  float sc = clamp(s, 0.0, 1.0);
+  float hw = R * (0.07 + 0.42 * exp(-pow((sc - 0.45) / 0.2, 2.0))) * (0.7 + 0.6 * vnoise(vec2(sc * 11.0, 2.3)));
+  hw *= smoothstep(-0.05, 0.03, s) * (1.0 - smoothstep(0.97, 1.06, s));
+  float band = abs(w) - hw;
+  band = max(band, (s - front) * L);
+  band = max(band, -s * L - 4.0);
+  sd = min(sd, band);
+  // the heavy splash, spreading as it lands and wicking on a little after
+  float g = smoothstep(0.12, 0.42, tc) * (1.0 + 0.1 * smoothstep(0.42, 1.0, tc));
+  if (g > 0.0) sd = min(sd, splatSD(dp, u, R, g, 1.3));
+  // drops flung off either side of the ribbon as it came apart
+  for (int j = 0; j < 14; j++) {
+    vec2 h = hash2(vec2(float(j) * 3.7 + 0.5, 11.0));
+    float sj = h.x * 1.12 - 0.04;
+    if (sj > front) continue;
+    float side = h.y > 0.5 ? 1.0 : -1.0;
+    float off = R * (0.22 + 0.8 * fract(h.y * 7.31)) * (0.5 + exp(-pow((sj - 0.45) / 0.25, 2.0)));
+    vec2 c = coffeeAt(A, u, n, L, sj) + n * side * off;
+    float r = R * (0.025 + 0.07 * pow(hash(h + 4.0), 1.5));
+    sd = min(sd, dropSD(q - c, u, r, 1.5, hash(h + 9.0) > 0.5 ? r * 2.2 : 0.0));
+  }
+  // and running down, as it does on a shirt: drips from the foot of the splash, each ending in a bead
+  float run = smoothstep(0.42, 1.0, tc);
+  if (run > 0.0) {
+    for (int j = 0; j < 4; j++) {
+      vec2 h = hash2(vec2(float(j) + 0.5, 23.0));
+      float y0 = P0.y + R * (0.3 + 0.25 * h.y);
+      float len = R * (0.5 + 1.4 * hash(h + 9.0)) * run * (j == 3 ? 0.5 : 1.0);
+      float yy = q.y - y0;
+      if (yy < -R * 0.2 || yy > len + R * 0.2) continue;
+      float k = clamp(yy / max(len, 1.0), 0.0, 1.0);
+      float x = P0.x + (h.x - 0.5) * 1.25 * R + (vnoise(vec2(q.y / 16.0, float(j) * 5.0)) - 0.5) * R * 0.1;
+      float ww = R * (0.07 - 0.025 * k) * (0.8 + 0.4 * h.y);
+      sd = min(sd, max(abs(q.x - x) - ww, max(-yy, yy - len)));
+      sd = min(sd, length(q - vec2(x, y0 + len)) - ww * 1.55);
+    }
+  }
+  return sd;
+}
+
+// -- mud: a car through a puddle beside it. The spray comes up from the road at the lower left in a fan: big
+// clots nearest, smaller and sparser drops further up, and a fine speckle of mist, each drop drawn out the way it
+// was flying, some with a spike thrown on ahead. The near drops land first and the spray climbs the cloth
+const float TM = 0.44, DM = 0.20;
+// where the spray comes from (off the lower left; on a tall screen, in from the left side) and its way
+void mudFrom(out vec2 O, out vec2 dirM) {
+  if (tall()) {
+    O = vec2(-0.3, 0.7) * uRes;
+    dirM = normalize(vec2(0.65, 0.4) * uRes - O);
+  } else {
+    O = stainAt(vec2(-0.06, 1.22));
+    dirM = normalize(stainAt(vec2(0.52, 0.42)) - O);
+  }
+}
+float mudLayer(vec2 q, float cs, float seed, float tm, float most, float grow, int nb) {
+  vec2 O, dirM;
+  mudFrom(O, dirM);
+  vec2 ip = floor(q / cs);
+  float cov = 0.0;
+  for (int j = -nb; j <= nb; j++)
+    for (int i = -nb; i <= nb; i++) {
+      vec2 id = ip + vec2(float(i), float(j));
+      vec2 h = hash2(id + seed);
+      vec2 pos = (id + 0.3 + 0.4 * h) * cs;
+      vec2 v = pos - O;
+      float lv = max(length(v), 1.0);
+      float dist = lv / gS;
+      vec2 td = v / lv;
+      // (thrown up in clumps and streams, not evenly)
+      float dens = smoothstep(0.78, 0.97, dot(td, dirM)) * (1.0 - smoothstep(0.45, 1.2, dist)) * most;
+      // (on a tall screen, kept clear of the step written at its foot)
+      if (tall()) dens *= 1.0 - smoothstep(0.6, 0.67, pos.y / uRes.y);
+      dens *= 0.35 + 1.1 * smoothstep(0.3, 0.7, vnoise(pos / (gS * 0.12) + vec2(atan(td.y, td.x) * 6.0, 0.0)));
+      if (hash(id + seed + 5.1) > dens) continue;
+      float ta = clamp((dist - 0.35) * 0.7, 0.0, 0.75) + 0.08 * hash(id + seed + 2.2);
+      if (tm < ta) continue;
+      float h4 = hash(id + seed + 8.3);
+      float r = cs * (0.07 + grow * h4 * h4) * mix(1.35, 0.6, smoothstep(0.45, 1.25, dist));
+      r *= min(1.0, (tm - ta) / 0.03 + 0.4);
+      float e = 1.1 + 0.9 * hash(id + seed + 3.3);
+      // a clot of mud is never round: a ragged edge, and now and then a short streak where it skidded on
+      vec2 dq = q - pos;
+      float jag = (vnoise(dq / max(r * 0.55, 0.8) + id) - 0.5) * r * 0.7;
+      vec2 l = vec2(dot(dq, td), dot(dq, vec2(-td.y, td.x)));
+      float m = 1.0 - smoothstep(-0.9, 0.9, length(vec2(l.x / e, l.y)) - r - jag);
+      if (h4 > 0.7 && l.x > 0.0 && l.x < r * 3.0) {
+        float w = r * 0.32 * (1.0 - l.x / (r * 3.0)) + 0.4;
+        m = max(m, (1.0 - smoothstep(w - 0.7, w + 0.7, abs(l.y))) * 0.9);
+      }
+      cov = max(cov, m);
+    }
+  return cov;
+}
+float mud(vec2 q, float tm) {
+  // nothing outside the fan the spray came up in
+  vec2 O, dirM;
+  mudFrom(O, dirM);
+  vec2 v = q - O;
+  float lv = length(v);
+  if (lv > gS * 1.3 || dot(v / max(lv, 1.0), dirM) < 0.74) return 0.0;
+  float c = mudLayer(q, gS * 0.05, 3.1, tm, 0.6, 0.17, 1);
+  c = max(c, mudLayer(q, gS * 0.022, 7.7, tm, 0.75, 0.12, 0));
+  c = max(c, mudLayer(q, gS * 0.010, 13.3, tm, 0.8, 0.10, 0));
+  return c;
+}
+
+// -- ink: a pen shaken to get it going, twice. Each flick throws a line of drops along an arc: a fat blob where
+// the ink first left the nib, then drops smaller and further apart, the far ones drawn out with a spike ahead
+const float TI = 0.66, DI = 0.15;
+float ink(vec2 q, float ti) {
+  float R = 0.08 * gS;
+  float cov = 0.0;
+  for (int f = 0; f < 2; f++) {
+    float tf = (ti - float(f) * 0.42) / 0.38;
+    if (tf <= 0.0) continue;
+    float ff = float(f);
+    vec2 A = stainAt(vec2(tall() ? 0.22 : 0.50, 0.55)) + vec2(R * 0.5, R * 1.1) * ff;
+    float ang = 0.22 + 0.2 * ff;
+    vec2 u = vec2(cos(ang), sin(ang));
+    vec2 n = vec2(-u.y, u.x);
+    float L = R * (5.6 - 1.4 * ff);
+    vec2 d = q - A;
+    float s = dot(d, u) / L;
+    if (s < -0.12 || s > 1.15 || abs(dot(d, n)) > R * 1.3) continue;
+    for (int j = 0; j < 16; j++) {
+      vec2 h = hash2(vec2(float(j) + 0.5, 41.0 + ff * 7.0));
+      float sj = pow((float(j) + h.x * 0.9) / 16.0, 1.35);
+      if (tf < sj * 0.7) continue;
+      vec2 c = A + u * sj * L + n * (sin(PI * sj) * 0.1 * L + (h.y - 0.5) * R * 0.55 * sj);
+      float r = R * (0.03 + 0.3 * pow(1.0 - sj, 2.5)) * (0.55 + 0.6 * hash(h + 3.0));
+      r *= min(1.0, (tf - sj * 0.7) / 0.06 + 0.5);
+      float tl = hash(h + 7.0) > 0.45 ? r * (1.2 + 2.2 * sj) : 0.0;
+      cov = max(cov, dropMark(q - c, u, r, 1.1 + 1.5 * sj, tl));
+    }
+  }
+  return cov;
+}
+
+// -- and a splash each of red wine and of turmeric: where (uv), size, when; the way it was thrown, what it is
+const vec4 SP[2] = vec4[2](
+  vec4(0.87, 0.24, 0.058, 0.84),
+  vec4(0.27, 0.44, 0.056, 0.92));
+const vec4 SD[2] = vec4[2](
+  vec4(0.98, -0.22, 4.0, 5.6),
+  vec4(0.40, 0.92, 3.0, 2.9));
 void main() {
   vec2 p = vUv * uRes;
   float t = uTime;
 
   float S = min(uRes.x * 1.25, uRes.y);
+  gS = S;
 
   // ---- the waterline: it is lowered in, the water climbing over it, a little aslant and never still
   float xl = p.x / uRes.y;
@@ -333,13 +580,20 @@ void main() {
   float men = exp(-pow(dd / 7.0, 2.0)) * atLine;
   q.y -= men * 4.0;
 
-  // a stain striking it dents the cloth for a moment
+  // a stain striking it dents the cloth for a moment: the coffee's heavy splash, the wine and the turmeric
   bool stained = uStain > 0.001 && uClean < 0.999;
   if (stained) {
-    for (int i = 0; i < 6; i++) {
+    float tc = (uStain - TC) / DC;
+    if (tc > 0.12 && tc < 0.36) {
+      vec2 A, u, n; float L, R;
+      coffeePath(A, u, n, L, R);
+      vec2 v = q - coffeeAt(A, u, n, L, 0.45);
+      q -= v * 0.14 * sin(PI * (tc - 0.12) / 0.24) * exp(-dot(v, v) / (R * R * 2.5));
+    }
+    for (int i = 0; i < 2; i++) {
       float ph = (uStain - SP[i].w) / 0.05;
       if (ph <= 0.0 || ph >= 1.0) continue;
-      vec2 c = stainAt(SP[i].xy);
+      vec2 c = stainAt(SP[i].xy - vec2(tall() && i == 0 ? 0.1 : 0.0, 0.0));
       float R = SP[i].z * S;
       vec2 v = q - c;
       q -= v * 0.12 * sin(PI * ph) * exp(-dot(v, v) / (R * R * 2.2));
@@ -366,40 +620,80 @@ void main() {
   float da = dt.a * uDirt;
   col = mix(col, col * dt.rgb, da);
 
-  // the stains: soaked into the threads (their edges bleed along the weave, ink most), fresh ones glossy,
-  // dried ones darker at the rim; in the wash they lift unevenly, carried off with the dirt
+  // the stains, soaked into the threads: their edges wander along the weave (ink furthest), they lie thicker and
+  // thinner, fresh ones sit wet and glossy. In the wash they lift unevenly, carried off with the dirt
   if (stained) {
-    float fresh = 0.0;
     vec2 qs = q + dv * 0.6;
-    for (int i = 0; i < 6; i++) {
+    vec2 wv = vec2(fbm3(qs / vec2(7.0, 38.0)) - 0.5, fbm3(qs / vec2(38.0, 7.0) + 3.0) - 0.5);
+    float grain = 0.88 + 0.12 * vnoise(qs / vec2(1.3, 4.0));
+    float fresh = 0.0;
+    // (how much of a stain is left as the wash goes on, unevenly over it)
+    #define LIFT(k, seed) (1.0 - smoothstep(stainLift(k).y, stainLift(k).z, uClean + (fbm3(qs / 55.0 + seed) - 0.5) * 0.35))
+
+    float tc = (uStain - TC) / DC;
+    if (tc > 0.0) {
+      // coffee as it is on cotton: its edge follows the threads; wet, it is dark and even; as it dries the
+      // coffee is carried to the edge and leaves a sharp darker ring, the middle lighter and mottled, a faint
+      // tide line inside where the edge paused, and a pale halo outside where the water wicked on alone
+      float fib = (vnoise(qs / vec2(1.4, 5.5)) - 0.5) * 2.6 + (vnoise(qs / vec2(5.5, 1.4) + 7.0) - 0.5) * 2.6;
+      float sd = coffeeSD(qs + wv * S * 0.008, tc) + fib;
+      if (sd < 24.0) {
+        float dry = smoothstep(0.5, 1.7, tc);
+        float inside = 1.0 - smoothstep(-0.7, 0.7, sd);
+        float ring = exp(-pow((sd + 1.6) / 1.4, 2.0)) * inside;
+        float deep = smoothstep(0.0, 26.0, -sd);
+        float tide = exp(-pow((sd + 10.0 + 7.0 * fbm3(qs / 45.0)) / 1.1, 2.0));
+        float halo = (1.0 - smoothstep(0.0, 9.0 + 9.0 * vnoise(qs / 16.0), sd)) * (1.0 - inside);
+        float mott = 0.7 + 0.6 * fbm3(qs / 17.0 + 1.3);
+        float aDry = inside * (mix(0.62, 0.4, deep) * mott + 0.5 * ring + 0.16 * tide);
+        float aWet = inside * (0.8 + 0.1 * mott);
+        float a = mix(aWet, aDry, dry) * grain * LIFT(0.0, 1.3);
+        col = mix(col, col * stainTint(0.0), min(a, 1.0));
+        col = mix(col, col * vec3(0.9, 0.82, 0.7), halo * 0.35 * dry * LIFT(0.0, 1.3));
+        fresh = max(fresh, inside * (1.0 - dry));
+      }
+    }
+    float tm = (uStain - TM) / DM;
+    if (tm > 0.0) {
+      float cv = mud(qs + wv * S * 0.003, tm);
+      if (cv > 0.002) {
+        float a = cv * stainLift(1.0).x * (0.68 + 0.45 * vnoise(qs / 2.2 + 4.1) * fbm3(qs / 9.0));
+        a *= LIFT(1.0, 4.1);
+        col = mix(col, col * stainTint(1.0), min(a, 1.0));
+        fresh = max(fresh, cv * 0.7 * (1.0 - smoothstep(0.3, 1.4, tm)));
+      }
+    }
+    float ti = (uStain - TI) / DI;
+    if (ti > 0.0) {
+      float cv = ink(qs + wv * S * 0.02, ti);
+      if (cv > 0.002) {
+        float a = cv * stainLift(2.0).x * (0.8 + 0.2 * fbm3(qs / 20.0 + 7.7)) * grain;
+        a *= LIFT(2.0, 7.7);
+        col = mix(col, col * stainTint(2.0), min(a, 1.0));
+        fresh = max(fresh, cv * (1.0 - smoothstep(0.4, 1.5, ti)));
+      }
+    }
+    for (int i = 0; i < 2; i++) {
       float T = SP[i].w;
       if (uStain < T) continue;
-      vec2 c = stainAt(SP[i].xy);
+      vec2 c = stainAt(SP[i].xy - vec2(tall() && i == 0 ? 0.1 : 0.0, 0.0));
       float R = SP[i].z * S;
       vec2 d0 = qs - c;
       if (dot(d0, d0) > R * R * 12.0) continue;
       float k = SD[i].z;
       float seed = SD[i].w;
-      // its edge wanders along the weave: along the threads one way, then the other (ink travels furthest)
-      float bleed = (k > 1.5 && k < 2.5 ? 0.22 : 0.08) * R;
-      vec2 d = d0 + bleed * vec2(fbm3(qs / vec2(7.0, 38.0) + seed) - 0.5, fbm3(qs / vec2(38.0, 7.0) + seed * 2.0) - 0.5);
-      float g = 1.0 - pow(1.0 - clamp((uStain - T) / 0.09, 0.0, 1.0), 3.0);
+      vec2 d = d0 + wv * R * 0.08;
+      float g = 1.0 - pow(1.0 - clamp((uStain - T) / 0.06, 0.0, 1.0), 3.0);
       float rim;
       float cov = splat(d, SD[i].xy, R, g, seed, rim);
       if (cov < 0.002) continue;
-      vec3 lf = stainLift(k);
-      // thinner and thicker in places, the threads taking it up unevenly, and a dried edge darker
-      float a = cov * lf.x * (0.62 + 0.38 * fbm3(qs / 26.0 + seed)) * (0.88 + 0.12 * vnoise(qs / vec2(1.3, 4.0)));
-      if (k < 0.5) a *= mix(0.55, 1.12, rim);                           // coffee: its ring
-      else if (k > 1.5) a *= mix(0.85, 1.08, rim);
-      else if (k < 1.5) a *= 0.72 + 0.4 * vnoise(qs / 2.4 + seed) * fbm3(qs / 9.0); // mud: grainy
-      else if (k > 4.5) a *= 0.65 + 0.35 * vnoise(qs / vec2(1.5, 7.0)); // grass: streaked along the threads
-      float fr = 1.0 - smoothstep(T + 0.03, T + 0.28, uStain);
-      a = min(1.0, a * (1.0 + 0.3 * fr));
-      a *= 1.0 - smoothstep(lf.y, lf.z, uClean + (fbm3(qs / 55.0 + seed) - 0.5) * 0.35);
+      float a = cov * stainLift(k).x * (0.62 + 0.38 * fbm3(qs / 26.0 + seed)) * grain * mix(0.85, 1.08, rim);
+      float fr = 1.0 - smoothstep(T + 0.02, T + 0.2, uStain);
+      a = min(1.0, a * (1.0 + 0.3 * fr)) * LIFT(k, seed);
       col = mix(col, col * stainTint(k), a);
       fresh = max(fresh, fr * cov);
     }
+    #undef LIFT
     // fresh, it sits wet and glossy on the creases
     col += vec3(1.0, 0.98, 0.95) * fresh * 0.07 * smoothstep(0.5, 0.75, s);
   }
@@ -545,13 +839,152 @@ void main() {
     }
   }
 
-  // ---- each stain in flight, just before it lands: coming in from the viewer's side, large and soft, smaller
-  // and sharper as it nears, its shadow on the cloth drawing in under it
   if (uStain > 0.001 && uStain < 0.999) {
-    for (int i = 0; i < 6; i++) {
-      float fl = (uStain - SP[i].w + 0.075) / 0.075;
+    // ---- the coffee in the air: the slug leaving the glass, stretching into a ribbon of drops that comes in
+    // toward the cloth, the part of it still in the air further off (larger, softer, higher), its shadow beneath
+    float tc = (uStain - TC) / DC;
+    if (tc > -0.14 && tc < 0.36) {
+      vec2 A, u, n; float L, R;
+      coffeePath(A, u, n, L, R);
+      float front = coffeeFront(tc);
+      float on = smoothstep(-0.14, -0.02, tc);
+      // the stretch of it still in the air, as points along its way: joined into one ribbon near the cloth,
+      // broken into separate drops at its far end
+      float dmin = 1e5, hmin = 1e5, shade = 0.0;
+      vec2 pc = vec2(0.0); float pr = 0.0, poff = 0.0;
+      for (int b = 0; b < 11; b++) {
+        float sb = front + 0.03 + float(b) * 0.05;
+        if (sb > 1.06) break;
+        float off = sb - front;
+        float bulk = 0.05 + 0.24 * exp(-pow((sb - 0.45) / 0.22, 2.0));
+        vec2 c0 = coffeeAt(A, u, n, L, sb);
+        // its shadow, on the cloth under where it will land
+        float sh = 1.0 - smoothstep(R * bulk * 0.5, R * bulk * (1.6 + off * 5.0), length(p - c0 - vec2(0.2, 0.35) * R * off * 3.0));
+        shade = max(shade, sh * (1.0 - min(1.0, off * 2.5)));
+        vec2 c = c0 + vec2(-0.35, -0.85) * R * off * 5.0;
+        float r = R * bulk * (1.0 + off * 1.6) * (b > 6 ? 0.6 : 1.0);
+        // the drop at this point, joined to the last by the ribbon's body (a capsule between them); and the
+        // same again a little down and to the right, so what lies outside that is its lit upper edge
+        vec2 p2 = p - vec2(0.3, 0.42) * R * 0.05;
+        float dd0 = length(p - c) - r;
+        float dd2 = length(p2 - c) - r;
+        if (b > 0 && b <= 6) {
+          vec2 e = c - pc;
+          float k = clamp(dot(p - pc, e) / dot(e, e), 0.0, 1.0);
+          dd0 = min(dd0, length(p - pc - e * k) - mix(pr, r, k));
+          float k2 = clamp(dot(p2 - pc, e) / dot(e, e), 0.0, 1.0);
+          dd2 = min(dd2, length(p2 - pc - e * k2) - mix(pr, r, k2));
+        }
+        if (dd0 < dmin) { dmin = dd0; poff = off; }
+        hmin = min(hmin, dd2);
+        pc = c; pr = r;
+      }
+      col *= 1.0 - 0.16 * shade * on;
+      float bl = 0.8 + R * min(0.16, poff * 0.4);
+      float ba = (1.0 - smoothstep(-bl, bl, dmin)) * on;
+      vec3 bc = vec3(0.29, 0.15, 0.065);
+      bc = mix(bc, vec3(0.45, 0.27, 0.13), smoothstep(-R * 0.08, 0.0, dmin)); // thinner, lighter at its edge
+      bc += vec3(1.0, 0.93, 0.82) * 0.38 * smoothstep(-bl, bl, hmin);
+      col = mix(col, bc, ba * 0.96);
+    }
+    // ---- the splash, in the air over the cloth
+    float ts = (tc - TSPL) / SPL;
+    if (ts > 0.0 && ts < 1.0) {
+      vec2 A, u, n; float L, R;
+      coffeePath(A, u, n, L, R);
+      vec2 P0 = coffeeAt(A, u, n, L, 0.45);
+      vec2 dp = p - P0;
+      if (dot(dp, dp) < R * R * 26.0) {
+        vec2 sun = normalize(vec2(0.45, 0.6)); // shadows fall down and to the right
+        vec3 cof = vec3(0.30, 0.165, 0.07);
+        // the crown: a wall of coffee thrown up round the strike, leaning out, its rim pulled into fingers.
+        // From above it is a ring, lit on the side toward the light, dark on the other, thin and bright at its rim
+        float tcw = clamp(ts / 0.55, 0.0, 1.0);
+        float zc = R * 0.9 * sin(PI * tcw) * (1.0 - 0.3 * tcw);
+        float rc = R * (0.42 + 0.6 * (1.0 - exp(-ts * 5.0)));
+        float ang = atan(dp.y, dp.x);
+        // (fingers of every size, unevenly round it)
+        float fing = pow(fbm3(vec2(ang * 3.2, 3.3)), 2.0) * 1.6 * (0.6 + 0.4 * vnoise(vec2(ang * 13.0, 9.1)));
+        float rin = rc - R * 0.05;
+        float rout = rc + zc * (0.3 + 0.55 * fing);
+        // its shadow on the cloth, cast out past it
+        vec2 sp = dp - sun * zc * 0.8;
+        float sl = length(sp);
+        float csh = smoothstep(rin - R * 0.1, rin + R * 0.05, sl) * (1.0 - smoothstep(rout - R * 0.05, rout + R * 0.25, sl));
+        col *= 1.0 - 0.28 * csh * smoothstep(0.0, 0.2, zc / R);
+        float rl = length(dp);
+        // inside it, the coffee that struck, still a pool of liquid: deep brown, a glint of the light in it,
+        // rocking as the crown rises and falls
+        // (once the crown has fallen it spreads out ragged and soaks in, becoming the stain)
+        float rp = mix(rin, rc * (0.85 + 0.45 * fbm3(vec2(ang * 2.4, 5.1))), smoothstep(0.35, 0.6, ts));
+        if (rl < rp + 2.0) {
+          float pa = (1.0 - smoothstep(rp - 2.0, rp + 1.0, rl)) * (1.0 - smoothstep(0.45, 0.8, ts));
+          vec2 wob = dp / R + 0.06 * vec2(sin(ts * 30.0 + rl / R * 9.0), cos(ts * 26.0 + rl / R * 7.0));
+          vec3 pc = cof * (0.8 + 0.25 * smoothstep(0.0, rin, rl));
+          pc += vec3(1.0, 0.95, 0.88) * 0.4 * (1.0 - smoothstep(0.0, 0.16, length(wob + vec2(0.17, 0.22))));
+          col = mix(col, pc, pa * 0.92);
+        }
+        if (zc > 0.5 && rl > rin - 2.0 && rl < rout + 2.0) {
+          float k = clamp((rl - rin) / max(rout - rin, 1.0), 0.0, 1.0); // 0 at its foot, 1 at its rim
+          float body = smoothstep(rin - 1.5, rin + 1.5, rl) * (1.0 - smoothstep(rout - 1.5, rout + 1.0, rl));
+          vec2 rad = dp / max(rl, 1.0);
+          float lit = dot(rad, -sun); // the outside of the wall facing the light
+          vec3 cc = cof * (0.75 + 0.5 * k);                             // thinner and lighter toward the rim
+          cc = mix(cc, vec3(0.55, 0.33, 0.16), k * k * 0.6);            // the light through its thin rim
+          cc *= 0.8 + 0.35 * lit;
+          cc += vec3(1.0, 0.92, 0.8) * 0.35 * pow(max(lit, 0.0), 3.0) * smoothstep(0.2, 0.6, k) * (1.0 - smoothstep(0.75, 0.95, k));
+          cc += vec3(1.0, 0.95, 0.88) * 0.3 * exp(-pow((rl - rout + 2.0) / 1.6, 2.0));
+          // (a thin sheet: the cloth shows through it a little, more toward its rim)
+          col = mix(col, cc, body * (0.92 - 0.3 * k * k) * smoothstep(0.0, 0.1, zc / R));
+        }
+        // the jet bouncing up out of the middle, a little after
+        float tj = (ts - 0.25) / 0.4;
+        if (tj > 0.0 && tj < 1.0) {
+          float zj = R * 1.4 * sin(PI * tj);
+          float rj = R * (0.13 + 0.08 * sin(PI * tj));
+          float jsh = 1.0 - smoothstep(rj * 0.6, rj * 1.8, length(dp - sun * zj * 0.8));
+          col *= 1.0 - 0.25 * jsh;
+          vec2 jp = dp;
+          float jd = length(vec2(jp.x, jp.y)) - rj * (1.0 + zj / (R * 6.0));
+          float ja = 1.0 - smoothstep(-1.5, 1.5, jd);
+          vec3 jc = cof * (0.85 + 0.3 * dot(normalize(jp + 0.001), -sun));
+          jc += vec3(1.0, 0.95, 0.88) * 0.5 * (1.0 - smoothstep(0.0, rj * 0.45, length(jp + sun * rj * 0.35)));
+          col = mix(col, jc, ja);
+        }
+        // the drops in flight: each where it is over the cloth, its shadow further from it the higher it is;
+        // larger and softer as it rises toward the eye, drawn out the way it flies
+        for (int i = 0; i < NSPL; i++) {
+          vec2 dir; float r0, v, w, t0, sz;
+          splashDrop(i, u, R, dir, r0, v, w, t0, sz);
+          float fd = splashFlight(w);
+          float sf = (ts - t0) / fd;
+          if (sf <= 0.0 || sf >= 1.0) continue;
+          vec2 g = P0 + dir * (r0 + v * sf);
+          float z = R * 1.3 * w * 4.0 * sf * (1.0 - sf);
+          vec2 sh = g + sun * z * 0.8;
+          float ss = 1.0 - smoothstep(sz * 0.4, sz * (1.4 + z / R), length(p - sh));
+          col *= 1.0 - 0.3 * ss * (1.0 - min(1.0, z / (R * 2.5)));
+          float r = sz * (1.0 + z / (R * 2.2));
+          float bl = 0.8 + z * 0.03;
+          vec2 d = p - g;
+          // stretched along its path, more while it is fast (leaving and landing)
+          float st = 1.0 + 0.9 * abs(1.0 - 2.0 * sf);
+          vec2 l = vec2(dot(d, dir) / st, dot(d, vec2(-dir.y, dir.x)));
+          float da = 1.0 - smoothstep(r - bl, r + bl, length(l));
+          if (da > 0.001) {
+            vec3 dc = cof * (0.8 + 0.3 * dot(normalize(d + 0.001), -sun));
+            dc += vec3(1.0, 0.95, 0.88) * 0.55 * (1.0 - smoothstep(0.0, r * 0.45, length(d + sun * r * 0.4)));
+            col = mix(col, dc, da);
+          }
+        }
+      }
+    }
+    // ---- the wine and the turmeric coming in from the viewer's side, large and soft, smaller and sharper as
+    // they near, the shadow drawing in under them
+    for (int i = 0; i < 2; i++) {
+      float fl = (uStain - SP[i].w + 0.05) / 0.05;
       if (fl <= 0.0 || fl >= 1.0) continue;
-      vec2 c = stainAt(SP[i].xy);
+      vec2 c = stainAt(SP[i].xy - vec2(tall() && i == 0 ? 0.1 : 0.0, 0.0));
       float R = SP[i].z * S;
       vec2 dir = SD[i].xy;
       float n = 1.0 - fl;
@@ -561,7 +994,6 @@ void main() {
       float br = R * mix(1.5, 0.42, fl);
       float bl = R * mix(0.8, 0.06, fl);
       vec2 rel = p - at;
-      // drawn out a little along the way it flies
       vec2 rl = vec2(dot(rel, dir) * mix(0.75, 0.9, fl), dot(rel, vec2(-dir.y, dir.x)));
       float ba = (1.0 - smoothstep(br - bl, br + bl, length(rl))) * smoothstep(0.0, 0.25, fl);
       vec3 tint = stainTint(SD[i].z);
@@ -789,7 +1221,8 @@ export function createClothGL(canvas: HTMLCanvasElement, srcs: Srcs, pressCv: HT
     raf = 0;
     if (!active) return;
     const key = names.map((n) => u[n].toFixed(4)).join();
-    const busy = moving();
+    // (being scrolled through counts as moving: drawn a little coarser while it changes, in full once it rests)
+    const busy = moving() || key !== last;
     if (busy === still) {
       still = !busy;
       fit();

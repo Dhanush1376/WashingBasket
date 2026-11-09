@@ -40,9 +40,10 @@ const DESTINATIONS: Destination[] = [
 /** The staff app's menu: its tabs plus the pages that live outside them. */
 const STAFF_DESTINATIONS: Destination[] = [
   { label: 'Home', icon: 'home', go: { staffTab: 'StaffHome' } },
+  { label: 'Wallet', icon: 'wallet', go: { staffTab: 'StaffSalary' } },
   { label: 'Scan', icon: 'scan', go: { staffTab: 'StaffScan' } },
-  { label: 'Salary', icon: 'wallet', go: { screen: 'StaffSalary' } },
   { label: 'Notifications', icon: 'bell', go: { screen: 'StaffNotifications' } },
+  { label: 'Support', icon: 'headset', go: { staffTab: 'StaffSupport' } },
   { label: 'Profile', icon: 'user', go: { staffTab: 'StaffProfile' } },
 ];
 

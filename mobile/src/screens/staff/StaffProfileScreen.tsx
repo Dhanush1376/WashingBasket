@@ -22,7 +22,7 @@ import { BottomSheet } from '../../components/ui/BottomSheet';
 import { PillField } from '../../components/ui/SheetForm';
 import { STAFF_ROLE_LABEL } from '../../laundry/labels';
 import { haptic } from '../../lib/haptics';
-import { date, money, plural } from '../../lib/format';
+import { date, money } from '../../lib/format';
 import { mockStore } from '../../mock/store/mockStore';
 import type { Staff } from '../../mock/types';
 import type { StaffTabProps } from '../../navigation/types';
@@ -31,7 +31,6 @@ import {
   announcementsFor,
   CONTACTS,
   dayKey,
-  leaveBalance,
   monthSummary,
   PAY_DAY_NOTE,
   payrollFor,
@@ -98,11 +97,8 @@ export function StaffProfileScreen({ navigation }: StaffTabProps<'StaffProfile'>
   const pay = st ? payrollFor(st.id) : undefined; // the signed-in person's own record only
   const month = dayKey().slice(0, 7);
   const sum = wf && st ? monthSummary(wf, st, month) : null;
-  const leave = wf && st ? leaveBalance(wf, st.id) : [];
   const notes = st ? announcementsFor(st) : [];
   const lastPaid = pay?.statements.find((s) => s.status === 'PAID');
-  const casual = leave.find((b) => b.id === 'CASUAL');
-  const others = leave.filter((b) => b.id !== 'CASUAL');
   const profile = wf && st ? profileWithEdits(wf, st.id) : undefined;
   const colleagues = state && st ? state.staff.filter((s) => s.locationId === st.locationId && s.id !== st.id && s.status === 'ACTIVE') : [];
 
@@ -158,7 +154,7 @@ export function StaffProfileScreen({ navigation }: StaffTabProps<'StaffProfile'>
                   <QuickAction icon="shield" label="ID card" onPress={() => setSheet('id')} />
                   <QuickAction icon="edit" label="Edit" onPress={() => setSheet('edit')} />
                   <QuickAction icon="wallet" label="Salary" onPress={() => navigation.navigate('StaffSalary')} />
-                  <QuickAction icon="headset" label="Help" onPress={() => setSheet('help')} />
+                  <QuickAction icon="headset" label="Help" onPress={() => navigation.navigate('StaffSupport')} />
                 </View>
               </>
             )}
@@ -210,59 +206,11 @@ export function StaffProfileScreen({ navigation }: StaffTabProps<'StaffProfile'>
           </Tile>
         </Rise>
 
-        {/* ── row 3: leave + notices ── */}
-        <Rise replay={replay} delay={200} distance={18} scale={0.97} style={styles.row}>
-          <Tile flex={1} style={styles.leaveCard} label="Casual leave balance" onPress={() => haptic.tap()}>
-            <View style={styles.tileHead}>
-              <View style={styles.tileIcon}>
-                <Icon name="sun" size={18} color={brand.orange} />
-              </View>
-              <View style={styles.arrowLight}>
-                <Icon name="check" size={16} color={colors.ink} strokeWidth={2} />
-              </View>
-            </View>
-            <View>
-              <Text style={styles.leaveLabel}>Casual leave</Text>
-              {casual ? (
-                <>
-                  <Text style={styles.leaveHero}>{plural(casual.left, 'day')}</Text>
-                  <View style={styles.leavePill}>
-                    <Text style={styles.leavePillText} numberOfLines={1}>
-                      {others.map((b) => `${b.left} ${b.label.split(' ')[0].toLowerCase()}`).join(' · ')}
-                    </Text>
-                  </View>
-                </>
-              ) : (
-                <Skeleton height={32} width={100} radius={8} style={{ marginTop: 4 }} />
-              )}
-            </View>
-          </Tile>
-
-          <Tile onPress={() => setSheet('notices')} flex={1} style={styles.noticeCard} label="Open notices">
-            <View style={styles.tileHead}>
-              <View style={styles.tileIcon}>
-                <Icon name="megaphone" size={18} color="#FFFFFF" strokeWidth={2} />
-              </View>
-              <View style={styles.arrowGlass}>
-                <Icon name="arrowUpRight" size={16} color="#FFFFFF" strokeWidth={2.2} />
-              </View>
-            </View>
-            <View>
-              <Text style={styles.noticeLabel}>Notices</Text>
-              <Text style={styles.noticeHero}>{notes.length}</Text>
-              <View style={styles.noticePill}>
-                <Text style={styles.noticePillText} numberOfLines={1}>
-                  {notes[0]?.title ?? 'Nothing new'}
-                </Text>
-              </View>
-            </View>
-          </Tile>
-        </Rise>
-
-        {/* ── row 4: account ── */}
-        <Rise replay={replay} delay={280} distance={18} scale={0.97}>
+        {/* ── row 3: account ── */}
+        <Rise replay={replay} delay={200} distance={18} scale={0.97}>
           <View style={styles.menuCard}>
             <MenuRow icon="bell" label="Notifications" badge={unread || undefined} onPress={() => setSheet('alerts')} />
+            <MenuRow divider icon="headset" label="Help & support" onPress={() => navigation.navigate('StaffSupport')} />
             <MenuRow divider icon="bookmark" label="Workplace policies" onPress={() => setSheet('policies')} />
             <MenuRow divider icon="logout" label="Log out" danger onPress={() => setSheet('logout')} />
           </View>

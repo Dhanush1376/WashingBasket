@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useCurrentCustomer, useLaundryState } from '../../laundry/hooks';
 import { money, plural } from '../../lib/format';
+import { haptic } from '../../lib/haptics';
 import { isOpen, STATUS_COPY } from '../../mock/engine/lifecycle';
 import { get5StepJourney } from '../laundry/OrderTimeline';
 import { findLocation, ordersForCustomer } from '../../mock/engine/selectors';
@@ -131,6 +132,51 @@ export function OverviewGrid({
 
   const hasAnyUrgent = laundryOpen.some((o) => ['PAYMENT_PENDING', 'AWAITING_STAFF_ACCEPTANCE', 'AWAITING_CUSTOMER_VERIFICATION'].includes(o.status));
 
+  // Horizontal scroll state for order tabs
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const [scrollX, setScrollX] = useState(0);
+  const [contentWidth, setContentWidth] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  const hasManyOrders = laundryOpen.length >= 3;
+  const canScrollLeft = scrollX > 4;
+  const canScrollRight = contentWidth > 0 && containerWidth > 0
+    ? scrollX < contentWidth - containerWidth - 4
+    : hasManyOrders;
+
+  const scrollLeft = () => {
+    if (!scrollRef.current) return;
+    haptic.tap();
+    const target = Math.max(0, scrollX - 110);
+    scrollRef.current.scrollTo({ x: target, animated: true });
+  };
+
+  const scrollRight = () => {
+    if (!scrollRef.current) return;
+    haptic.tap();
+    const max = contentWidth > containerWidth ? contentWidth - containerWidth : 220;
+    const target = Math.min(max, scrollX + 110);
+    scrollRef.current.scrollTo({ x: target, animated: true });
+  };
+
+  const selectOrder = (idx: number) => {
+    setSelectedIdx(idx);
+    haptic.tap();
+    if (scrollRef.current && hasManyOrders) {
+      const approxX = Math.max(0, idx * 95 - 40);
+      scrollRef.current.scrollTo({ x: approxX, animated: true });
+    }
+  };
+
+  useEffect(() => {
+    if (urgentIdx > 0 && scrollRef.current && hasManyOrders) {
+      const timer = setTimeout(() => {
+        scrollRef.current?.scrollTo({ x: Math.max(0, urgentIdx * 95 - 40), animated: false });
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [urgentIdx, hasManyOrders]);
+
   return (
     <View style={styles.wrap}>
       {/* ── Active orders: Unified dark card arranged cleanly like Image 2 ── */}
@@ -149,42 +195,90 @@ export function OverviewGrid({
             </Text>
           </View>
 
-          {/* Multi-Order Tabs Switcher aligned to top right */}
+          {/* Multi-Order Tabs Switcher aligned to top right with < > scroll buttons */}
           {laundryOpen.length > 1 ? (
-            <View style={styles.tabsRow}>
-              {laundryOpen.map((ord, idx) => {
-                const isSelected = idx === activeIdx;
-                const info = getOrderAction(ord);
-                const chipLabel =
-                  ord.status === 'PAYMENT_PENDING'
-                    ? `${ord.id} · Pay`
-                    : ord.status === 'PROCESSING'
-                    ? `${ord.id} · Washing`
-                    : ord.status === 'READY_FOR_DELIVERY'
-                    ? `${ord.id} · Ready`
-                    : ord.id;
+            <View style={styles.switcherWrap}>
+              {hasManyOrders ? (
+                <Pressable
+                  onPress={scrollLeft}
+                  disabled={!canScrollLeft}
+                  hitSlop={6}
+                  style={({ pressed }) => [
+                    styles.scrollBtn,
+                    !canScrollLeft && styles.scrollBtnDisabled,
+                    pressed && canScrollLeft && { transform: [{ scale: 0.92 }], opacity: 0.8 },
+                    webCursor,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Scroll orders left"
+                >
+                  <Icon name="chevronLeft" size={13} color={canScrollLeft ? '#FFFFFF' : 'rgba(255,255,255,0.35)'} strokeWidth={2.4} />
+                </Pressable>
+              ) : null}
 
-                return (
-                  <Pressable
-                    key={ord.id}
-                    onPress={() => setSelectedIdx(idx)}
-                    accessibilityRole="tab"
-                    accessibilityState={{ selected: isSelected }}
-                    accessibilityLabel={`Switch to order ${ord.id}`}
-                    style={[styles.orderTab, isSelected && styles.orderTabActive, webCursor]}
-                  >
-                    <View
-                      style={[
-                        styles.tabDot,
-                        { backgroundColor: info.isUrgent ? colors.orange : isSelected ? '#FFFFFF' : 'rgba(255,255,255,0.4)' },
-                      ]}
-                    />
-                    <Text style={[styles.orderTabText, isSelected && styles.orderTabTextActive]}>
-                      {chipLabel}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+              <ScrollView
+                ref={scrollRef}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.tabsScrollContent}
+                style={styles.tabsScrollView}
+                onScroll={(e) => setScrollX(e.nativeEvent.contentOffset.x)}
+                scrollEventThrottle={16}
+                onContentSizeChange={(w) => setContentWidth(w)}
+                onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+              >
+                {laundryOpen.map((ord, idx) => {
+                  const isSelected = idx === activeIdx;
+                  const info = getOrderAction(ord);
+                  const chipLabel =
+                    ord.status === 'PAYMENT_PENDING'
+                      ? `${ord.id} · Pay`
+                      : ord.status === 'PROCESSING'
+                      ? `${ord.id} · Washing`
+                      : ord.status === 'READY_FOR_DELIVERY'
+                      ? `${ord.id} · Ready`
+                      : ord.id;
+
+                  return (
+                    <Pressable
+                      key={ord.id}
+                      onPress={() => selectOrder(idx)}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: isSelected }}
+                      accessibilityLabel={`Switch to order ${ord.id}`}
+                      style={[styles.orderTab, isSelected && styles.orderTabActive, webCursor]}
+                    >
+                      <View
+                        style={[
+                          styles.tabDot,
+                          { backgroundColor: info.isUrgent ? colors.orange : isSelected ? '#FFFFFF' : 'rgba(255,255,255,0.4)' },
+                        ]}
+                      />
+                      <Text style={[styles.orderTabText, isSelected && styles.orderTabTextActive]}>
+                        {chipLabel}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+
+              {hasManyOrders ? (
+                <Pressable
+                  onPress={scrollRight}
+                  disabled={!canScrollRight}
+                  hitSlop={6}
+                  style={({ pressed }) => [
+                    styles.scrollBtn,
+                    !canScrollRight && styles.scrollBtnDisabled,
+                    pressed && canScrollRight && { transform: [{ scale: 0.92 }], opacity: 0.8 },
+                    webCursor,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Scroll orders right"
+                >
+                  <Icon name="chevronRight" size={13} color={canScrollRight ? '#FFFFFF' : 'rgba(255,255,255,0.35)'} strokeWidth={2.4} />
+                </Pressable>
+              ) : null}
             </View>
           ) : null}
         </View>
@@ -394,7 +488,43 @@ const styles = StyleSheet.create({
   hero: { minHeight: 154, justifyContent: 'space-between', padding: 18, borderWidth: 1.2, borderColor: 'rgba(255,255,255,0.18)', ...soft },
   small: { flex: 1, height: 116, justifyContent: 'space-between' },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
+  switcherWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 4,
+    marginLeft: 6,
+    minWidth: 0,
+  },
+  tabsScrollView: {
+    flexGrow: 0,
+    flexShrink: 1,
+    maxWidth: '100%',
+  },
+  tabsScrollContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 1,
+  },
+  scrollBtn: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  scrollBtnDisabled: {
+    opacity: 0.32,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+  },
   tabsRow: { flexDirection: 'row', gap: 6, alignItems: 'center' },
   orderTab: {
     flexDirection: 'row',
@@ -415,7 +545,16 @@ const styles = StyleSheet.create({
   orderTabText: { fontFamily: fonts.medium, fontSize: 11.5, color: 'rgba(255,255,255,0.65)' },
   orderTabTextActive: { fontFamily: fonts.semibold, color: '#FFFFFF' },
   orderBody: { marginTop: 12 },
-  tag: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', height: 26, paddingHorizontal: 11, borderRadius: 13 },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    height: 26,
+    paddingHorizontal: 11,
+    borderRadius: 13,
+    flexShrink: 0,
+  },
   doneChip: { alignSelf: 'auto', gap: 5, paddingRight: 8 },
   tagDot: { width: 6, height: 6, borderRadius: 3 },
   tagText: { fontFamily: fonts.semibold, fontSize: 11.5 },

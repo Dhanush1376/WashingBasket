@@ -14,8 +14,9 @@
  *            first, the last of it rising off in wisps, until it is matte and crisp
  *   Iron     a steam iron is set down on it and pushed and pulled across it in long strokes, pressing the
  *            creases out wherever its soleplate has been, then lifted away
- *   Return   the view draws back to the whole piece, which is folded softly, the way a towel is folded,
- *            and slides away to be handed back
+ *   Return   the camera draws back: the piece stays as it is and the table it lies on comes into view round
+ *            it. It is folded softly, the way a towel is folded, then slid across the table, the view
+ *            following, into the basket waiting beside it, where it drops in under the rim
  *
  * Without motion, the steps are listed with their pictures. Without WebGL, the cloth is still shown, dry.
  */
@@ -27,6 +28,9 @@ import crumple from '../assets/cloth-crumple.webp';
 import dirt from '../assets/cloth-dirt.webp';
 import foldSprite from '../assets/cloth-fold.webp';
 import foldSpriteSmall from '../assets/cloth-fold-m.webp';
+import basketImg from '../assets/basket.webp';
+import basketRimImg from '../assets/basket-rim.webp';
+import woodImg from '../assets/table-wood.webp';
 import ironImg from '../assets/cloth-iron.webp';
 import washed from '../assets/cloth-washed.webp';
 import weave from '../assets/cloth-weave.webp';
@@ -35,20 +39,29 @@ import { createClothGL, type ClothState } from './clothGL';
 
 const N = CARE.steps.length;
 /** Each step's part of the journey, and so its share of the scroll: collect, wash, dry, iron, return. */
-const CLOTH = [2.6, 3.4, 2.8, 5.0, 3.6];
+const CLOTH = [3.4, 3.4, 2.8, 5.0, 3.6];
 /** The fold, rendered frame by frame (care-fabric/stage.py): a sprite sheet of `frames` cells. */
 const FOLD = { frames: 49, cols: 7, fw: 720, fh: 520, sw: 600, sh: 400 };
 /** Phones load the sheet at 0.6 of full size (care-fabric/stage.py writes both). */
 const FOLD_SMALL = 0.6;
 /** The iron image: its width over its height. */
-const IRON_RATIO = 720 / 317;
+const IRON_RATIO = 1080 / 476;
+/** Where its cord leaves the boot, out from the iron's middle toward its heel (of its width; care-fabric/iron3d.py). */
+const CORD_AT = 0.983 - 0.5;
 /** The close-up is drawn a little larger than the stage, so its edges never show. */
 const ZOOM = 1.06;
+/** The basket (care-fabric/basket3d.py), in the width of the flat piece: its opening fits the piece folded in four. */
+const BASKET = { w: 0.8, h: 0.62, tilt: -4 };
+/** Where the piece comes to rest on the clothes already in it, from the basket's middle (of the piece's width), and its turn. */
+const LAND = { x: -0.03, y: -0.015, r: -6 };
+/** The table's grain, as wide as this on screen once the view has drawn back. */
+const WOOD = 900;
 
 const CLOTH_VARS = {
   '--weave': `url(${weave})`,
   '--crumple': `url(${crumple})`,
   '--dirt': `url(${dirt})`,
+  '--wood': `url(${woodImg})`,
 } as React.CSSProperties;
 
 const load = (src: string) => {
@@ -72,6 +85,16 @@ export function Care() {
     const foldCv = one<HTMLCanvasElement>('.cloth__fold');
     const iron = one<HTMLElement>('.iron');
     const ironFace = one<HTMLElement>('.iron__face');
+    const cordCv = one<HTMLCanvasElement>('.cloth__cord');
+    const table = one<HTMLElement>('.cloth__table');
+    const lay = one<HTMLElement>('.cloth__lay');
+    const basket = one<HTMLElement>('.cloth__basket');
+    const rim = one<HTMLElement>('.cloth__rim');
+    const hem = one<SVGSVGElement>('.cloth__hem');
+    const hemRect = one<SVGRectElement>('.cloth__hem .stitch');
+    const edgeRect = one<SVGRectElement>('.cloth__hem .edge');
+    const cctx = cordCv.getContext('2d')!;
+    let cordK = 1;
     const fctx = foldCv.getContext('2d')!;
     const small = window.matchMedia('(pointer: coarse), (max-width: 899px)').matches;
     const foldIm = load(small ? foldSpriteSmall : foldSprite);
@@ -110,15 +133,20 @@ export function Care() {
     let SW = 0;
     let SH = 0;
     let ironW = 0;
+    let SV = 0;
     let track = 0;
     let verts: { x: number; y: number; r: number }[] = [];
-    const geo = { dx: 0, dy: 0, k: 1, cx: 0, cy: 0 };
+    // the view drawn back (`dx`, `dy`, `k`), where the piece lies then (`sx`, `sy`), the basket beside it on the
+    // table (`bx`, `by`) and how far the view pans across to it (`pan`)
+    const geo = { dx: 0, dy: 0, k: 1, cx: 0, cy: 0, sx: 0, sy: 0, bx: 0, by: 0, pan: 0, tw: 1 };
     // the folded piece, as the fold leaves it: where it lies in a sprite cell (a quarter of the cloth, in the
     // lower right), so it can be brought to the middle as it folds
     const folded = { x: 0.75, y: 0.7, w: 0.42, h: 0.39 };
 
     // where the iron is at `p` of its work, and which way it faces: move by move, easing into and out of
     // each, the line of a stroke bowing a little and the wrist never quite still, as a hand irons
+    // where the cord is plugged in: below the bottom of the screen, a little right of the middle
+    const socket = (): [number, number] => [SW * 0.6, SV + ironW * 0.7];
     const ironAt = (p: number) => {
       const segs = verts.length - 1;
       const x = Math.min(segs - 1e-6, Math.max(0, p * segs));
@@ -127,11 +155,18 @@ export function Care() {
       const e = 0.5 - 0.5 * Math.cos(Math.PI * t);
       const a = verts[k];
       const b = verts[k + 1];
-      const bow = Math.abs(b.x - a.x) > track ? Math.sin(Math.PI * e) * track * 0.07 * (k % 2 ? 1 : -1) : 0;
+      // (a long push or pull bows a little sideways, as an arm does)
+      const bow = Math.abs(b.y - a.y) > track * 0.6 ? Math.sin(Math.PI * e) * track * 0.06 * (k % 2 ? 1 : -1) : 0;
+      const x2 = a.x + (b.x - a.x) * e + bow;
+      const y2 = a.y + (b.y - a.y) * e;
+      // it lies along its cord: the heel turned toward where the cord is plugged in, below the screen, so the
+      // flex leaves the boot straight and runs on in the same line (kept within reason near the bottom)
+      const [ax, ay] = socket();
+      const toward = (Math.atan2(ay - y2, ax - x2) * 180) / Math.PI;
       return {
-        x: a.x + (b.x - a.x) * e,
-        y: a.y + (b.y - a.y) * e + bow,
-        r: a.r + (b.r - a.r) * e + Math.sin(k * 1.9 + t * 3.1) * 2.2,
+        x: x2,
+        y: y2,
+        r: Math.max(48, Math.min(132, toward)) + Math.sin(k * 1.9 + t * 3.1) * 2.2,
         k,
       };
     };
@@ -168,7 +203,7 @@ export function Care() {
         // and the whole soleplate where it rests now
         pctx.fillStyle = '#fff';
         pctx.beginPath();
-        pctx.ellipse(cx - off, cy, (ironW * 0.42 * 0.5) / ZOOM, (track * 0.5 * 0.5) / ZOOM, 0, 0, Math.PI * 2);
+        pctx.ellipse(cx - off, cy, (ironW * 0.42 * 0.5) / ZOOM, (track * 0.5 * 0.5) / ZOOM, (at.r * Math.PI) / 180, 0, Math.PI * 2);
         pctx.fill();
         pctx.shadowColor = 'transparent';
       }
@@ -176,6 +211,58 @@ export function Care() {
       const h = ironW / IRON_RATIO;
       gsap.set(iron, { x: at.x - ironW / 2, y: at.y - h / 2 });
       gsap.set(ironFace, { rotation: at.r });
+      cord(at);
+    };
+
+    // the iron's cord, from the boot at its heel down to where it is plugged in, below the bottom of the screen:
+    // straight out of the boot, then easing round to the socket, so it trails after the iron and swings as it
+    // crosses. Drawn as a round flex: its shadow on the cloth, a darker body, a lighter core, a line of light
+    const cord = (at: { x: number; y: number; r: number }) => {
+      if (!SW) return;
+      cctx.setTransform(cordK, 0, 0, cordK, 0, 0);
+      cctx.clearRect(0, 0, SW, SH);
+      const a = (at.r * Math.PI) / 180;
+      const hx = Math.cos(a);
+      const hy = Math.sin(a);
+      const ex = at.x + hx * CORD_AT * ironW;
+      const ey = at.y + hy * CORD_AT * ironW;
+      const [ax, ay] = socket();
+      const c1x = ex + hx * ironW * 0.5;
+      const c1y = ey + hy * ironW * 0.5;
+      const c2x = ax;
+      const c2y = ay - ironW * 0.6;
+      const path = (dx: number, dy: number) => {
+        cctx.beginPath();
+        cctx.moveTo(ex + dx, ey + dy);
+        cctx.bezierCurveTo(c1x + dx, c1y + dy, c2x + dx, c2y + dy, ax + dx, ay + dy);
+      };
+      const w = Math.max(3, ironW * 0.03);
+      cctx.lineCap = 'round';
+      cctx.lineJoin = 'round';
+      // its shadow, cast down and to the right like the iron's
+      const off = 20000;
+      cctx.shadowColor = 'rgba(70, 36, 16, 0.32)';
+      cctx.shadowBlur = w * 0.9;
+      cctx.shadowOffsetX = off + w * 0.5;
+      cctx.shadowOffsetY = w * 0.9;
+      cctx.strokeStyle = '#000';
+      cctx.lineWidth = w;
+      path(-off, 0);
+      cctx.stroke();
+      cctx.shadowColor = 'transparent';
+      // the flex itself
+      cctx.strokeStyle = '#8c939d';
+      cctx.lineWidth = w;
+      path(0, 0);
+      cctx.stroke();
+      cctx.strokeStyle = '#d3d8de';
+      cctx.lineWidth = w * 0.66;
+      path(-w * 0.06, -w * 0.08);
+      cctx.stroke();
+      cctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+      cctx.lineWidth = w * 0.2;
+      path(-w * 0.16, -w * 0.2);
+      cctx.stroke();
     };
 
     // the fold, frame by frame from the sprite sheet
@@ -216,6 +303,8 @@ export function Care() {
           }
       if (x1 > x0 && y1 > y0)
         Object.assign(folded, { x: (x0 + x1) / 2 / CW, y: (y0 + y1) / 2 / CH, w: (x1 - x0) / CW, h: (y1 - y0) / CH });
+      // (it drops into the basket about its own middle)
+      gsap.set(foldCv, { transformOrigin: `${folded.x * 100}% ${folded.y * 100}%` });
       pushIn(state.f);
     };
     // it is brought to the middle as each fold calls for it, never scaled: the first fold (top half down) halves its
@@ -245,6 +334,9 @@ export function Care() {
       gl?.resize(SW, SH);
       pressCv.width = Math.max(2, Math.round(SW / 2));
       pressCv.height = Math.max(2, Math.round(SH / 2));
+      cordK = Math.min(window.devicePixelRatio || 1, 2);
+      cordCv.width = Math.round(SW * cordK);
+      cordCv.height = Math.round(SH * cordK);
       // the whole piece, when the view draws back: 3 : 2, in the middle of the stage, between the corners
       const c = copy.getBoundingClientRect();
       const n = now.getBoundingClientRect();
@@ -267,21 +359,72 @@ export function Care() {
       const fh = (fw * FOLD.fh) / FOLD.fw;
       gsap.set(foldCv, { width: fw, height: fh, left: spot.cx - fw / 2, top: spot.cy - fh / 2 });
       pushIn(state.f);
-      // the iron's work, row by row down the cloth, as a person irons: pushed tip first a good way along,
-      // drawn back a little, pushed on to the edge; there it is turned round as it comes down to the next
-      // row, and worked back the other way
-      ironW = Math.min(desktop ? SW * 0.3 : SW * 0.7, 540);
+      // the table the piece lies on, drawn at the close-up's scale and moved with it, so drawing back reads as the
+      // camera rising: big enough to fill the stage once drawn back and panned across to the basket
+      const s = geo.k * ZOOM;
+      geo.sx = spot.cx;
+      geo.tw = tw;
+      geo.sy = spot.cy;
+      const bw = tw * BASKET.w;
+      const bh = tw * BASKET.h;
+      geo.bx = spot.cx + tw * 0.5 + bw * 0.5 + Math.max(16, tw * 0.05);
+      geo.by = spot.cy - (desktop ? tw * 0.05 : 0);
+      geo.pan = Math.max(0, geo.bx + bw * 0.5 + Math.max(20, SW * 0.04) - SW);
+      const TW = (SW + 2 * Math.abs(geo.dx) + 2 * geo.pan) / s + 8;
+      const TH = (SH + 2 * Math.abs(geo.dy)) / s + 8;
+      // the piece's stitched hem, drawn on the live cloth so it meets the fold's first frame exactly
+      hem.setAttribute('viewBox', `0 0 ${SW} ${SH}`);
+      const hi = ww / 60;
+      hemRect.setAttribute('x', String(geo.cx + hi));
+      hemRect.setAttribute('y', String(geo.cy + hi));
+      hemRect.setAttribute('width', String(ww - 2 * hi));
+      hemRect.setAttribute('height', String(wh - 2 * hi));
+      hemRect.setAttribute('stroke-width', String(ww / 520));
+      hemRect.setAttribute('stroke-dasharray', `${ww / 190} ${ww / 210}`);
+      // (and the turned edge, a little darker, right at the edge)
+      edgeRect.setAttribute('x', String(geo.cx));
+      edgeRect.setAttribute('y', String(geo.cy));
+      edgeRect.setAttribute('width', String(ww));
+      edgeRect.setAttribute('height', String(wh));
+      edgeRect.setAttribute('stroke-width', String(ww / 150));
+      gsap.set(table, { width: TW, height: TH, left: SW / 2 - TW / 2, top: SH / 2 - TH / 2, backgroundSize: `${WOOD / s}px ${WOOD / s}px` });
+      gsap.set(lay, {
+        width: ww,
+        height: wh,
+        left: TW / 2 - ww / 2,
+        top: TH / 2 - wh / 2,
+        boxShadow: `${2 / s}px ${6 / s}px ${16 / s}px rgba(80, 48, 22, 0.3), 0 ${1 / s}px ${2 / s}px rgba(80, 48, 22, 0.25)`,
+      });
+      gsap.set(basket, {
+        rotation: BASKET.tilt,
+        width: bw / s,
+        height: bh / s,
+        left: TW / 2 + (geo.bx - SW / 2 - geo.dx) / s - bw / s / 2,
+        top: TH / 2 + (geo.by - SH / 2 - geo.dy) / s - bh / s / 2,
+      });
+      // (its rim, over the piece once it has dropped in: where the basket is once the view has panned)
+      gsap.set(rim, { rotation: BASKET.tilt, width: bw, height: bh, left: geo.bx - geo.pan - bw / 2, top: geo.by - bh / 2 });
+      // the iron's work, a strip at a time across the cloth, as a person irons: tip up, its cord trailing down
+      // off the board; pushed a good way up the strip, drawn back a little, pushed on to the top, pulled back
+      // down, then set over to the next strip
+      ironW = Math.min(desktop ? Math.min(SW * 0.3, SH * 0.44) : SW * 0.7, 540);
       const ironH = ironW / IRON_RATIO;
-      const rows = Math.min(5, Math.max(3, Math.round(SH / (ironH * 0.95))));
-      track = (SH / rows) * 1.08;
-      const ys = Array.from({ length: rows }, (_, i) => track * 0.42 + ((SH - track * 0.84) * i) / (rows - 1));
-      const X = (f: number) => -0.04 * SW + f * SW * 1.08;
-      verts = [{ x: X(1), y: ys[0], r: 0 }];
-      ys.forEach((y, i) => {
-        const r = i % 2 ? -180 : 0;
-        const fs = i % 2 ? [0.58, 0.4, 1] : [0.42, 0.6, 0];
-        if (i > 0) verts.push({ x: X(i % 2 ? 0 : 1), y, r });
-        fs.forEach((f) => verts.push({ x: X(f), y, r }));
+      // (over the part of the stage on screen: on phones it reaches on under the browser's bottom bar)
+      SV = SH - (parseFloat(getComputedStyle(root).getPropertyValue('--skirt')) || 0);
+      const cols = Math.min(5, Math.max(3, Math.round(SW / (ironH * 1.15))));
+      track = (SW / cols) * 1.08;
+      const xs = Array.from({ length: cols }, (_, i) => track * 0.42 + ((SW - track * 0.84) * i) / (cols - 1));
+      // (on a phone, kept between the title and the step written at the foot, which it would cover)
+      // (top to bottom of the cloth, every part of it pressed: the soleplate's track reaches past both edges)
+      const reach = Math.min(track * 0.42, ironW * 0.3);
+      const yLow = SV - reach;
+      const yHigh = reach;
+      const Y = (f: number) => yLow + f * (Math.min(yHigh, yLow) - yLow);
+      const R = 90;
+      verts = [{ x: xs[0], y: Y(0), r: R }];
+      xs.forEach((x, i) => {
+        if (i > 0) verts.push({ x, y: Y(0), r: R });
+        [0.55, 0.35, 1, 0].forEach((f) => verts.push({ x, y: Y(f), r: R }));
       });
       gsap.set(iron, { width: ironW, height: ironW / IRON_RATIO });
       press(state.p);
@@ -323,11 +466,20 @@ export function Care() {
       .addLabel('s3', L(3))
       // iron: set down on the cloth, pushed and drawn back across it, lifted away
       .fromTo(iron, { autoAlpha: 0, scale: 1.14 }, { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power2.out' }, L(3))
+      .fromTo(cordCv, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4, ease: 'power2.out' }, L(3))
       .to(state, { p: 1, duration: i3 - 0.75, ease: 'none', onUpdate: () => press(state.p) }, L(3) + 0.35)
       .to(iron, { autoAlpha: 0, scale: 1.12, duration: 0.4, ease: 'power2.in' }, L(4) - 0.4)
+      .to(cordCv, { autoAlpha: 0, duration: 0.4, ease: 'power2.in' }, L(4) - 0.4)
       .addLabel('s4', L(4))
-      // return: the view draws back a little to the whole piece; it is folded, softly, brought to the middle
-      // as it folds, and slides away
+      // return: the camera draws back, the piece as it was and the table coming into view round it; it is folded,
+      // softly, brought to the middle as it folds, slid across to the basket with the view following, and dropped in
+      .fromTo([table, hem], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, L(4))
+      .fromTo(
+        table,
+        { x: 0, y: 0, scale: ZOOM },
+        { x: () => geo.dx, y: () => geo.dy, scale: () => geo.k * ZOOM, duration: r5 * 0.24, ease: 'power2.inOut', immediateRender: false },
+        L(4),
+      )
       .to(
         piece,
         {
@@ -340,19 +492,42 @@ export function Care() {
         },
         L(4),
       )
-      .set(foldCv, { autoAlpha: 1 }, L(4) + r5 * 0.24)
-      .set(piece, { autoAlpha: 0 }, L(4) + r5 * 0.24 + 0.05)
-      .to(state, { f: 1, duration: r5 * 0.5, ease: 'sine.inOut', onUpdate: () => {
+      // (the live cloth handed over to the fold's first frame, the one fading into the other where they lie)
+      // (only once the view has settled, so the two lie exactly over each other)
+      .fromTo(foldCv, { autoAlpha: 0 }, { autoAlpha: 1, duration: r5 * 0.04, ease: 'none' }, L(4) + r5 * 0.245)
+      .to(piece, { autoAlpha: 0, duration: 0.01 }, L(4) + r5 * 0.285)
+      // (the flat piece's shadow on the table goes with it; the folding cloth casts its own)
+      .to(lay, { autoAlpha: 0, duration: r5 * 0.08, ease: 'none' }, L(4) + r5 * 0.29)
+      .to(state, { f: 1, duration: r5 * 0.42, ease: 'sine.inOut', onUpdate: () => {
         drawFold(state.f);
         pushIn(state.f);
-      } }, L(4) + r5 * 0.24 + 0.05)
-      .to(foldCv, { x: () => SW, duration: r5 * 0.2, ease: 'power2.inOut' }, L(5) - r5 * 0.2)
+      } }, L(4) + r5 * 0.29)
+      // slid across the table to the basket, the view panning after it
+      .to(
+        foldCv,
+        { x: () => geo.bx - geo.pan - geo.sx + LAND.x * geo.tw, y: () => geo.by - geo.sy + LAND.y * geo.tw, rotation: LAND.r, duration: r5 * 0.18, ease: 'power2.inOut' },
+        L(4) + r5 * 0.72,
+      )
+      .to(table, { x: () => geo.dx - geo.pan, duration: r5 * 0.18, ease: 'power2.inOut' }, L(4) + r5 * 0.74)
+      // and in: it sinks below the rim, a little smaller and in the basket's shade, its corners under the rim
+      .to(foldCv, { scale: 0.8, filter: 'brightness(0.93)', duration: r5 * 0.07, ease: 'power2.in' }, L(4) + r5 * 0.92)
+      .fromTo(rim, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, L(4) + r5 * 0.93)
       .addLabel('end', L(5));
 
+    // A phone's address bar showing or hiding fires a resize but leaves the stage as it is (it is the large
+    // viewport's height): nothing to do then. Re-recording the timeline's values there, mid-journey, would take
+    // the current state as every tween's start and break the way back. When the stage really changes (the phone
+    // turned), it is rebuilt from the start and brought back to where it was
+    let size = `${SW}x${SH}`;
     const onResize = () => {
+      const r = stage.getBoundingClientRect();
+      if (`${r.width}x${r.height}` === size) return;
       layout();
+      size = `${SW}x${SH}`;
+      const t = cloth.time();
+      cloth.seek(0);
       cloth.invalidate();
-      cloth.seek(cloth.time());
+      cloth.seek(t);
     };
     window.addEventListener('resize', onResize);
 
@@ -452,13 +627,23 @@ export function Care() {
       <div className="wash__stage">
         {/* the cloth, close up, and what happens to it */}
         <div className="cloth" aria-hidden="true">
+          <div className="cloth__table">
+            <i className="cloth__lay" />
+            <img className="cloth__basket" src={basketImg} alt="" />
+          </div>
           <div className="cloth__piece">
             <i className="cloth__weave" />
             <i className="cloth__crumple" />
             <i className="cloth__dirt" />
             <canvas className="cloth__gl" />
+            <svg className="cloth__hem" preserveAspectRatio="none">
+              <rect className="edge" fill="none" />
+              <rect className="stitch" fill="none" />
+            </svg>
           </div>
           <canvas className="cloth__fold" />
+          <img className="cloth__rim" src={basketRimImg} alt="" />
+          <canvas className="cloth__cord" />
           <div className="iron">
             <div className="iron__face">
               <img src={ironImg} alt="" />

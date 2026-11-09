@@ -8,6 +8,7 @@ import {
   Inter_800ExtraBold,
   useFonts,
 } from '@expo-google-fonts/inter';
+import { CourierPrime_400Regular, CourierPrime_700Bold } from '@expo-google-fonts/courier-prime';
 import { Nunito_900Black } from '@expo-google-fonts/nunito';
 import {
   PlusJakartaSans_700Bold,
@@ -21,6 +22,7 @@ import { LoadingOverlay } from './src/components/app/LoadingOverlay';
 import { NetworkLoader } from './src/components/app/NetworkLoader';
 import { IntroSplashScreen } from './src/components/splash/IntroSplashScreen';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { PaymentCelebrationHost } from './src/components/app/PaymentCelebration';
 import { LogoPreviewScreen } from './src/screens/LogoPreviewScreen';
 import { preloadAppAssets } from './src/services/preloadAssets';
 import { SessionProvider } from './src/session/session';
@@ -89,6 +91,9 @@ export default function App() {
     Nunito_900Black,
     PlusJakartaSans_700Bold,
     PlusJakartaSans_800ExtraBold,
+    // the printed laundry slip
+    CourierPrime_400Regular,
+    CourierPrime_700Bold,
   });
 
   // Intro animation ONLY plays on cold launch/open. Subsequent page refreshes/reloads skip it.
@@ -124,6 +129,8 @@ export default function App() {
       ) : (
         <SessionProvider>
           <RootNavigator />
+          {/* "Payment successful" toast and celebration pop-up, over every screen */}
+          <PaymentCelebrationHost />
           {/* the logo loader, over everything, when a page is slow to load, connection drops, or refresh is underway */}
           <NetworkLoader />
           {/* on refresh / default reload when intro is not shown: show the washing basket LogoLoader */}

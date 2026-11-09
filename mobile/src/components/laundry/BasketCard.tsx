@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors, fonts } from '../../theme';
 import { Icon } from '../app/Icon';
 
-const SOFT_YELLOW = '#FFD873'; // the brand yellow, softened
+const SOFT_YELLOW = '#FED843'; // signature QR hero yellow from order detail
 export const BASKET_PEEK = 42; // how much of the card shows above the sheet
 
 /**

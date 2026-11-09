@@ -503,33 +503,29 @@
   text-align: left;
   transition: filter 0.4s var(--ease);
 }
-/* soft washes of the three brand colours: red for collect, orange for care, yellow for return */
+/* the three colours of the logo, white type on each: red for collect, orange for care, blue for return */
 .hero__card:nth-of-type(1) {
-  --t: #fccfbf;
+  --t: #d01028;
 }
 .hero__card:nth-of-type(2) {
-  --t: #fdd8b2;
+  --t: #f07d00;
 }
 .hero__card:nth-of-type(3) {
-  --t: #ffe99c;
+  --t: #003f88;
 }
 .hero__card:hover {
-  filter: brightness(0.97);
+  filter: brightness(1.06);
 }
 /* the count, as in the Care section: "01 / 03", the current one in the brand's orange when it is on */
 .hero__at {
   font-family: var(--text);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
-  color: var(--ink-soft);
+  color: rgba(255, 255, 255, 0.72);
 }
 .hero__at b {
   font-weight: 600;
-  color: var(--ink);
-  transition: color 0.4s;
-}
-.hero__card.is-on .hero__at b {
-  color: #ff8a1f;
+  color: #fff;
 }
 /* the step, written large */
 .hero__word {
@@ -538,7 +534,7 @@
   font-size: calc(var(--cs) * 0.235);
   line-height: 0.92;
   letter-spacing: -0.055em;
-  color: var(--ink);
+  color: #fff;
   transform-origin: 0 100%;
   transition: transform 0.6s var(--ease);
 }
@@ -550,11 +546,12 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: inset 0 0 0 0 var(--ink);
+  box-shadow: inset 0 0 0 0 #fff;
   transition: box-shadow 0.4s var(--ease);
 }
+/* the one playing: a white ring just inside its edge */
 .hero__card.is-on::after {
-  box-shadow: inset 0 0 0 2px var(--ink);
+  box-shadow: inset 0 0 0 4px var(--t), inset 0 0 0 6px #fff;
 }
 .hero__text {
   position: absolute;
@@ -1068,6 +1065,9 @@
 /* ───────────── care · the cloth's journey ───────────── */
 
 .wash {
+  /* on phones the stage reaches on past the bottom of the screen, under the browser's bottom bar, where some
+     browsers (Safari's floating bar) draw the page without counting it in the viewport */
+  --skirt: 0px;
   position: relative;
   height: 640svh;
   background: var(--ivory);
@@ -1077,8 +1077,8 @@
   top: 0;
   /* the large viewport: on phones the stage fills the screen with the browser's bars shown or tucked away,
      never leaving the page's ivory above or below it */
-  height: 100vh;
-  height: 100lvh;
+  height: calc(100vh + var(--skirt));
+  height: calc(100lvh + var(--skirt));
   overflow: hidden;
   isolation: isolate;
   --pad: max(var(--g), calc((100% - var(--wrap)) / 2));
@@ -1135,10 +1135,53 @@
   transition: visibility 0s 0.45s;
 }
 /* the folded cloth, frame by frame, and the iron */
+/* the iron's cord, drawn live (under the iron, over the cloth) */
+.cloth__cord {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  visibility: hidden;
+  opacity: 0;
+}
 .cloth__fold {
   position: absolute;
   visibility: hidden;
   opacity: 0;
+  filter: brightness(1);
+}
+/* the piece's stitched hem, at the edge of what the view draws back to (over the live cloth) */
+.cloth__hem .stitch {
+  stroke: rgba(176, 112, 80, 0.55);
+}
+.cloth__hem .edge {
+  stroke: rgba(170, 108, 76, 0.22);
+}
+.cloth__piece > .cloth__hem {
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+}
+/* the table the piece lies on, and the basket beside it: seen once the view draws back */
+.cloth__table {
+  position: absolute;
+  visibility: hidden;
+  opacity: 0;
+  background: #eeebe6 var(--wood) repeat center;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.cloth__lay,
+.cloth__basket {
+  position: absolute;
+  display: block;
+  max-width: none;
+}
+.cloth__rim {
+  position: absolute;
+  visibility: hidden;
+  opacity: 0;
+  max-width: none;
 }
 .iron {
   position: absolute;
@@ -1162,7 +1205,6 @@
   display: block;
   width: 100%;
   height: 100%;
-  filter: saturate(0.92);
 }
 /* steam from the soleplate, rolling out ahead of the tip */
 .iron__steam {
@@ -1373,6 +1415,7 @@
 @media (max-width: 899px) {
   /* a phone scrolls freely here (no hold), so each step gets more of the scroll to itself */
   .wash {
+    --skirt: 160px;
     height: 700svh;
   }
   .wash__copy {
@@ -1395,8 +1438,8 @@
   .wash__now {
     left: var(--g);
     /* clear of the browser's bottom bar while it is shown */
-    bottom: 24px;
-    bottom: calc(24px + 100lvh - 100svh);
+    bottom: calc(24px + var(--skirt));
+    bottom: calc(24px + var(--skirt) + 100lvh - 100svh);
   }
   .wash__at {
     font-size: 12.5px;

@@ -20,9 +20,10 @@ import type {
   WalletTransaction,
 } from '../types.ts';
 import { intakePurpose, isTerminal, MODE_COPY, nextStage, STAGE_COPY } from './lifecycle.ts';
+import { billedQty, orderGarments, serviceTakesGarment, type GarmentPick } from './garments.ts';
 import { activateQr, consumeQr, issueQr, revokeQr } from './qr.ts';
 import { actorForCustomer, actorForStaff, logActivity, notify, transition } from './records.ts';
-import { findCustomer, findLocation, findOrder, findQr, findStaff, openIssueFor, priceBasket, walletBalance } from './selectors.ts';
+import { catalogItem, findCustomer, findLocation, findOrder, findQr, findStaff, openIssueFor, priceBasket, walletBalance } from './selectors.ts';
 import { fail, formatPhone, nextNumber, phoneDigits, localDay, rupees, slotStarted } from './util.ts';
 
 /** Every new demo customer starts with this much mock credit, so the flow can be tried end to end. */
@@ -83,7 +84,11 @@ export type SubmitInput = {
   customerId: string;
   locationId: string;
   serviceMode: ServiceMode;
-  basket: { itemId: string; qty: number }[];
+  /**
+   * One entry per service. With `garments`, the billed quantity is worked out from them (pieces, or estimated kg)
+   * and `qty` is ignored.
+   */
+  basket: { itemId: string; qty: number; garments?: GarmentPick[] }[];
   pickup?: { address: string; landmark?: string; contactPhone: string; date: string; slotId: string };
   instructions?: string;
   discount?: number;
@@ -98,12 +103,24 @@ export function submitOrder(s: MockState, ctx: OpContext, input: SubmitInput): L
   if (location.status !== 'ACTIVE') fail('LOCATION_PAUSED', `${location.shortName} isn’t taking orders right now.`);
   if (!location.serviceModes.includes(input.serviceMode)) fail('MODE_UNAVAILABLE', `${MODE_COPY[input.serviceMode].label} isn’t offered at ${location.shortName}.`);
 
-  for (const b of input.basket) {
-    if (!Number.isInteger(b.qty) || b.qty < 0 || b.qty > MAX_QTY_PER_ITEM) fail('BAD_QTY', `Quantities must be between 1 and ${MAX_QTY_PER_ITEM}.`);
+  // a service sent with a garment list is billed from that list
+  const basket = input.basket.map((b) => {
+    if (!b.garments) return { itemId: b.itemId, qty: b.qty };
+    const found = catalogItem(s, b.itemId);
+    if (!found) return fail('UNKNOWN_ITEM', 'An item in your basket is no longer on the price list.');
+    for (const g of b.garments) {
+      if (!Number.isInteger(g.qty) || g.qty < 0 || g.qty > MAX_QTY_PER_ITEM) fail('BAD_QTY', `Quantities must be between 1 and ${MAX_QTY_PER_ITEM}.`);
+      if (g.qty > 0 && !serviceTakesGarment(found.categoryId, g.garmentId)) fail('BAD_GARMENT', `${found.categoryName} doesn’t take one of the listed clothes.`);
+    }
+    return { itemId: b.itemId, qty: billedQty(found.item.unit, b.garments), garments: orderGarments(b.garments) };
+  });
+  for (const b of basket) {
+    if (!b.garments && (!Number.isInteger(b.qty) || b.qty < 0 || b.qty > MAX_QTY_PER_ITEM)) fail('BAD_QTY', `Quantities must be between 1 and ${MAX_QTY_PER_ITEM}.`);
   }
-  const priced = priceBasket(s, input.serviceMode, input.basket);
+  const priced = priceBasket(s, input.serviceMode, basket);
   if (!priced.lines.length) fail('EMPTY', 'Add at least one item.');
-  if (priced.lines.length !== input.basket.filter((b) => b.qty > 0).length) fail('UNKNOWN_ITEM', 'An item in your basket is no longer on the price list.');
+  if (priced.lines.length !== basket.filter((b) => b.qty > 0).length) fail('UNKNOWN_ITEM', 'An item in your basket is no longer on the price list.');
+  const garmentsFor = new Map(basket.map((b) => [b.itemId, 'garments' in b ? b.garments : undefined]));
 
   let pickup: LaundryOrder['pickup'];
   if (input.serviceMode === 'HOME_PICKUP') {
@@ -128,6 +145,7 @@ export function submitOrder(s: MockState, ctx: OpContext, input: SubmitInput): L
     unitPrice: l.item.price,
     qty: l.qty,
     amount: l.amount,
+    garments: garmentsFor.get(l.item.id),
   }));
 
   const order: LaundryOrder = {

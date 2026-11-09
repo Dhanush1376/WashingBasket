@@ -7,7 +7,9 @@ import { Icon, type IconName } from '../components/app/Icon';
 import { haptic } from '../lib/haptics';
 import { StaffHomeScreen } from '../screens/staff/StaffHomeScreen';
 import { StaffProfileScreen } from '../screens/staff/StaffProfileScreen';
+import { StaffSalaryScreen } from '../screens/staff/StaffSalaryScreen';
 import { StaffScanScreen } from '../screens/staff/StaffScanScreen';
+import { StaffSupportScreen } from '../screens/staff/StaffSupportScreen';
 import { app, colors } from '../theme';
 import type { StaffTabParamList } from './types';
 
@@ -15,11 +17,13 @@ const Tab = createBottomTabNavigator<StaffTabParamList>();
 
 const TABS: Record<keyof StaffTabParamList, { label: string; icon: IconName }> = {
   StaffHome: { label: 'Home', icon: 'home' },
+  StaffSalary: { label: 'Wallet', icon: 'wallet' },
   StaffScan: { label: 'Scan', icon: 'scan' },
+  StaffSupport: { label: 'Support', icon: 'headset' },
   StaffProfile: { label: 'Profile', icon: 'user' },
 };
 
-/** The staff app's three tabs: Home, Scan and Profile under the floating pill. */
+/** The staff app's five tabs: Home, Wallet (Salary), Scan, Support and Profile under the floating pill. */
 export function StaffTabs() {
   return (
     <Tab.Navigator
@@ -32,7 +36,9 @@ export function StaffTabs() {
       tabBar={(props) => <StaffTabBar {...props} />}
     >
       <Tab.Screen name="StaffHome" component={StaffHomeScreen} />
+      <Tab.Screen name="StaffSalary" component={StaffSalaryScreen as React.ComponentType<any>} />
       <Tab.Screen name="StaffScan" component={StaffScanScreen} />
+      <Tab.Screen name="StaffSupport" component={StaffSupportScreen as React.ComponentType<any>} />
       <Tab.Screen name="StaffProfile" component={StaffProfileScreen} />
     </Tab.Navigator>
   );

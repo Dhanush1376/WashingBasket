@@ -79,7 +79,6 @@ export const PhoneInput = forwardRef<TextInputInstance, Props>(function PhoneInp
         keyboardType="number-pad"
         textContentType="telephoneNumber"
         autoComplete="tel-national"
-        returnKeyType="done"
         onSubmitEditing={onSubmit}
         onFocus={() => {
           setFocused(true);

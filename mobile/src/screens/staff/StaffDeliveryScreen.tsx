@@ -4,6 +4,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Rise } from '../../components/app/motion';
 import { EmptyState } from '../../components/app/states';
 import { GarmentIcon } from '../../components/laundry/GarmentIcon';
+import { LineGarments } from '../../components/laundry/LineGarments';
+import { lineQtyLabel, piecesToCount } from '../../mock/engine/garments';
 import { haptic } from '../../lib/haptics';
 import { plural, when } from '../../lib/format';
 import { MODE_COPY } from '../../mock/engine/lifecycle';
@@ -119,16 +121,19 @@ export function StaffDeliveryScreen({ navigation, route }: ScreenProps<'StaffDel
         <Panel>
           <View style={styles.headRow}>
             <Text style={shared.h2}>Handing over</Text>
-            <Text style={styles.pieces}>{plural(order.pieces, 'piece')}</Text>
+            <Text style={styles.pieces}>{plural(piecesToCount(order.lines) || order.pieces, 'piece')}</Text>
           </View>
           {order.lines.map((l) => (
-            <View key={l.itemId} style={styles.line}>
-              <View style={styles.art}>
-                <GarmentIcon name={l.icon} size={28} />
+            <React.Fragment key={l.itemId}>
+              <View style={styles.line}>
+                <View style={styles.art}>
+                  <GarmentIcon name={l.icon} size={28} />
+                </View>
+                <Text style={[shared.strong, styles.flex]}>{l.name}</Text>
+                <Text style={styles.qty}>{lineQtyLabel(l)}</Text>
               </View>
-              <Text style={[shared.strong, styles.flex]}>{l.name}</Text>
-              <Text style={styles.qty}>× {l.qty}</Text>
-            </View>
+              <LineGarments line={l} />
+            </React.Fragment>
           ))}
         </Panel>
       </Rise>
