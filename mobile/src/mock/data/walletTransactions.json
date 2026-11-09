@@ -128,18 +128,6 @@
     "idempotencyKey": "pay:WB-1004"
   },
   {
-    "id": "wt-12",
-    "date": "2026-11-02T06:31:00.000Z",
-    "customerId": "u-1002",
-    "type": "debit",
-    "source": "order",
-    "amount": 360,
-    "title": "Order #WB-1003",
-    "status": "completed",
-    "orderId": "WB-1003",
-    "idempotencyKey": "pay:WB-1003"
-  },
-  {
     "id": "wt-11",
     "date": "2026-11-01T04:36:00.000Z",
     "customerId": "u-1002",

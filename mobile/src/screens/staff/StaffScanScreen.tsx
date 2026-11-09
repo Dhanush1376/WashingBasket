@@ -26,8 +26,43 @@ type ScanRow = { key: string; ok: boolean; title: string; meta: string; at: stri
 const HERO = '#FED843'; // the customer order page's QR card
 const NAVY = '#0A1C3E';
 const GREEN = '#0D7A21';
-const now = () => Date.now();
 const REASONS = ['Item counts don’t match the order', 'Items need a service we don’t offer here', 'Damaged items the customer didn’t mention', 'Customer asked to cancel'];
+
+const NOW_MS = Date.now();
+const MOCK_SCAN_ROWS: ScanRow[] = [
+  {
+    key: 'mock-1',
+    ok: true,
+    title: 'WB-1014 · Aarav Mehta',
+    meta: 'Drop-off at counter · 5 pcs · Awaiting acceptance',
+    at: new Date(NOW_MS - 12 * 60 * 1000).toISOString(),
+    orderId: 'WB-1014',
+  },
+  {
+    key: 'mock-2',
+    ok: true,
+    title: 'WB-1011 · Priya Patel',
+    meta: 'Drop-off at counter · 4 pcs · Awaiting acceptance',
+    at: new Date(NOW_MS - 35 * 60 * 1000).toISOString(),
+    orderId: 'WB-1011',
+  },
+  {
+    key: 'mock-3',
+    ok: true,
+    title: 'WB-1008 · Rohan Verma',
+    meta: 'Drop-off at counter · 6 pcs · Awaiting acceptance',
+    at: new Date(NOW_MS - 75 * 60 * 1000).toISOString(),
+    orderId: 'WB-1008',
+  },
+  {
+    key: 'mock-4',
+    ok: true,
+    title: 'WB-1003 · Sneha Reddy',
+    meta: 'Home pickup · 7 pcs · Awaiting acceptance',
+    at: new Date(NOW_MS - 140 * 60 * 1000).toISOString(),
+    orderId: 'WB-1003',
+  },
+];
 
 /** What each refusal looks like: a clear title and icon for the most common cases. */
 const REFUSAL: Record<string, { title: string; icon: IconName }> = {
@@ -225,51 +260,13 @@ export function StaffScanScreen({ navigation, route }: StaffTabProps<'StaffScan'
   };
 
   /* ── every scan I've made, newest first ── */
-  const log =
-    state && me
-      ? state.qrTokens
-          .flatMap((q) => q.scans.filter((s) => s.staffId === me.staff.id && s.result !== 'CONSUMED').map((s) => ({ q, s })))
-          .sort((a, b) => b.s.at.localeCompare(a.s.at))
-          .slice(0, 20)
-      : [];
-
-  const mockScanRows: ScanRow[] = useMemo(() => {
-    const t = Date.now();
-    return [
-      {
-        key: 'mock-1',
-        ok: true,
-        title: 'WB-1014 · Aarav Mehta',
-        meta: 'Drop-off at counter · 5 pcs · Awaiting acceptance',
-        at: new Date(t - 12 * 60 * 1000).toISOString(),
-        orderId: 'WB-1014',
-      },
-      {
-        key: 'mock-2',
-        ok: true,
-        title: 'WB-1011 · Priya Patel',
-        meta: 'Drop-off at counter · 4 pcs · Awaiting acceptance',
-        at: new Date(t - 35 * 60 * 1000).toISOString(),
-        orderId: 'WB-1011',
-      },
-      {
-        key: 'mock-3',
-        ok: true,
-        title: 'WB-1008 · Rohan Verma',
-        meta: 'Drop-off at counter · 6 pcs · Awaiting acceptance',
-        at: new Date(t - 75 * 60 * 1000).toISOString(),
-        orderId: 'WB-1008',
-      },
-      {
-        key: 'mock-4',
-        ok: true,
-        title: 'WB-1003 · Sneha Reddy',
-        meta: 'Home pickup · 7 pcs · Awaiting acceptance',
-        at: new Date(t - 140 * 60 * 1000).toISOString(),
-        orderId: 'WB-1003',
-      },
-    ];
-  }, []);
+  const log = useMemo(() => {
+    if (!state || !me) return [];
+    return state.qrTokens
+      .flatMap((q) => q.scans.filter((s) => s.staffId === me.staff.id && s.result !== 'CONSUMED').map((s) => ({ q, s })))
+      .sort((a, b) => b.s.at.localeCompare(a.s.at))
+      .slice(0, 20);
+  }, [state, me]);
 
   const actualRows: ScanRow[] = useMemo(() => {
     if (!state || !me) return [];
@@ -289,8 +286,8 @@ export function StaffScanScreen({ navigation, route }: StaffTabProps<'StaffScan'
   }, [log, state, me]);
 
   const allScanRows = useMemo(() => {
-    return [...actualRows, ...mockScanRows];
-  }, [actualRows, mockScanRows]);
+    return [...actualRows, ...MOCK_SCAN_ROWS];
+  }, [actualRows]);
 
   const insets = useSafeAreaInsets();
   const [heroH, setHeroH] = useState(() => Math.max(insets.top, 6) + 210);

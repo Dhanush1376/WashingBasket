@@ -25,5 +25,8 @@
     "@vitejs/plugin-react": "^6.2.1",
     "typescript": "~6.0.3",
     "vite": "^8.3.5"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "^1.2.16"
   }
 }
