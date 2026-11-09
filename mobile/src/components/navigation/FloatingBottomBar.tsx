@@ -144,6 +144,12 @@ export const STAFF_FLOATING_TABS = [
   { name: 'StaffProfile' as const, label: 'Profile', icon: 'user' as const },
 ];
 
+let scanSeq = 0;
+function nextScanNonce(): number {
+  scanSeq += 1;
+  return scanSeq;
+}
+
 export function StaffFloatingBottomBar({
   activeTab,
   onTabPress,
@@ -177,7 +183,7 @@ export function StaffFloatingBottomBar({
       if (tabName === 'StaffScan') {
         navigation.navigate('StaffTabs', {
           screen: 'StaffScan',
-          params: { intent: 'ANY', orderId: undefined, nonce: Date.now() },
+          params: { intent: 'ANY', orderId: undefined, nonce: nextScanNonce() },
         });
       } else {
         navigation.navigate('StaffTabs', { screen: tabName });

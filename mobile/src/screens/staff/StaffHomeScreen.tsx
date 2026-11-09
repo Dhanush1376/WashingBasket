@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Icon, type IconName } from '../../components/app/Icon';
@@ -15,10 +15,8 @@ import type { StaffTabProps } from '../../navigation/types';
 import { useSession } from '../../session/session';
 import {
   branchOrders,
-  doneToday,
   exceptions,
   isSupervisor,
-  matchesFilter,
   ROLE,
   STAGE_ICON,
   workload,
@@ -80,6 +78,15 @@ export function StaffHomeScreen({ navigation }: StaffTabProps<'StaffHome'>) {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, 5);
   }, [state, me, prefs]);
+
+  // number of scans (matching StaffScanScreen's allScanRows count)
+  const totalScans = useMemo(() => {
+    if (!state || !me) return 4;
+    const actual = state.qrTokens
+      .flatMap((q) => q.scans.filter((s) => s.staffId === me.staff.id && s.result !== 'CONSUMED'))
+      .length;
+    return actual + 4;
+  }, [state, me]);
 
   const openNotification = (n: LaundryNotification) => {
     haptic.tap();
@@ -151,15 +158,6 @@ export function StaffHomeScreen({ navigation }: StaffTabProps<'StaffHome'>) {
   const lastPaid = statements.find((s) => s.status === 'PAID');
   const salaryVal = lastPaid ? lastPaid.net : (pay?.salary.monthlyGross ?? 24000);
   const salaryFormatted = money(salaryVal);
-
-  // number of scans (matching StaffScanScreen's allScanRows count)
-  const totalScans = useMemo(() => {
-    if (!state || !me) return 4;
-    const actual = state.qrTokens
-      .flatMap((q) => q.scans.filter((s) => s.staffId === me.staff.id && s.result !== 'CONSUMED'))
-      .length;
-    return actual + 4;
-  }, [state, me]);
 
   return (
     <StaffPage
