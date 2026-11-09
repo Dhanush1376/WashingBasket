@@ -46,13 +46,11 @@ export type RootStackParamList = {
   StaffSalary: undefined;
 };
 
-/** The staff app's five tabs. */
+/** The staff app's three tabs: Home, Scan and Profile. */
 export type StaffTabParamList = {
   StaffHome: undefined;
-  StaffOrders: { filter?: import('../staff/work').OrdersFilter } | undefined;
   /** `orderId` + `intent` when started from an order: a code for another order or purpose is refused. */
   StaffScan: { intent?: 'ANY' | 'INTAKE' | 'DELIVERY'; orderId?: string; nonce?: number } | undefined;
-  StaffSchedule: undefined;
   StaffProfile: undefined;
 };
 

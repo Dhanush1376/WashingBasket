@@ -35,14 +35,14 @@ export function StaffReviewScreen({ navigation, route }: ScreenProps<'StaffRevie
   const [outcome, setOutcome] = useState<'accepted' | 'rejected' | null>(null);
 
   const scanNext = () => navigation.navigate('StaffTabs', { screen: 'StaffScan', params: { intent: 'ANY', orderId: undefined, nonce: Date.now() } });
-  const toOrders = () => navigation.navigate('StaffTabs', { screen: 'StaffOrders' });
+  const toHome = () => navigation.navigate('StaffTabs', { screen: 'StaffHome' });
 
   const order = state ? findOrder(state, orderId) : undefined;
   if (!state || !me) return <StaffPage title="Review order" tab={false} bell={false}>{null}</StaffPage>;
   if (!order || order.locationId !== me.location.id) {
     return (
       <StaffPage title="Review order" tab={false} bell={false}>
-        <EmptyState icon="alert" title="Not your branch’s order" message="You can only accept orders for your own branch." action={{ label: 'Back to orders', onPress: toOrders }} />
+        <EmptyState icon="alert" title="Not your branch’s order" message="You can only accept orders for your own branch." action={{ label: 'Back to home', onPress: toHome }} />
       </StaffPage>
     );
   }
@@ -66,7 +66,7 @@ export function StaffReviewScreen({ navigation, route }: ScreenProps<'StaffRevie
           }
         >
           <Button label="Scan next" icon="scan" onPress={scanNext} />
-          <Button label={ok ? 'Open order' : 'Back to orders'} variant="outline" onPress={() => (ok ? navigation.replace('StaffOrder', { orderId: order.id }) : toOrders())} />
+          <Button label={ok ? 'Open order' : 'Back to home'} variant="outline" onPress={() => (ok ? navigation.replace('StaffOrder', { orderId: order.id }) : toHome())} />
         </Outcome>
       </StaffPage>
     );

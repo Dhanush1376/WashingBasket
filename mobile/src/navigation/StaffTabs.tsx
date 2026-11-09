@@ -6,10 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '../components/app/Icon';
 import { haptic } from '../lib/haptics';
 import { StaffHomeScreen } from '../screens/staff/StaffHomeScreen';
-import { StaffOrdersScreen } from '../screens/staff/StaffOrdersScreen';
 import { StaffProfileScreen } from '../screens/staff/StaffProfileScreen';
 import { StaffScanScreen } from '../screens/staff/StaffScanScreen';
-import { StaffScheduleScreen } from '../screens/staff/StaffScheduleScreen';
 import { app, colors } from '../theme';
 import type { StaffTabParamList } from './types';
 
@@ -17,13 +15,11 @@ const Tab = createBottomTabNavigator<StaffTabParamList>();
 
 const TABS: Record<keyof StaffTabParamList, { label: string; icon: IconName }> = {
   StaffHome: { label: 'Home', icon: 'home' },
-  StaffOrders: { label: 'Orders', icon: 'bag' },
   StaffScan: { label: 'Scan', icon: 'scan' },
-  StaffSchedule: { label: 'Schedule', icon: 'calendar' },
   StaffProfile: { label: 'Profile', icon: 'user' },
 };
 
-/** The staff app's five places, under the same floating pill of round buttons as the customer app. */
+/** The staff app's three tabs: Home, Scan and Profile under the floating pill. */
 export function StaffTabs() {
   return (
     <Tab.Navigator
@@ -36,9 +32,7 @@ export function StaffTabs() {
       tabBar={(props) => <StaffTabBar {...props} />}
     >
       <Tab.Screen name="StaffHome" component={StaffHomeScreen} />
-      <Tab.Screen name="StaffOrders" component={StaffOrdersScreen} />
       <Tab.Screen name="StaffScan" component={StaffScanScreen} />
-      <Tab.Screen name="StaffSchedule" component={StaffScheduleScreen} />
       <Tab.Screen name="StaffProfile" component={StaffProfileScreen} />
     </Tab.Navigator>
   );

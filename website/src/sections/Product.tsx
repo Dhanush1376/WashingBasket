@@ -130,11 +130,12 @@ export function Booking() {
         })
         .fromTo(pick('.journey__plate'), { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out', stagger: 0.08 }, 0)
         .fromTo(phones, { yPercent: 78, rotation: 4 }, { yPercent: 0, rotation: 0, duration: 1, ease: 'power3.out', stagger: 0.08 }, 0.05);
-      // the numbers, links and words come in once, as the row arrives
+      // the numbers, links, arrows and words come in once, as the row arrives
       gsap
         .timeline({ scrollTrigger: { trigger, start: desktop ? 'top 55%' : 'top 70%', once: true } })
         .from(pick('.journey__no'), { scale: 0.4, opacity: 0, duration: 0.5, ease: 'back.out(2.2)', stagger: 0.08 }, 0)
         .from(pick('.journey__link'), { opacity: 0, x: desktop ? -14 : 0, y: desktop ? 0 : -10, duration: 0.5, ease: 'power2.out', stagger: 0.08 }, 0.1)
+        .from(pick('.journey__plate-arrow'), { scale: 0.4, opacity: 0, duration: 0.5, ease: 'back.out(2)', stagger: 0.08 }, 0.12)
         .from(pick('.journey__text'), { opacity: 0, y: 16, duration: 0.6, ease: 'power2.out', stagger: 0.06 }, 0.05);
     };
     const steps = q('.journey__step');
@@ -161,6 +162,13 @@ export function Booking() {
             <div className="journey__plate">
               <Phone src={s.screen} alt={`The ${s.title.toLowerCase()} screen of the Washing Basket app`} className="journey__phone" eager />
             </div>
+            {i < last ? (
+              <div className="journey__plate-arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </div>
+            ) : null}
             <div className="journey__stop">
               <span className="journey__no" aria-hidden="true">
                 {String(i + 1).padStart(2, '0')}

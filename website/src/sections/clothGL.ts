@@ -38,6 +38,12 @@ export type ClothState = {
   dry: number;
   /** dry, crisp fibres */
   fluff: number;
+  /** the stains thrown on as it is collected: 0 none yet → 1 all of them landed */
+  stain: number;
+  /** the stains washing out */
+  clean: number;
+  /** lowered into the water: 0 the waterline below it → 1 under all over */
+  dip: number;
 };
 
 const VS = `#version 300 es
@@ -62,7 +68,7 @@ uniform sampler2D uCrumple;
 uniform sampler2D uWashed;
 uniform sampler2D uDirtT;
 uniform sampler2D uPressT;
-uniform float uFold, uDirt, uLift, uSoak, uWater, uRing, uFoam, uPop, uDry, uFluff;
+uniform float uFold, uDirt, uLift, uSoak, uWater, uRing, uFoam, uPop, uDry, uFluff, uStain, uClean, uDip;
 // ripples from the pointer: x, y (px), the time it touched, strength
 uniform vec4 uDrops[12];
 uniform int uNDrops;
@@ -119,7 +125,7 @@ vec3 ringWave(vec2 p, vec2 c, float front, float amp, float soft, float decay, f
   return a * vec3(sin(behind * freq), -cos(behind * freq) * freq * dp / L);
 }
 // the water's height (x) and its slope (yz), worked out together so it is evaluated once per pixel
-vec3 water(vec2 p) {
+vec3 water(vec2 p, float dd) {
   float t = uTime;
   vec2 k1 = vec2(0.0115, 0.0068), k2 = vec2(-0.0062, 0.0128), k3 = vec2(0.0190, -0.0105);
   float a1 = dot(p, k1) + t * 0.85, a2 = dot(p, k2) + t * 1.07, a3 = dot(p, k3) - t * 1.36;
@@ -135,6 +141,11 @@ vec3 water(vec2 p) {
     a *= 0.5;
   }
   h += vec3(n.x / 0.875 - 0.5, n.yz / 0.875) * 5.0;
+  // small ripples running off the waterline as it is lowered in
+  if (dd > 0.0 && dd < 600.0 && uDip < 0.999) {
+    float k = 0.075, e = exp(-dd / 130.0) * 1.5 * (1.0 - smoothstep(0.85, 1.0, uDip));
+    h += e * vec3(sin(dd * k - t * 5.5), 0.0, cos(dd * k - t * 5.5) * k);
+  }
   float fade = 1.0 - uRing;
   if (fade > 0.001) {
     float R = length(uRes) * 1.05;
@@ -225,14 +236,115 @@ vec3 bubble(vec3 col, vec2 d, float r, float under) {
   return col;
 }
 
+// ---- what the basket comes in with: stains thrown onto it as it is collected ------------------------------
+// where each lands (uv), its size (of the shorter side), when in the throw it lands (of uStain)
+const vec4 SP[6] = vec4[6](
+  vec4(0.57, 0.40, 0.105, 0.05),
+  vec4(0.30, 0.64, 0.095, 0.21),
+  vec4(0.69, 0.60, 0.072, 0.37),
+  vec4(0.47, 0.20, 0.060, 0.52),
+  vec4(0.42, 0.80, 0.062, 0.66),
+  vec4(0.83, 0.31, 0.056, 0.80));
+// the way it was thrown, what it is (coffee, mud, ink, turmeric, red wine, grass), a seed
+const vec4 SD[6] = vec4[6](
+  vec4(0.94, 0.34, 0.0, 1.3),
+  vec4(-0.66, 0.75, 1.0, 4.1),
+  vec4(-0.89, -0.45, 2.0, 7.7),
+  vec4(0.40, 0.92, 3.0, 2.9),
+  vec4(0.98, -0.22, 4.0, 5.6),
+  vec4(-0.32, 0.95, 5.0, 8.8));
+// what each does to the cotton (it darkens it, so a multiply)
+vec3 stainTint(float k) {
+  return k < 0.5 ? vec3(0.60, 0.40, 0.24)
+       : k < 1.5 ? vec3(0.52, 0.42, 0.31)
+       : k < 2.5 ? vec3(0.22, 0.27, 0.52)
+       : k < 3.5 ? vec3(0.99, 0.76, 0.24)
+       : k < 4.5 ? vec3(0.64, 0.22, 0.32)
+       :           vec3(0.52, 0.65, 0.32);
+}
+// how strongly, and the stretch of the wash over which it comes out (mud first, ink last)
+vec3 stainLift(float k) {
+  return k < 0.5 ? vec3(0.78, 0.15, 0.70)
+       : k < 1.5 ? vec3(0.88, 0.00, 0.55)
+       : k < 2.5 ? vec3(0.92, 0.32, 0.98)
+       : k < 3.5 ? vec3(0.80, 0.22, 0.85)
+       : k < 4.5 ? vec3(0.74, 0.18, 0.80)
+       :           vec3(0.72, 0.10, 0.75);
+}
+// where it lands, in px: on a tall screen, in the clear band between the title and the step
+vec2 stainAt(vec2 uv) {
+  if (uRes.y > uRes.x * 1.2) uv.y = 0.34 + (uv.y - 0.2) * 0.62;
+  return uv * uRes;
+}
+// one splash at d (px from where it struck), thrown along dir, of size R, spread g (0..1).
+// Returns its cover; rim = how near its edge (a drop that dries leaves its edge darker)
+float splat(vec2 d, vec2 dir, float R, float g, float seed, out float rim) {
+  rim = 0.0;
+  vec2 side = vec2(-dir.y, dir.x);
+  vec2 l = vec2(dot(d, dir), dot(d, side)) / R;
+  if (dot(l, l) > 11.0) return 0.0;
+  // stretched along the throw and carried a little forward of where it struck
+  vec2 m = vec2((l.x - 0.28 * g) / (1.0 + 0.4 * g), l.y);
+  float r = length(m);
+  float a = atan(m.y, m.x);
+  float fwd = max(cos(a), 0.0);
+  // a ragged edge, with fingers splashed out ahead
+  float e = 0.8 + 0.5 * (fbm3(vec2(cos(a), sin(a)) * 1.7 + seed) - 0.5);
+  e += pow(vnoise(vec2(a * 7.0, seed * 3.1)), 3.0) * 0.75 * fwd * fwd * fwd;
+  e *= g;
+  // (the liquid soaks on a little past where it landed, thinning out into the threads)
+  float cov = 1.0 - smoothstep(e - 0.16, e + 0.05, r);
+  cov = max(cov, (1.0 - smoothstep(e, e + 0.22, r)) * 0.28);
+  rim = smoothstep(e - 0.28, e - 0.03, r) * (1.0 - smoothstep(e - 0.03, e + 0.05, r));
+  // the droplets flung on ahead of it, each a little teardrop along the way it flew
+  float gs = smoothstep(0.0, 1.0, g * 1.2 - 0.1);
+  for (int j = 0; j < 7; j++) {
+    vec2 h = hash2(vec2(seed * 13.0, float(j) + 0.5));
+    float sa = (h.x - 0.5) * 1.6;
+    vec2 u = vec2(cos(sa), sin(sa));
+    vec2 o = l - u * (1.15 + 1.75 * h.y) * gs;
+    float sr = (0.045 + 0.10 * hash(h * 7.0 + 1.0)) * min(1.0, g * 2.5);
+    float dl = length(vec2(dot(o, u) * (0.55 + 0.4 * h.x), dot(o, vec2(-u.y, u.x))));
+    cov = max(cov, 1.0 - smoothstep(sr * 0.55, sr * 1.1, dl));
+  }
+  return cov;
+}
+
 void main() {
   vec2 p = vUv * uRes;
   float t = uTime;
 
+  float S = min(uRes.x * 1.25, uRes.y);
+
+  // ---- the waterline: it is lowered in, the water climbing over it, a little aslant and never still
+  float xl = p.x / uRes.y;
+  float line = (mix(1.12, -0.16, uDip) + (p.x / uRes.x - 0.5) * 0.10
+    + sin(xl * 5.0 + t * 1.6) * 0.010 + sin(xl * 11.0 - t * 2.3) * 0.005 + (vnoise(vec2(xl * 3.0, t * 0.5)) - 0.5) * 0.03) * uRes.y;
+  float dd = p.y - line; // under the water where > 0
+  float sub = smoothstep(-1.2, 1.2, dd);
+  float W = uWater * sub;
+  float atLine = uWater * (1.0 - step(0.999, uDip));
+
   // ---- the surface over it: how far it bends the view of the cloth, and how it catches the light
   vec2 grad = vec2(0.0);
-  if (uWater > 0.001) grad = water(p).yz;
-  vec2 q = p - grad * 70.0 * uWater * uWater;
+  if (W > 0.001) grad = water(p, dd).yz * sub;
+  vec2 q = p - grad * 70.0 * W * W;
+  // the surface climbing the cloth at the line bends the view there, like a lens
+  float men = exp(-pow(dd / 7.0, 2.0)) * atLine;
+  q.y -= men * 4.0;
+
+  // a stain striking it dents the cloth for a moment
+  bool stained = uStain > 0.001 && uClean < 0.999;
+  if (stained) {
+    for (int i = 0; i < 6; i++) {
+      float ph = (uStain - SP[i].w) / 0.05;
+      if (ph <= 0.0 || ph >= 1.0) continue;
+      vec2 c = stainAt(SP[i].xy);
+      float R = SP[i].z * S;
+      vec2 v = q - c;
+      q -= v * 0.12 * sin(PI * ph) * exp(-dot(v, v) / (R * R * 2.2));
+    }
+  }
 
   // warm air shimmering over it as it dries
   float haze = sin(PI * clamp(uDry, 0.0, 1.0));
@@ -253,7 +365,46 @@ void main() {
   vec4 dt = texture(uDirtT, (q + dv) * uCov.xy + uCov.zw);
   float da = dt.a * uDirt;
   col = mix(col, col * dt.rgb, da);
-  float cloudy = sin(PI * uLift) * uWater;
+
+  // the stains: soaked into the threads (their edges bleed along the weave, ink most), fresh ones glossy,
+  // dried ones darker at the rim; in the wash they lift unevenly, carried off with the dirt
+  if (stained) {
+    float fresh = 0.0;
+    vec2 qs = q + dv * 0.6;
+    for (int i = 0; i < 6; i++) {
+      float T = SP[i].w;
+      if (uStain < T) continue;
+      vec2 c = stainAt(SP[i].xy);
+      float R = SP[i].z * S;
+      vec2 d0 = qs - c;
+      if (dot(d0, d0) > R * R * 12.0) continue;
+      float k = SD[i].z;
+      float seed = SD[i].w;
+      // its edge wanders along the weave: along the threads one way, then the other (ink travels furthest)
+      float bleed = (k > 1.5 && k < 2.5 ? 0.22 : 0.08) * R;
+      vec2 d = d0 + bleed * vec2(fbm3(qs / vec2(7.0, 38.0) + seed) - 0.5, fbm3(qs / vec2(38.0, 7.0) + seed * 2.0) - 0.5);
+      float g = 1.0 - pow(1.0 - clamp((uStain - T) / 0.09, 0.0, 1.0), 3.0);
+      float rim;
+      float cov = splat(d, SD[i].xy, R, g, seed, rim);
+      if (cov < 0.002) continue;
+      vec3 lf = stainLift(k);
+      // thinner and thicker in places, the threads taking it up unevenly, and a dried edge darker
+      float a = cov * lf.x * (0.62 + 0.38 * fbm3(qs / 26.0 + seed)) * (0.88 + 0.12 * vnoise(qs / vec2(1.3, 4.0)));
+      if (k < 0.5) a *= mix(0.55, 1.12, rim);                           // coffee: its ring
+      else if (k > 1.5) a *= mix(0.85, 1.08, rim);
+      else if (k < 1.5) a *= 0.72 + 0.4 * vnoise(qs / 2.4 + seed) * fbm3(qs / 9.0); // mud: grainy
+      else if (k > 4.5) a *= 0.65 + 0.35 * vnoise(qs / vec2(1.5, 7.0)); // grass: streaked along the threads
+      float fr = 1.0 - smoothstep(T + 0.03, T + 0.28, uStain);
+      a = min(1.0, a * (1.0 + 0.3 * fr));
+      a *= 1.0 - smoothstep(lf.y, lf.z, uClean + (fbm3(qs / 55.0 + seed) - 0.5) * 0.35);
+      col = mix(col, col * stainTint(k), a);
+      fresh = max(fresh, fr * cov);
+    }
+    // fresh, it sits wet and glossy on the creases
+    col += vec3(1.0, 0.98, 0.95) * fresh * 0.07 * smoothstep(0.5, 0.75, s);
+  }
+
+  float cloudy = sin(PI * uLift) * W;
   if (cloudy > 0.001) {
     float m = fbm(q / 170.0 + vec2(t * 0.03, -t * 0.05) + uLift * 1.6);
     float cloud = smoothstep(0.42, 0.82, m) * cloudy;
@@ -263,12 +414,15 @@ void main() {
   // ---- the water wicking in from where it went in, ragged at the scale of the threads
   // (not there before it goes in, nor once it is dry through)
   float wet = 0.0, wfront = 0.0;
-  if (uSoak > 0.001 && uDry < 0.999) {
-    float f = min(length((p - C1 * uRes) / uRes.y), length((p - C2 * uRes) / uRes.y) * 1.15 + 0.12) * 0.62;
-    f += (fbm(p / 210.0 + 3.7) - 0.5) * 0.42 + (vnoise(p / 4.5) - 0.5) * 0.035;
-    float front = uSoak * 1.25 - 0.05;
-    wet = 1.0 - smoothstep(front - 0.012, front + 0.012, f);
-    wfront = exp(-pow((front - f) / 0.018, 2.0)) * (1.0 - step(0.999, uSoak));
+  // (it climbs the threads ahead of the waterline, ragged at their scale; just under, it is still drinking the
+  // water in, and goes deeper the longer it has been under)
+  if (uDip > 0.001 && uDry < 0.999) {
+    float rag = (fbm(p / 120.0 + 3.7) - 0.5) * 30.0 + (fbm3(p / vec2(3.0, 14.0)) - 0.5) * 9.0;
+    float e = dd + 8.0 + 36.0 * uSoak + rag;
+    // fully wet just above the line, thinning out up the threads to a faint damp edge
+    wet = smoothstep(-3.0, 2.0, e) * (0.45 + 0.55 * smoothstep(0.0, 26.0 + 30.0 * uSoak, e));
+    wfront = exp(-pow(e / 4.0, 2.0)) * 0.6 * (1.0 - step(0.999, uDip));
+    wet *= mix(0.5, 1.0, max(uSoak, smoothstep(0.0, 0.4 * uRes.y, dd)));
   }
 
   // drying: the raised folds first, the hollows last
@@ -309,21 +463,29 @@ void main() {
   }
 
   // ---- the water: a faint cool cast, light focused through the ripples, glints on the crests
-  if (uWater > 0.001) {
-    col = mix(col, col * vec3(0.985, 1.0, 1.01), uWater * 0.5);
+  if (W > 0.001) {
+    // a little darker under the water, the deeper the more
+    col *= 1.0 - 0.035 * W * smoothstep(0.0, 0.5 * uRes.y, dd);
+    col = mix(col, col * vec3(0.985, 1.0, 1.01), W * 0.5);
     // light focused through the ripples: soft bands, brighter in some places than others
     float c = caustic((p + grad * 50.0) / 900.0, t * 0.28);
     float patchy = smoothstep(0.25, 0.75, vnoise(p / 420.0 + vec2(t * 0.02, 0.0)));
-    col += vec3(1.0, 0.97, 0.9) * min(c, 1.0) * (0.04 + 0.08 * patchy) * uWater;
+    col += vec3(1.0, 0.97, 0.9) * min(c, 1.0) * (0.04 + 0.08 * patchy) * W;
     vec3 n = normalize(vec3(-grad * 2.6, 1.0));
     vec3 H = normalize(normalize(vec3(-0.35, -0.55, 1.0)) + vec3(0.0, 0.0, 1.0));
     float spec = pow(max(dot(n, H), 0.0), 260.0);
-    col += vec3(1.0) * spec * 0.55 * uWater;
-    col *= 1.0 - clamp(length(grad) * 0.5, 0.0, 0.08) * uWater;
+    col += vec3(1.0) * spec * 0.55 * W;
+    col *= 1.0 - clamp(length(grad) * 0.5, 0.0, 0.08) * W;
+  }
+  // the line itself: a bright thread where the surface climbs the cloth, the dark of it curving away just under
+  if (men > 0.0005 || atLine > 0.0) {
+    col = mix(col, col * 0.84, exp(-pow((dd - 8.0) / 6.0, 2.0)) * 0.55 * atLine);
+    col += vec3(1.0, 0.99, 0.96) * exp(-pow((dd + 1.5) / 2.2, 2.0)) * 0.26 * atLine;
   }
 
   // ---- air escaping the weave: small silvery bubbles that swell, drift and burst at the surface
-  float airy = uWater * (0.1 + 0.6 * sin(PI * clamp(uSoak, 0.0, 1.0))) * (1.0 - uPop);
+  float airy = W * (0.1 + 0.6 * sin(PI * clamp(uSoak, 0.0, 1.0))) * (1.0 - uPop);
+  airy = min(1.0, airy + W * 0.8 * exp(-max(dd, 0.0) / 45.0) * (1.0 - step(0.999, uDip)));
   if (airy > 0.003) {
     vec2 rel;
     float cell = 54.0;
@@ -339,7 +501,7 @@ void main() {
   }
 
   // ---- the suds: clusters of packed bubbles that drift, swell, burst and re-form
-  float suds = uFoam * (1.0 - uPop);
+  float suds = uFoam * (1.0 - uPop) * sub;
   if (suds > 0.002) {
     vec2 drift = vec2(t * 5.0, t * 2.5) + 18.0 * vec2(sin(t * 0.21 + p.y / 310.0), cos(t * 0.17 + p.x / 360.0));
     vec2 pf = p - drift - grad * 30.0;
@@ -383,12 +545,38 @@ void main() {
     }
   }
 
+  // ---- each stain in flight, just before it lands: coming in from the viewer's side, large and soft, smaller
+  // and sharper as it nears, its shadow on the cloth drawing in under it
+  if (uStain > 0.001 && uStain < 0.999) {
+    for (int i = 0; i < 6; i++) {
+      float fl = (uStain - SP[i].w + 0.075) / 0.075;
+      if (fl <= 0.0 || fl >= 1.0) continue;
+      vec2 c = stainAt(SP[i].xy);
+      float R = SP[i].z * S;
+      vec2 dir = SD[i].xy;
+      float n = 1.0 - fl;
+      float sd = length(p - c - vec2(0.35, 0.55) * R * n * 2.5);
+      col *= 1.0 - 0.22 * fl * (1.0 - smoothstep(R * 0.2, R * mix(2.4, 0.7, fl), sd));
+      vec2 at = c - dir * R * 4.0 * n - vec2(0.0, R * 2.0) * n * n;
+      float br = R * mix(1.5, 0.42, fl);
+      float bl = R * mix(0.8, 0.06, fl);
+      vec2 rel = p - at;
+      // drawn out a little along the way it flies
+      vec2 rl = vec2(dot(rel, dir) * mix(0.75, 0.9, fl), dot(rel, vec2(-dir.y, dir.x)));
+      float ba = (1.0 - smoothstep(br - bl, br + bl, length(rl))) * smoothstep(0.0, 0.25, fl);
+      vec3 tint = stainTint(SD[i].z);
+      vec3 bc = tint * tint * 0.85;
+      bc += vec3(1.0) * 0.45 * (1.0 - smoothstep(0.0, br * 0.45, length(rel + vec2(0.3, 0.38) * br)));
+      col = mix(col, bc, ba);
+    }
+  }
+
   outColor = vec4(col, 1.0);
 }`;
 
 type Srcs = { weave: string; crumple: string; washed: string; dirt: string };
 
-export function createClothGL(canvas: HTMLCanvasElement, srcs: Srcs, pressCv: HTMLCanvasElement, onReady: () => void) {
+export function createClothGL(canvas: HTMLCanvasElement, srcs: Srcs, pressCv: HTMLCanvasElement, onReady: () => void, state?: ClothState) {
   const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' });
   if (!gl || gl.isContextLost()) return null;
 
@@ -423,7 +611,7 @@ export function createClothGL(canvas: HTMLCanvasElement, srcs: Srcs, pressCv: HT
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
   const U = (n: string) => gl.getUniformLocation(prog, n);
-  const names = ['fold', 'dirt', 'lift', 'soak', 'water', 'ring', 'foam', 'pop', 'dry', 'fluff'] as const;
+  const names = ['fold', 'dirt', 'lift', 'soak', 'water', 'ring', 'foam', 'pop', 'dry', 'fluff', 'stain', 'clean', 'dip'] as const;
   const uLoc = Object.fromEntries(names.map((n) => [n, U('u' + n[0].toUpperCase() + n.slice(1))])) as Record<(typeof names)[number], WebGLUniformLocation | null>;
   const uRes = U('uRes');
   const uTime = U('uTime');
@@ -471,7 +659,7 @@ export function createClothGL(canvas: HTMLCanvasElement, srcs: Srcs, pressCv: HT
   upload(4, pressCv, false, false);
 
   // ---- state and drawing
-  const u: ClothState = { fold: 0, dirt: 1, lift: 0, soak: 0, water: 0, ring: 0, foam: 0, pop: 0, dry: 0, fluff: 0 };
+  const u: ClothState = state ?? { fold: 0, dirt: 1, lift: 0, soak: 0, water: 0, ring: 0, foam: 0, pop: 0, dry: 0, fluff: 0, stain: 0, clean: 0, dip: 0 };
   let W = 1;
   let H = 1;
   let last = '';
@@ -484,6 +672,8 @@ export function createClothGL(canvas: HTMLCanvasElement, srcs: Srcs, pressCv: HT
   // a coarser frame is drawn into a corner of a buffer off screen and scaled up onto it
   // (moving, it starts a little under full and climbs if the frames keep up)
   let quality = 0.72;
+  // phones get fewer pixels to fill: their screens are small, and their graphics chips share memory and heat
+  const budget = window.matchMedia('(pointer: coarse)').matches ? 0.55e6 : 1.2e6;
   let ceiling = 1.01;
   let still = true;
   let blit = true;
@@ -498,7 +688,7 @@ export function createClothGL(canvas: HTMLCanvasElement, srcs: Srcs, pressCv: HT
   const resize = (w: number, h: number) => {
     W = Math.max(1, w);
     H = Math.max(1, h);
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5, Math.sqrt(1.2e6 / (W * H)));
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5, Math.sqrt(budget / (W * H)));
     const cw = Math.max(1, Math.round(W * dpr));
     const ch = Math.max(1, Math.round(H * dpr));
     if (cw !== canvas.width || ch !== canvas.height) {

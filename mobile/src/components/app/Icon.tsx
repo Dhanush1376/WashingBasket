@@ -74,6 +74,7 @@ const PATHS = {
   wind: ['M3 8h11a3 3 0 1 0-3-3', 'M3 12h16a3 3 0 1 1-3 3', 'M3 16h7'],
   users: [circle(9, 8, 3.5), 'M2.5 20a6.5 6.5 0 0 1 13 0', 'M16 4.6a3.5 3.5 0 0 1 0 6.8', 'M18.5 14.2a6.5 6.5 0 0 1 3 5.8'],
   megaphone: ['M3 10.5v3a1.5 1.5 0 0 0 1.5 1.5H7l7 4.5V4.5L7 9H4.5A1.5 1.5 0 0 0 3 10.5z', 'M18 9a4 4 0 0 1 0 6', 'M8 15l1.2 5'],
+  layers: ['M12 2 2 7l10 5 10-5-10-5z', 'M2 17l10 5 10-5', 'M2 12l10 5 10-5'],
 } as const;
 
 export type IconName = keyof typeof PATHS;
@@ -82,9 +83,10 @@ type Props = { name: IconName; size?: number; color?: string; strokeWidth?: numb
 
 /** Line icons in one consistent style: 24 grid, round caps and joins, 1.8 stroke. */
 export const Icon = memo(function Icon({ name, size = 22, color = colors.ink, strokeWidth = 1.8 }: Props) {
+  const paths = PATHS[name] || PATHS.package || [];
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      {PATHS[name].map((d, i) => (
+      {paths.map((d, i) => (
         <Path key={i} d={d} stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
       ))}
     </Svg>

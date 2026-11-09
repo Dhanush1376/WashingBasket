@@ -58,7 +58,7 @@ export function StaffOrderScreen({ navigation, route }: ScreenProps<'StaffOrder'
   if (!order || order.locationId !== me.location.id) {
     return (
       <StaffPage title={orderId} tab={false}>
-        <EmptyState icon="alert" title="Not your branch’s order" message="You can only see orders for your own branch." action={{ label: 'Back to orders', onPress: () => navigation.navigate('StaffTabs', { screen: 'StaffOrders' }) }} />
+        <EmptyState icon="alert" title="Not your branch’s order" message="You can only see orders for your own branch." action={{ label: 'Back to home', onPress: () => navigation.navigate('StaffTabs', { screen: 'StaffHome' }) }} />
       </StaffPage>
     );
   }

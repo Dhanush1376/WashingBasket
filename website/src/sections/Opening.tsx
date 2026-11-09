@@ -38,11 +38,47 @@ export function Hero() {
     io.observe(el);
     return () => io.disconnect();
   }, []);
+  // Phones only autoplay a video that is muted as an attribute, which React does not write, so it is set here.
+  // Where autoplay is still refused (iOS Low Power Mode, data saver), it starts on the visitor's first touch,
+  // scroll or key instead of waiting on the browser's own play button.
+  const playing = useRef(false);
+  useEffect(() => {
+    const v = film.current;
+    if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    v.setAttribute('muted', '');
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
+  }, []);
   useEffect(() => {
     const v = film.current;
     if (!v || prefersReducedMotion()) return;
-    if (visible) v.play().catch(() => {});
-    else v.pause();
+    if (!visible) {
+      v.pause();
+      return;
+    }
+    const start = () => {
+      v.muted = true;
+      return v.play().then(
+        () => {
+          playing.current = true;
+        },
+        () => {
+          playing.current = false;
+        },
+      );
+    };
+    const events = ['touchstart', 'pointerdown', 'scroll', 'keydown'] as const;
+    const retry = () => {
+      start().then(() => {
+        if (playing.current) events.forEach((e) => window.removeEventListener(e, retry));
+      });
+    };
+    start().then(() => {
+      if (!playing.current) events.forEach((e) => window.addEventListener(e, retry, { passive: true }));
+    });
+    return () => events.forEach((e) => window.removeEventListener(e, retry));
   }, [visible]);
 
   useScene(ref, ({ q, one }) => {
@@ -77,14 +113,18 @@ export function Hero() {
           playsInline
           autoPlay={!prefersReducedMotion()}
           preload="auto"
+          disablePictureInPicture
+          disableRemotePlayback
+          controls={false}
           aria-label="Washing Basket at work: a basket collected, washed, dried, ironed, folded and handed back"
           onTimeUpdate={(e) => {
             const s = sceneAt(e.currentTarget.currentTime);
             setCur((c) => (c === s ? c : s));
           }}
         >
-          <source src={FILM.webm} type="video/webm" />
+          {/* MP4 first: every phone plays it, and plays it in hardware */}
           <source src={FILM.mp4} type="video/mp4" />
+          <source src={FILM.webm} type="video/webm" />
         </video>
       </div>
 

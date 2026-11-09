@@ -26,14 +26,14 @@ export function StaffDeliveryScreen({ navigation, route }: ScreenProps<'StaffDel
   const [done, setDone] = useState(false);
 
   const scanNext = () => navigation.navigate('StaffTabs', { screen: 'StaffScan', params: { intent: 'ANY', orderId: undefined, nonce: Date.now() } });
-  const toOrders = () => navigation.navigate('StaffTabs', { screen: 'StaffOrders' });
+  const toHome = () => navigation.navigate('StaffTabs', { screen: 'StaffHome' });
 
   const order = state ? findOrder(state, orderId) : undefined;
   if (!state || !me) return <StaffPage title="Complete delivery" tab={false} bell={false}>{null}</StaffPage>;
   if (!order || order.locationId !== me.location.id) {
     return (
       <StaffPage title="Complete delivery" tab={false} bell={false}>
-        <EmptyState icon="alert" title="Not your branch’s order" message="You can only hand over orders for your own branch." action={{ label: 'Back to orders', onPress: toOrders }} />
+        <EmptyState icon="alert" title="Not your branch’s order" message="You can only hand over orders for your own branch." action={{ label: 'Back to home', onPress: toHome }} />
       </StaffPage>
     );
   }
@@ -47,7 +47,7 @@ export function StaffDeliveryScreen({ navigation, route }: ScreenProps<'StaffDel
       <StaffPage title={isHome ? 'Delivered' : 'Collected'} tab={false} bell={false}>
         <Outcome ok title={`${order.id} ${isHome ? 'delivered' : 'collected'}`} message={`All ${plural(order.pieces, 'piece')} handed to ${name}. The order is complete.`}>
           <Button label="Scan next" icon="scan" onPress={scanNext} />
-          <Button label="Back to orders" variant="outline" onPress={toOrders} />
+          <Button label="Back to home" variant="outline" onPress={toHome} />
         </Outcome>
       </StaffPage>
     );

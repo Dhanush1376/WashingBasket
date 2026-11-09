@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, PanResponder, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, PanResponder, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -18,11 +18,13 @@ import { acceptOrder, rejectOrder } from '../../mock/services/staffService';
 import type { StaffTabProps } from '../../navigation/types';
 import { can, canSeeContact, displayName } from '../../staff/work';
 import { colors, fonts, space } from '../../theme';
+import { TopBar } from '../../components/app/TopBar';
 import { ScannerModal } from './ScannerModal';
-import { BEIGE, Button, CHIP, RADIUS, RULE, shared, soft, StaffPage, TAB_ROOM, Tag, useStaff, webCursor } from './kit';
+import { BEIGE, BG, Button, CHIP, RADIUS, RULE, shared, TAB_ROOM, Tag, useStaff, webCursor } from './kit';
 
 type Refusal = Extract<ScanResult, { ok: false }>;
 type ScanRow = { key: string; ok: boolean; title: string; meta: string; at: string; orderId?: string };
+const SHEET_ID = 'staff-scans-sheet';
 const HERO = '#FED843'; // the customer order page's QR card
 const NAVY = '#0A1C3E';
 const GREEN = '#0D7A21';
@@ -90,7 +92,7 @@ export function StaffScanScreen({ navigation, route }: StaffTabProps<'StaffScan'
   const intent = route.params?.intent ?? 'ANY';
   const expectOrderId = route.params?.orderId;
   const nonce = route.params?.nonce;
-  const { state, me } = useStaff();
+  const { state, me, unread } = useStaff();
 
   const [camera, setCamera] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -290,30 +292,130 @@ export function StaffScanScreen({ navigation, route }: StaffTabProps<'StaffScan'
   }, [actualRows]);
 
   const insets = useSafeAreaInsets();
-  const [heroH, setHeroH] = useState(() => Math.max(insets.top, 6) + 210);
+  const [heroH, setHeroH] = useState(0);
+
+  // the scans drawer, exactly like customer WalletScreen: drag or tap its handle and it rises over the yellow card & topbar
+  const lift = Math.round(Math.max(0, heroH - insets.top - 64) * 0.75);
+  const pos = useSharedValue(0); // 0 = resting, 1 = raised
+  const startPos = useSharedValue(0);
+  const [isRaised, setIsRaised] = useState(false);
+
+  const settle = (to: number) => {
+    setIsRaised(to > 0.5);
+    pos.set(withSpring(to, { damping: 22, stiffness: 240, mass: 0.8 }));
+  };
+
+  const give = (p: number) => (p < 0 ? p * 0.25 : p > 1 ? 1 + (p - 1) * 0.25 : p);
+
+  const pan = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 6 && Math.abs(g.dy) > Math.abs(g.dx),
+        onMoveShouldSetPanResponderCapture: (_, g) => Math.abs(g.dy) > 6 && Math.abs(g.dy) > Math.abs(g.dx),
+        onPanResponderGrant: () => startPos.set(pos.value),
+        onPanResponderMove: (_, g) => {
+          const p = startPos.value - g.dy / Math.max(lift, 1);
+          pos.set(give(p));
+        },
+        onPanResponderRelease: (_, g) => settle(g.vy < -0.3 ? 1 : g.vy > 0.3 ? 0 : pos.value > 0.5 ? 1 : 0),
+        onPanResponderTerminate: () => settle(pos.value > 0.5 ? 1 : 0),
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lift, pos],
+  );
+
+  useWebDrag(
+    'scans-handle',
+    {
+      onStart: () => startPos.set(pos.value),
+      onMove: (dy) => {
+        const v = startPos.value - dy / Math.max(lift, 1);
+        pos.set(give(v));
+      },
+      onEnd: (vy) => settle(vy < -0.3 ? 1 : vy > 0.3 ? 0 : pos.value > 0.5 ? 1 : 0),
+    },
+    [heroH, lift],
+  );
+
+  const toggle = () => {
+    haptic.tap();
+    settle(pos.value > 0.5 ? 0 : 1);
+  };
+
+  const listY = useRef(0);
+  const onListScroll = (e: { nativeEvent: { contentOffset: { y: number } } }) => {
+    listY.current = e.nativeEvent.contentOffset.y;
+  };
+  const onListDragEnd = (e: { nativeEvent: { contentOffset: { y: number }; velocity?: { y: number } } }) => {
+    const y = e.nativeEvent.contentOffset.y;
+    if (y <= 0 && pos.value > 0.5 && (e.nativeEvent.velocity?.y ?? 0) < -0.2) settle(0);
+  };
+  const onListDragBegin = () => {
+    if (pos.value < 0.5) settle(1);
+  };
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const node = document.getElementById(SHEET_ID);
+    if (!node) return;
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) < 2) return;
+      const raised = pos.value > 0.5;
+      if (e.deltaY > 0 && !raised) {
+        e.preventDefault();
+        settle(1);
+      } else if (e.deltaY < 0 && raised && listY.current <= 0) {
+        e.preventDefault();
+        settle(0);
+      }
+    };
+    node.addEventListener('wheel', onWheel, { passive: false });
+    return () => node.removeEventListener('wheel', onWheel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heroH, lift]);
+
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -pos.value * lift }],
+  }));
+  const listInset = useAnimatedStyle(() => ({
+    marginBottom: (1 - Math.min(1, Math.max(0, pos.value))) * lift,
+  }));
+  const heroStyle = useAnimatedStyle(() => {
+    const t = Math.min(1, Math.max(0, pos.value));
+    return { opacity: 1 - t * 0.2, transform: [{ scale: 1 - t * 0.04 }] };
+  });
+  const backdropStyle = useAnimatedStyle(() => {
+    const t = Math.min(1, Math.max(0, pos.value));
+    return { opacity: t * 0.52 };
+  });
+
+  const bottomGap = Math.max(insets.bottom, 12) + TAB_ROOM;
 
   const camTitle = intent === 'INTAKE' ? 'Scan to accept' : intent === 'DELIVERY' ? 'Scan delivery QR' : 'Scan customer QR';
 
   return (
-    <StaffPage
-      title="Scan"
-      overlay={
-        scans && me ? (
-          <ScansDrawer
-            rows={allScanRows}
-            onOpen={openScanOrder}
-            heroBottom={heroH}
-          />
-        ) : null
-      }
-    >
-      <View
-        onLayout={(e) => {
-          const h = e.nativeEvent.layout.height;
-          const topOffset = Math.max(insets.top, 6) + 58 + space.xs;
-          if (h > 60) setHeroH(Math.round(topOffset + h));
-        }}
+    <View style={styles.root}>
+      {/* ── Top navbar & hero card up top (dims & scales behind the drawer, exactly like WalletScreen) ── */}
+      <Animated.View
+        style={[
+          styles.page,
+          { paddingTop: Math.max(insets.top, 6) },
+          heroStyle,
+        ]}
+        onLayout={(e) => setHeroH(Math.round(e.nativeEvent.layout.height))}
       >
+        <Rise distance={8}>
+          <TopBar
+            padded={false}
+            title="Scan"
+            bell
+            unread={unread}
+            onBell={() => navigation.navigate('StaffNotifications' as any)}
+            onHome={() => navigation.navigate('StaffTabs', { screen: 'StaffHome' } as any)}
+          />
+        </Rise>
+
+        <View style={{ marginTop: space.sm }}>
         {/* ── the yellow card: the scan tile on the left, the code box underneath ── */}
         <Rise delay={60} distance={14} scale={0.98}>
           {scans || !me ? (
@@ -417,7 +519,115 @@ export function StaffScanScreen({ navigation, route }: StaffTabProps<'StaffScan'
             </View>
           </Pop>
         ) : null}
-      </View>
+        </View>
+      </Animated.View>
+
+      {/* ── Dimming backdrop behind the sheet when scrolled/raised (covers & dims TopBar too!) ── */}
+      <Animated.View
+        style={[StyleSheet.absoluteFill, styles.backdrop, backdropStyle]}
+        pointerEvents={isRaised ? 'auto' : 'none'}
+      >
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={() => settle(0)}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss scans drawer"
+        />
+      </Animated.View>
+
+      {/* ── The scans sheet: white, rounded on top, rising over the hero and top navbar ── */}
+      {heroH && (scans || !me) ? (
+        <Animated.View
+          nativeID={SHEET_ID}
+          style={[
+            styles.drawer,
+            { top: heroH + space.sm, bottom: -lift },
+            sheetStyle,
+          ]}
+        >
+          <View nativeID="scans-handle" {...pan.panHandlers}>
+            <Pressable
+              onPress={toggle}
+              accessibilityRole="button"
+              accessibilityLabel={isRaised ? 'Collapse scans' : 'Expand scans'}
+              hitSlop={10}
+              style={[styles.drawerHit, webCursor]}
+            >
+              <View style={styles.drawerHandle} />
+            </Pressable>
+            <Pressable
+              onPress={toggle}
+              accessibilityRole="button"
+              accessibilityLabel={isRaised ? 'Collapse scans' : 'Expand scans'}
+              style={[styles.drawerHead, webCursor]}
+            >
+              <View style={styles.row}>
+                <Text style={styles.drawerTitle}>My scans</Text>
+                <View style={styles.pill}>
+                  <Text style={styles.pillText}>{allScanRows.length}</Text>
+                </View>
+              </View>
+              <Icon name={isRaised ? 'chevronDown' : 'chevronUp'} size={18} color={colors.inkMuted} />
+            </Pressable>
+          </View>
+
+          <Animated.View style={[styles.flex, listInset]}>
+            <ScrollView
+              style={styles.flex}
+              onScroll={onListScroll}
+              onScrollBeginDrag={onListDragBegin}
+              onScrollEndDrag={onListDragEnd}
+              scrollEventThrottle={16}
+              contentContainerStyle={{
+                paddingHorizontal: space.lg,
+                paddingBottom: bottomGap + 40,
+              }}
+              showsVerticalScrollIndicator={false}
+            >
+              {allScanRows.length ? (
+                allScanRows.map((r, i) => (
+                  <Pressable
+                    key={r.key}
+                    onPress={() => r.orderId && openScanOrder(r.orderId)}
+                    disabled={!r.orderId}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${r.title}, ${r.ok ? 'valid' : 'refused'}, ${ago(r.at)}`}
+                    style={({ pressed }) => [styles.logRow, i > 0 && styles.lineRule, webCursor, pressed && { opacity: 0.7 }]}
+                  >
+                    <View
+                      style={[
+                        styles.logIcon,
+                        {
+                          backgroundColor: r.ok ? colors.successTint : colors.dangerTint,
+                          borderWidth: 1,
+                          borderColor: r.ok ? 'rgba(13, 122, 33, 0.18)' : 'rgba(235, 87, 87, 0.18)',
+                        },
+                      ]}
+                    >
+                      <Icon name={r.ok ? 'check' : 'x'} size={16} color={r.ok ? GREEN : colors.danger} strokeWidth={2.4} />
+                    </View>
+                    <View style={styles.flex}>
+                      <Text style={styles.lineName} numberOfLines={1}>
+                        {r.title}
+                      </Text>
+                      <Text style={styles.lineMeta} numberOfLines={1}>
+                        {r.meta}
+                      </Text>
+                    </View>
+                    <Text style={styles.logTime}>{ago(r.at)}</Text>
+                  </Pressable>
+                ))
+              ) : (
+                <View style={styles.emptyLog}>
+                  <Icon name="scan" size={20} color={colors.inkMuted} />
+                  <Text style={styles.lineMeta}>Codes you scan show up here, valid or not.</Text>
+                </View>
+              )}
+              {allScanRows.length ? <Text style={styles.end}>End of scans</Text> : null}
+            </ScrollView>
+          </Animated.View>
+        </Animated.View>
+      ) : null}
 
       {/* ── Order details in an app drawer ── */}
       <BottomSheet
@@ -719,223 +929,7 @@ export function StaffScanScreen({ navigation, route }: StaffTabProps<'StaffScan'
           </View>
         ) : null}
       </BottomSheet>
-    </StaffPage>
-  );
-}
-
-
-const SHEET_ID = 'staff-scans-sheet';
-
-/**
- * Every code I've scanned, in an interactive app drawer resting right below the scan card, exactly like the wallet page:
- * drag or tap its handle and it rises smoothly over the scan card.
- */
-function ScansDrawer({
-  rows,
-  onOpen,
-  heroBottom,
-}: {
-  rows: ScanRow[];
-  onOpen: (orderId: string) => void;
-  heroBottom: number;
-}) {
-  const insets = useSafeAreaInsets();
-  const topBarH = Math.max(insets.top, 6) + 64;
-  const restingTop = Math.max(topBarH + 80, heroBottom);
-  const lift = Math.round(Math.max(40, restingTop - topBarH));
-  const bottomGap = Math.max(insets.bottom, 12) + TAB_ROOM;
-
-  const pos = useSharedValue(0); // 0 = resting below card, 1 = raised
-  const startPos = useSharedValue(0);
-  const [raised, setRaised] = useState(false);
-
-  const settle = (to: number) => {
-    setRaised(to > 0.5);
-    pos.set(withSpring(to, { damping: 22, stiffness: 240, mass: 0.8 }));
-  };
-
-  const give = (p: number) => (p < 0 ? p * 0.25 : p > 1 ? 1 + (p - 1) * 0.25 : p);
-
-  const pan = useMemo(
-    () =>
-      PanResponder.create({
-        onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 6 && Math.abs(g.dy) > Math.abs(g.dx),
-        onMoveShouldSetPanResponderCapture: (_, g) => Math.abs(g.dy) > 6 && Math.abs(g.dy) > Math.abs(g.dx),
-        onPanResponderGrant: () => startPos.set(pos.value),
-        onPanResponderMove: (_, g) => {
-          const p = startPos.value - g.dy / Math.max(lift, 1);
-          pos.set(give(p));
-        },
-        onPanResponderRelease: (_, g) => settle(g.vy < -0.3 ? 1 : g.vy > 0.3 ? 0 : pos.value > 0.5 ? 1 : 0),
-        onPanResponderTerminate: () => settle(pos.value > 0.5 ? 1 : 0),
-      }),
-    [lift, pos],
-  );
-
-  useWebDrag(
-    'scans-handle',
-    {
-      onStart: () => startPos.set(pos.value),
-      onMove: (dy) => {
-        const v = startPos.value - dy / Math.max(lift, 1);
-        pos.set(give(v));
-      },
-      onEnd: (vy) => settle(vy < -0.3 ? 1 : vy > 0.3 ? 0 : pos.value > 0.5 ? 1 : 0),
-    },
-    [lift],
-  );
-
-  const toggle = () => {
-    haptic.tap();
-    settle(pos.value > 0.5 ? 0 : 1);
-  };
-
-  const listY = useRef(0);
-  const onListScroll = (e: { nativeEvent: { contentOffset: { y: number } } }) => {
-    listY.current = e.nativeEvent.contentOffset.y;
-  };
-  const onListDragEnd = (e: { nativeEvent: { contentOffset: { y: number }; velocity?: { y: number } } }) => {
-    const y = e.nativeEvent.contentOffset.y;
-    if (y <= 0 && pos.value > 0.5 && (e.nativeEvent.velocity?.y ?? 0) < -0.2) settle(0);
-  };
-  const onListDragBegin = () => {
-    if (pos.value < 0.5) settle(1);
-  };
-
-  useEffect(() => {
-    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
-    const node = document.getElementById(SHEET_ID);
-    if (!node) return;
-    const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) < 2) return;
-      const isRaised = pos.value > 0.5;
-      if (e.deltaY > 0 && !isRaised) {
-        e.preventDefault();
-        settle(1);
-      } else if (e.deltaY < 0 && isRaised && listY.current <= 0) {
-        e.preventDefault();
-        settle(0);
-      }
-    };
-    node.addEventListener('wheel', onWheel, { passive: false });
-    return () => node.removeEventListener('wheel', onWheel);
-  }, [lift]);
-
-  const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: -pos.value * lift }],
-  }));
-  const listInset = useAnimatedStyle(() => ({
-    marginBottom: (1 - Math.min(1, Math.max(0, pos.value))) * lift,
-  }));
-  const shadeStyle = useAnimatedStyle(() => ({
-    opacity: Math.min(1, Math.max(0, pos.value)) * 0.45,
-  }));
-
-  return (
-    <>
-      <Animated.View
-        style={[StyleSheet.absoluteFill, styles.drawerShade, shadeStyle]}
-        pointerEvents={raised ? 'auto' : 'none'}
-      >
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={() => settle(0)}
-          accessibilityRole="button"
-          accessibilityLabel="Dismiss scans drawer"
-        />
-      </Animated.View>
-
-      <Animated.View
-        nativeID={SHEET_ID}
-        style={[
-          styles.drawer,
-          { top: restingTop, bottom: -lift },
-          sheetStyle,
-        ]}
-      >
-        <View nativeID="scans-handle" {...pan.panHandlers}>
-          <Pressable
-            onPress={toggle}
-            accessibilityRole="button"
-            accessibilityLabel={raised ? 'Collapse scans' : 'Expand scans'}
-            hitSlop={10}
-            style={[styles.drawerHit, webCursor]}
-          >
-            <View style={styles.drawerHandle} />
-          </Pressable>
-          <Pressable
-            onPress={toggle}
-            accessibilityRole="button"
-            accessibilityLabel={raised ? 'Collapse scans' : 'Expand scans'}
-            style={[styles.drawerHead, webCursor]}
-          >
-            <View style={styles.row}>
-              <Text style={styles.drawerTitle}>My scans</Text>
-              <View style={styles.pill}>
-                <Text style={styles.pillText}>{rows.length}</Text>
-              </View>
-            </View>
-            <Icon name={raised ? 'chevronDown' : 'chevronUp'} size={18} color={colors.inkMuted} />
-          </Pressable>
-        </View>
-
-        <Animated.View style={[styles.flex, listInset]}>
-          <ScrollView
-            style={styles.flex}
-            onScroll={onListScroll}
-            onScrollBeginDrag={onListDragBegin}
-            onScrollEndDrag={onListDragEnd}
-            scrollEventThrottle={16}
-            contentContainerStyle={{
-              paddingHorizontal: space.lg,
-              paddingBottom: bottomGap + 40,
-            }}
-            showsVerticalScrollIndicator={false}
-          >
-            {rows.length ? (
-              rows.map((r, i) => (
-                <Pressable
-                  key={r.key}
-                  onPress={() => r.orderId && onOpen(r.orderId)}
-                  disabled={!r.orderId}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${r.title}, ${r.ok ? 'valid' : 'refused'}, ${ago(r.at)}`}
-                  style={({ pressed }) => [styles.logRow, i > 0 && styles.lineRule, webCursor, pressed && { opacity: 0.7 }]}
-                >
-                  <View
-                    style={[
-                      styles.logIcon,
-                      {
-                        backgroundColor: r.ok ? colors.successTint : colors.dangerTint,
-                        borderWidth: 1,
-                        borderColor: r.ok ? 'rgba(13, 122, 33, 0.18)' : 'rgba(235, 87, 87, 0.18)',
-                      },
-                    ]}
-                  >
-                    <Icon name={r.ok ? 'check' : 'x'} size={16} color={r.ok ? GREEN : colors.danger} strokeWidth={2.4} />
-                  </View>
-                  <View style={styles.flex}>
-                    <Text style={styles.lineName} numberOfLines={1}>
-                      {r.title}
-                    </Text>
-                    <Text style={styles.lineMeta} numberOfLines={1}>
-                      {r.meta}
-                    </Text>
-                  </View>
-                  <Text style={styles.logTime}>{ago(r.at)}</Text>
-                </Pressable>
-              ))
-            ) : (
-              <View style={styles.emptyLog}>
-                <Icon name="scan" size={20} color={colors.inkMuted} />
-                <Text style={styles.lineMeta}>Codes you scan show up here, valid or not.</Text>
-              </View>
-            )}
-            {rows.length ? <Text style={styles.end}>End of scans</Text> : null}
-          </ScrollView>
-        </Animated.View>
-      </Animated.View>
-    </>
+    </View>
   );
 }
 
@@ -954,13 +948,15 @@ function InfoRow({ icon, label, value, divider, right }: { icon: IconName; label
   );
 }
 
-const C = 18;
 const cleanCardShadow =
   Platform.OS === 'web'
     ? ({ boxShadow: '0 1px 3px rgba(10, 28, 62, 0.02), 0 4px 12px rgba(10, 28, 62, 0.035)' } as object)
     : { shadowColor: '#0A1C3E', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.035, shadowRadius: 8, elevation: 1 };
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: BG },
+  page: { paddingHorizontal: space.lg, maxWidth: 560, width: '100%', alignSelf: 'center' },
+  backdrop: { backgroundColor: '#181410' },
   flex: { flex: 1, minWidth: 0 },
   grow: { flex: 1.6 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 7 },

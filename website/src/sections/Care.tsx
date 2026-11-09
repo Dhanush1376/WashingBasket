@@ -26,24 +26,20 @@ import { CARE } from '../content';
 import crumple from '../assets/cloth-crumple.webp';
 import dirt from '../assets/cloth-dirt.webp';
 import foldSprite from '../assets/cloth-fold.webp';
+import foldSpriteSmall from '../assets/cloth-fold-m.webp';
 import ironImg from '../assets/cloth-iron.webp';
 import washed from '../assets/cloth-washed.webp';
 import weave from '../assets/cloth-weave.webp';
-import { getLenis, gsap, isJumping, ScrollTrigger, useScene } from '../motion';
-import { createClothGL } from './clothGL';
+import { gsap, ScrollTrigger, useScene } from '../motion';
+import { createClothGL, type ClothState } from './clothGL';
 
 const N = CARE.steps.length;
-/** The last step is due by this share of the scroll, leaving the rest for it to be read before the page moves on. */
-const DUE = 0.75;
-/** The least time (ms) a step stays on screen before the page may scroll on past it, however fast it is scrolled. */
-const DWELL = 1400;
-/** The share of the scroll at which step `i` comes up. */
-const dueAt = (i: number) => (Math.max(0, i - 0.15) * DUE) / (N - 1);
-
-/** How long (s) the cloth takes from one step's state to the next: wash, dry, iron, return. */
-const CLOTH = [2.6, 3.0, 5.6, 4.4];
+/** Each step's part of the journey, and so its share of the scroll: collect, wash, dry, iron, return. */
+const CLOTH = [2.6, 3.4, 2.8, 5.0, 3.6];
 /** The fold, rendered frame by frame (care-fabric/stage.py): a sprite sheet of `frames` cells. */
-const FOLD = { frames: 33, cols: 6, fw: 720, fh: 520, sw: 600, sh: 400 };
+const FOLD = { frames: 49, cols: 7, fw: 720, fh: 520, sw: 600, sh: 400 };
+/** Phones load the sheet at 0.6 of full size (care-fabric/stage.py writes both). */
+const FOLD_SMALL = 0.6;
 /** The iron image: its width over its height. */
 const IRON_RATIO = 720 / 317;
 /** The close-up is drawn a little larger than the stage, so its edges never show. */
@@ -77,7 +73,11 @@ export function Care() {
     const iron = one<HTMLElement>('.iron');
     const ironFace = one<HTMLElement>('.iron__face');
     const fctx = foldCv.getContext('2d')!;
-    const foldIm = load(foldSprite);
+    const small = window.matchMedia('(pointer: coarse), (max-width: 899px)').matches;
+    const foldIm = load(small ? foldSpriteSmall : foldSprite);
+    // one frame's cell in the sheet that was loaded
+    const CW = Math.round(FOLD.fw * (small ? FOLD_SMALL : 1));
+    const CH = Math.round(FOLD.fh * (small ? FOLD_SMALL : 1));
     const state = { p: 0, f: 0 };
 
     // the iron's track, kept at half the stage's size: white wherever the soleplate has pressed
@@ -86,8 +86,25 @@ export function Care() {
     pressCv.height = 2;
     const pctx = pressCv.getContext('2d')!;
 
-    const gl = createClothGL(glCv, { weave, crumple, washed, dirt }, pressCv, () => piece.classList.add('has-gl'));
-    const u = gl?.u ?? { fold: 0, dirt: 1, lift: 0, soak: 0, water: 0, ring: 0, foam: 0, pop: 0, dry: 0, fluff: 0 };
+    // the timeline drives `u`; a renderer built again after the phone drops the canvas picks up from the same state
+    const u: ClothState = { fold: 0, dirt: 0.3, lift: 0, soak: 0, water: 0, ring: 0, foam: 0, pop: 0, dry: 0, fluff: 0, stain: 0, clean: 0, dip: 0 };
+    const showGL = () => piece.classList.add('has-gl');
+    let gl = createClothGL(glCv, { weave, crumple, washed, dirt }, pressCv, showGL, u);
+    // a phone may take the canvas away (low memory, or the browser in the background). The plain cloth beneath
+    // shows at once instead of a blank screen, and the live one comes back when the browser hands the canvas back
+    const onLost = (e: Event) => {
+      e.preventDefault();
+      piece.classList.remove('has-gl');
+      gl?.setActive(false);
+      gl = null;
+    };
+    const onRestored = () => {
+      gl = createClothGL(glCv, { weave, crumple, washed, dirt }, pressCv, showGL, u);
+      gl?.resize(SW, SH);
+      gl?.setActive(vis.isActive);
+    };
+    glCv.addEventListener('webglcontextlost', onLost);
+    glCv.addEventListener('webglcontextrestored', onRestored);
 
     // ---- layout: the stage, where the folded cloth will lie, the iron's strokes ------------------------------
     let SW = 0;
@@ -97,9 +114,8 @@ export function Care() {
     let verts: { x: number; y: number; r: number }[] = [];
     const geo = { dx: 0, dy: 0, k: 1, cx: 0, cy: 0 };
     // the folded piece, as the fold leaves it: where it lies in a sprite cell (a quarter of the cloth, in the
-    // lower right), so the view can push in on it and bring it to the middle as it folds
+    // lower right), so it can be brought to the middle as it folds
     const folded = { x: 0.75, y: 0.7, w: 0.42, h: 0.39 };
-    const zoomIn = { z: 1, w: 1, h: 1, cx: 0, cy: 0, sw: 1, sh: 1, c: new DOMRect(), n: new DOMRect() };
 
     // where the iron is at `p` of its work, and which way it faces: move by move, easing into and out of
     // each, the line of a stroke bowing a little and the wrist never quite still, as a hand irons
@@ -163,60 +179,58 @@ export function Care() {
     };
 
     // the fold, frame by frame from the sprite sheet
-    foldCv.width = FOLD.fw;
-    foldCv.height = FOLD.fh;
+    foldCv.width = CW;
+    foldCv.height = CH;
     const drawFold = (f: number) => {
-      fctx.clearRect(0, 0, FOLD.fw, FOLD.fh);
+      fctx.clearRect(0, 0, CW, CH);
       if (!foldIm.complete || !foldIm.naturalWidth) return;
-      const k = Math.max(0, Math.min(FOLD.frames - 1, Math.round(f * (FOLD.frames - 1))));
-      fctx.drawImage(foldIm, (k % FOLD.cols) * FOLD.fw, Math.floor(k / FOLD.cols) * FOLD.fh, FOLD.fw, FOLD.fh, 0, 0, FOLD.fw, FOLD.fh);
+      // between two frames, the next one fades in over this one, so the cloth moves continuously
+      const at = Math.max(0, Math.min(FOLD.frames - 1, f * (FOLD.frames - 1)));
+      const k = Math.floor(at);
+      const mix = at - k;
+      const cell = (n: number) => fctx.drawImage(foldIm, (n % FOLD.cols) * CW, Math.floor(n / FOLD.cols) * CH, CW, CH, 0, 0, CW, CH);
+      fctx.globalAlpha = 1;
+      cell(k);
+      if (mix > 0.02 && k < FOLD.frames - 1) {
+        fctx.globalAlpha = mix;
+        cell(k + 1);
+        fctx.globalAlpha = 1;
+      }
     };
     const measureFold = () => {
       const k = FOLD.frames - 1;
       const cv = document.createElement('canvas');
-      cv.width = FOLD.fw;
-      cv.height = FOLD.fh;
+      cv.width = CW;
+      cv.height = CH;
       const cx = cv.getContext('2d', { willReadFrequently: true })!;
-      cx.drawImage(foldIm, (k % FOLD.cols) * FOLD.fw, Math.floor(k / FOLD.cols) * FOLD.fh, FOLD.fw, FOLD.fh, 0, 0, FOLD.fw, FOLD.fh);
-      const a = cx.getImageData(0, 0, FOLD.fw, FOLD.fh).data;
-      let x0 = FOLD.fw, y0 = FOLD.fh, x1 = 0, y1 = 0;
-      for (let y = 0; y < FOLD.fh; y += 2)
-        for (let x = 0; x < FOLD.fw; x += 2)
-          if (a[(y * FOLD.fw + x) * 4 + 3] > 128) {
+      cx.drawImage(foldIm, (k % FOLD.cols) * CW, Math.floor(k / FOLD.cols) * CH, CW, CH, 0, 0, CW, CH);
+      const a = cx.getImageData(0, 0, CW, CH).data;
+      let x0 = CW, y0 = CH, x1 = 0, y1 = 0;
+      for (let y = 0; y < CH; y += 2)
+        for (let x = 0; x < CW; x += 2)
+          if (a[(y * CW + x) * 4 + 3] > 128) {
             if (x < x0) x0 = x;
             if (x > x1) x1 = x;
             if (y < y0) y0 = y;
             if (y > y1) y1 = y;
           }
       if (x1 > x0 && y1 > y0)
-        Object.assign(folded, { x: (x0 + x1) / 2 / FOLD.fw, y: (y0 + y1) / 2 / FOLD.fh, w: (x1 - x0) / FOLD.fw, h: (y1 - y0) / FOLD.fh });
-      fitZoom();
-    };
-    // how far to push in: as large as it can be, centred, without touching the title in the top left corner or
-    // the step in the bottom right (it may pass beside either of them), the bar at the top or the edges
-    const fitZoom = () => {
-      const { cx, cy, sw, sh, c, n } = zoomIn;
-      const pw = folded.w * zoomIn.w;
-      const ratio = (folded.h * zoomIn.h) / pw;
-      const m = 20;
-      const clear = (below: number, beside: number) => Math.max(below / ratio, beside) * 2;
-      const W = Math.min(
-        clear(cy - c.bottom - m, cx - c.right - m),
-        clear(n.top - m - cy, n.left - m - cx),
-        (2 * Math.min(cy - 84, sh - 28 - cy)) / ratio,
-        sw - 2 * m,
-        sw * (desktop ? 0.42 : 0.68),
-        640,
-      );
-      zoomIn.z = Math.max(1, Math.min(2.4, W / pw));
+        Object.assign(folded, { x: (x0 + x1) / 2 / CW, y: (y0 + y1) / 2 / CH, w: (x1 - x0) / CW, h: (y1 - y0) / CH });
       pushIn(state.f);
     };
+    // it is brought to the middle as each fold calls for it, never scaled: the first fold (top half down) halves its
+    // height, so it is brought up to the middle then; the second (left half over) halves its width, so only then
+    // is it brought across. It never runs off the screen part way
+    const ease = (a: number, b: number, f: number) => {
+      const t = Math.max(0, Math.min(1, (f - a) / (b - a)));
+      return t * t * (3 - 2 * t);
+    };
     const pushIn = (f: number) => {
+      const e1 = ease(0, 0.5, f);
+      const e2 = ease(0.5, 1, f);
       gsap.set(foldCv, {
-        transformOrigin: `${folded.x * 100}% ${folded.y * 100}%`,
-        scale: 1 + (zoomIn.z - 1) * f,
-        xPercent: -(folded.x - 0.5) * 100 * f,
-        yPercent: -(folded.y - 0.5) * 100 * f,
+        xPercent: -(folded.x - 0.5) * 100 * e2,
+        yPercent: -(folded.y - 0.5) * 100 * e1,
       });
     };
     foldIm.onload = () => {
@@ -236,9 +250,11 @@ export function Care() {
       const n = now.getBoundingClientRect();
       const top = c.bottom - r.top + 16;
       const bottom = n.top - r.top - 16;
-      const spot = { cx: SW / 2, cy: Math.min(Math.max(SH * 0.52, top + 60), bottom - 60) };
+      const spot = desktop ? { cx: SW / 2, cy: SH * 0.53 } : { cx: SW / 2, cy: Math.min(Math.max(SH * 0.52, top + 60), bottom - 60) };
       const room = Math.min(spot.cy - top, bottom - spot.cy) * 2;
-      const tw = Math.max(120, Math.min(SW * (desktop ? 0.33 : 0.72), SH * 0.42 * 1.5, room * 1.5, 620));
+      const tw = desktop
+        ? Math.max(320, Math.min(SW * 0.56, SH * 0.66 * 1.5, 860))
+        : Math.max(120, Math.min(SW * 0.72, SH * 0.42 * 1.5, room * 1.5, 620));
       // the part of the close-up that becomes the piece: the largest 3 : 2 window in the stage
       const ww = Math.min(SW, SH * 1.5);
       const wh = ww / 1.5;
@@ -250,9 +266,7 @@ export function Care() {
       const fw = (tw * FOLD.fw) / FOLD.sw;
       const fh = (fw * FOLD.fh) / FOLD.fw;
       gsap.set(foldCv, { width: fw, height: fh, left: spot.cx - fw / 2, top: spot.cy - fh / 2 });
-      const off = (b: DOMRect) => new DOMRect(b.x - r.left, b.y - r.top, b.width, b.height);
-      Object.assign(zoomIn, { w: fw, h: fh, cx: spot.cx, cy: spot.cy, sw: SW, sh: SH, c: off(c), n: off(n) });
-      fitZoom();
+      pushIn(state.f);
       // the iron's work, row by row down the cloth, as a person irons: pushed tip first a good way along,
       // drawn back a little, pushed on to the edge; there it is turned round as it comes down to the next
       // row, and worked back the other way
@@ -278,32 +292,42 @@ export function Care() {
     // ---- the journey, as one timeline with a label at each step -----------------------------------------------
     const L = (i: number) => CLOTH.slice(0, i).reduce((x, y) => x + y, 0);
     const cloth = gsap.timeline({ paused: true, defaults: { ease: 'power1.inOut' } });
-    const [w, d, i3] = CLOTH;
+    const [c0, w, d, i3, r5] = CLOTH;
+    const W0 = L(1);
     cloth
       .addLabel('s0', 0)
-      // wash: into the water. It wicks through, rings spread, the dirt lifts away, suds gather, the folds change
-      .to(u, { water: 1, duration: 0.8, ease: 'power2.out' }, 0.05)
-      .to(u, { ring: 1, duration: w - 0.1, ease: 'power1.out' }, 0.05)
-      .to(u, { soak: 1, duration: w * 0.62, ease: 'power1.out' }, 0.1)
-      .to(u, { lift: 1, duration: w * 0.8, ease: 'sine.inOut' }, w * 0.2)
-      .to(u, { dirt: 0, duration: w * 0.7 }, w * 0.25)
-      .to(u, { fold: 1, duration: w * 0.7 }, w * 0.25)
-      .to(u, { foam: 1, duration: w * 0.65, ease: 'power2.out' }, w * 0.35)
-      .to('.cloth__crumple', { opacity: 0, duration: w * 0.7 }, w * 0.25)
-      .to('.cloth__dirt', { opacity: 0, duration: w * 0.7 }, w * 0.25)
-      .addLabel('s1', L(1))
-      // dry: the water drains, the suds burst away, then the damp leaves it patch by patch
-      .to(u, { pop: 1, duration: d * 0.5, ease: 'sine.in' }, L(1))
-      .to(u, { water: 0, duration: d * 0.55, ease: 'sine.inOut' }, L(1) + d * 0.05)
-      .to(u, { dry: 1, duration: d * 0.8, ease: 'sine.inOut' }, L(1) + d * 0.18)
-      .to(u, { fluff: 1, duration: d * 0.45 }, L(1) + d * 0.55)
+      // collect: what it came in with is thrown onto it, one stain after another, and it greys a little
+      .to(u, { stain: 1, duration: c0 * 0.92, ease: 'none' }, 0)
+      .to(u, { dirt: 1, duration: c0 * 0.9, ease: 'none' }, 0.05)
+      .fromTo('.cloth__dirt', { opacity: 0.3 }, { opacity: 1, duration: c0 * 0.9, ease: 'none' }, 0.05)
+      .addLabel('s1', W0)
+      // wash: lowered in, the water climbing over it and up its threads; rings spread, the dirt and the stains
+      // lift away, suds gather, the folds change
+      .to(u, { water: 1, duration: w * 0.12, ease: 'power1.out' }, W0)
+      .to(u, { dip: 1, duration: w * 0.36, ease: 'sine.inOut' }, W0)
+      .to(u, { soak: 1, duration: w * 0.55, ease: 'power1.out' }, W0 + w * 0.08)
+      .to(u, { ring: 1, duration: w * 0.6, ease: 'power1.out' }, W0 + w * 0.34)
+      .to(u, { lift: 1, duration: w * 0.62, ease: 'sine.inOut' }, W0 + w * 0.36)
+      .to(u, { dirt: 0, duration: w * 0.55 }, W0 + w * 0.4)
+      .to(u, { clean: 1, duration: w * 0.58 }, W0 + w * 0.4)
+      .to(u, { fold: 1, duration: w * 0.55 }, W0 + w * 0.4)
+      .to(u, { foam: 1, duration: w * 0.5, ease: 'power2.out' }, W0 + w * 0.48)
+      .to('.cloth__crumple', { opacity: 0, duration: w * 0.55 }, W0 + w * 0.4)
+      .to('.cloth__dirt', { opacity: 0, duration: w * 0.55 }, W0 + w * 0.4)
       .addLabel('s2', L(2))
-      // iron: set down on the cloth, pushed and drawn back across it, lifted away
-      .fromTo(iron, { autoAlpha: 0, scale: 1.14 }, { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power2.out' }, L(2))
-      .to(state, { p: 1, duration: i3 - 0.75, ease: 'none', onUpdate: () => press(state.p) }, L(2) + 0.35)
-      .to(iron, { autoAlpha: 0, scale: 1.12, duration: 0.4, ease: 'power2.in' }, L(3) - 0.4)
+      // dry: the water drains, the suds burst away, then the damp leaves it patch by patch
+      .to(u, { pop: 1, duration: d * 0.5, ease: 'sine.in' }, L(2))
+      .to(u, { water: 0, duration: d * 0.55, ease: 'sine.inOut' }, L(2) + d * 0.05)
+      .to(u, { dry: 1, duration: d * 0.8, ease: 'sine.inOut' }, L(2) + d * 0.18)
+      .to(u, { fluff: 1, duration: d * 0.45 }, L(2) + d * 0.55)
       .addLabel('s3', L(3))
-      // return: the view draws back to the whole piece; it is folded, softly, and slides away
+      // iron: set down on the cloth, pushed and drawn back across it, lifted away
+      .fromTo(iron, { autoAlpha: 0, scale: 1.14 }, { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power2.out' }, L(3))
+      .to(state, { p: 1, duration: i3 - 0.75, ease: 'none', onUpdate: () => press(state.p) }, L(3) + 0.35)
+      .to(iron, { autoAlpha: 0, scale: 1.12, duration: 0.4, ease: 'power2.in' }, L(4) - 0.4)
+      .addLabel('s4', L(4))
+      // return: the view draws back a little to the whole piece; it is folded, softly, brought to the middle
+      // as it folds, and slides away
       .to(
         piece,
         {
@@ -311,19 +335,19 @@ export function Care() {
           y: () => geo.dy,
           scale: () => geo.k * ZOOM,
           clipPath: () => `inset(${geo.cy}px ${geo.cx}px ${geo.cy}px ${geo.cx}px round 3px)`,
-          duration: 1.2,
+          duration: r5 * 0.24,
           ease: 'power2.inOut',
         },
-        L(3),
+        L(4),
       )
-      .set(foldCv, { autoAlpha: 1 }, L(3) + 1.2)
-      .set(piece, { autoAlpha: 0 }, L(3) + 1.25)
-      .to(state, { f: 1, duration: 2.1, ease: 'sine.inOut', onUpdate: () => {
+      .set(foldCv, { autoAlpha: 1 }, L(4) + r5 * 0.24)
+      .set(piece, { autoAlpha: 0 }, L(4) + r5 * 0.24 + 0.05)
+      .to(state, { f: 1, duration: r5 * 0.5, ease: 'sine.inOut', onUpdate: () => {
         drawFold(state.f);
         pushIn(state.f);
-      } }, L(3) + 1.25)
-      .to(foldCv, { x: () => SW, duration: 0.85, ease: 'power2.inOut' }, L(3) + 3.5)
-      .addLabel('s4', L(4));
+      } }, L(4) + r5 * 0.24 + 0.05)
+      .to(foldCv, { x: () => SW, duration: r5 * 0.2, ease: 'power2.inOut' }, L(5) - r5 * 0.2)
+      .addLabel('end', L(5));
 
     const onResize = () => {
       layout();
@@ -364,7 +388,7 @@ export function Care() {
           if (Math.random() < 0.4) {
             const a = Math.random() * Math.PI * 2;
             const r = 60 + Math.random() * 120;
-            gsap.delayedCall(0.25 + Math.random() * 0.35, () => gl.drop(x + Math.cos(a) * r, y + Math.sin(a) * r, 0.7 * u.water));
+            gsap.delayedCall(0.25 + Math.random() * 0.35, () => gl?.drop(x + Math.cos(a) * r, y + Math.sin(a) * r, 0.7 * u.water));
           }
         }
         dripLater();
@@ -378,105 +402,46 @@ export function Care() {
     gl?.setActive(vis.isActive);
     dripLater();
 
-    // ---- the steps follow the scroll --------------------------------------------------------------------------
-    let shown = 0;
-    let target = 0;
-    let shownAt = 0;
-    let play: gsap.core.Timeline | null = null;
-    const advance = () => {
-      if (shown === target) return;
-      const jump = Math.abs(target - shown);
-      const back = target < shown;
-      shown = target;
-      shownAt = performance.now();
-      setStep(target);
-      root.style.setProperty('--hold', `${DWELL}ms`);
-      // one step forward plays at its own pace, after hurrying through whatever is left of the one before;
-      // going back, or a jump across several, is hurried through
-      play?.kill();
-      play = gsap.timeline();
-      const end = cloth.labels[`s${target}`];
-      const dist = Math.abs(end - cloth.time());
-      if (jump > 1 || back) {
-        play.add(cloth.tweenTo(end, { duration: jump > 1 ? Math.min(3.2, dist / 2.2) : Math.min(2.4, dist / 2), ease: 'none' }));
-      } else {
-        const from = cloth.labels[`s${target - 1}`];
-        if (cloth.time() < from - 0.01) play.add(cloth.tweenTo(from, { duration: (from - cloth.time()) / 3, ease: 'none' }));
-        play.add(cloth.tweenTo(end, { duration: end - Math.max(from, cloth.time()), ease: 'none' }));
+    // ---- the journey follows the scroll: as far along as the page is, as fast or as slow as it is scrolled,
+    // and back again going up (a little smoothing, so a flick of the wheel glides rather than jumps)
+    const bounds = Array.from({ length: N }, (_, i) => cloth.labels[`s${i}`]);
+    let shown = -1;
+    let fill = -1;
+    const follow = () => {
+      const t = cloth.time();
+      let k = 0;
+      while (k < N - 1 && t >= bounds[k + 1] - 0.001) k++;
+      if (k !== shown) {
+        shown = k;
+        setStep(k);
+      }
+      const len = (k < N - 1 ? bounds[k + 1] : cloth.duration()) - bounds[k];
+      const f = Math.round(Math.min(1, Math.max(0, (t - bounds[k]) / len)) * 200) / 200;
+      if (f !== fill) {
+        fill = f;
+        root.style.setProperty('--fill', String(f));
       }
     };
-
+    cloth.eventCallback('onUpdate', follow);
     const st = ScrollTrigger.create({
       trigger: root,
       start: 'top top',
       end: 'bottom bottom',
-      onUpdate: (self) => {
-        let next = Math.min(N - 1, Math.floor((self.progress / DUE) * (N - 1) + 0.15));
-        if (next > shown && !isJumping()) next = performance.now() - shownAt >= DWELL ? shown + 1 : shown;
-        target = next;
-        advance();
-      },
+      animation: cloth,
+      scrub: 0.7,
     });
+    follow();
 
-    // however fast the page is scrolled, each step holds the screen for a moment (its tick fills meanwhile)
-    // before the page moves past it, the last one included. Going back up is never held, nor a jump from a link.
-    let inside = false;
-    let held = false;
-    let release = 0;
-    const pace = () => {
-      const lenis = getLenis();
-      const y = window.scrollY;
-      if (y < st.start) {
-        inside = false;
-        return;
-      }
-      if (!inside) {
-        inside = true;
-        if (shown === 0) {
-          shownAt = performance.now();
-          // the first step's tick starts filling now, not when the page loaded
-          one<HTMLElement>('.wash__ticks')
-            .getAnimations({ subtree: true })
-            .forEach((an) => (an.currentTime = 0));
-        }
-      }
-      if (!lenis || isJumping() || y >= st.end) return;
-      const settled = performance.now() - shownAt >= DWELL;
-      let max: number;
-      if (shown >= N - 1) {
-        if (settled) return;
-        max = st.end - 2;
-      } else {
-        const next = settled ? shown + 2 : shown + 1;
-        max = next > N - 1 ? st.end - 2 : st.start + dueAt(next) * (st.end - st.start) - 2;
-      }
-      if (y > max) {
-        // a clean pause rather than a tug of war with the wheel: the page stops at the step, and is let go
-        // once the step has had its moment
-        lenis.scrollTo(max, { immediate: true, force: true });
-        if (!held) {
-          held = true;
-          lenis.stop();
-          const wait = Math.max(120, DWELL - (performance.now() - shownAt));
-          release = window.setTimeout(() => {
-            held = false;
-            getLenis()?.start();
-          }, wait);
-        }
-      }
-    };
-    window.addEventListener('scroll', pace, { passive: true });
     return () => {
-      window.clearTimeout(release);
-      if (held) getLenis()?.start();
+      st.kill();
       drip?.kill();
       stage.removeEventListener('pointermove', onMove);
       stage.removeEventListener('pointerdown', onDown);
       window.removeEventListener('resize', onResize);
-      window.removeEventListener('scroll', pace);
       vis.kill();
-      play?.kill();
       cloth.kill();
+      glCv.removeEventListener('webglcontextlost', onLost);
+      glCv.removeEventListener('webglcontextrestored', onRestored);
       gl?.destroy();
       piece.classList.remove('has-gl');
     };

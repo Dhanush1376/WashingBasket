@@ -157,7 +157,7 @@ export function StaffProfileScreen({ navigation }: StaffTabProps<'StaffProfile'>
                 <View style={styles.actions}>
                   <QuickAction icon="shield" label="ID card" onPress={() => setSheet('id')} />
                   <QuickAction icon="edit" label="Edit" onPress={() => setSheet('edit')} />
-                  <QuickAction icon="calendar" label="Schedule" onPress={() => navigation.navigate('StaffSchedule')} />
+                  <QuickAction icon="wallet" label="Salary" onPress={() => navigation.navigate('StaffSalary')} />
                   <QuickAction icon="headset" label="Help" onPress={() => setSheet('help')} />
                 </View>
               </>
@@ -185,11 +185,11 @@ export function StaffProfileScreen({ navigation }: StaffTabProps<'StaffProfile'>
             </View>
           </Tile>
 
-          <Tile onPress={() => navigation.navigate('StaffSchedule')} flex={1} style={styles.statsCard} label="Open my schedule">
+          <Tile flex={1} style={styles.statsCard} label="This month's summary" onPress={() => haptic.tap()}>
             <View style={styles.tileHead}>
               <Text style={styles.cardKicker}>{MONTHS[Number(month.slice(5)) - 1]}</Text>
               <View style={styles.arrowLight}>
-                <Icon name="arrowUpRight" size={16} color={colors.ink} strokeWidth={2} />
+                <Icon name="clock" size={16} color={colors.ink} strokeWidth={2} />
               </View>
             </View>
             {sum ? (
@@ -212,13 +212,13 @@ export function StaffProfileScreen({ navigation }: StaffTabProps<'StaffProfile'>
 
         {/* ── row 3: leave + notices ── */}
         <Rise replay={replay} delay={200} distance={18} scale={0.97} style={styles.row}>
-          <Tile onPress={() => navigation.navigate('StaffSchedule')} flex={1} style={styles.leaveCard} label="Open leave">
+          <Tile flex={1} style={styles.leaveCard} label="Casual leave balance" onPress={() => haptic.tap()}>
             <View style={styles.tileHead}>
               <View style={styles.tileIcon}>
                 <Icon name="sun" size={18} color={brand.orange} />
               </View>
               <View style={styles.arrowLight}>
-                <Icon name="arrowUpRight" size={16} color={colors.ink} strokeWidth={2} />
+                <Icon name="check" size={16} color={colors.ink} strokeWidth={2} />
               </View>
             </View>
             <View>

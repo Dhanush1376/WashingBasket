@@ -392,8 +392,16 @@
   clip-path: inset(0 round var(--R));
 }
 /* the film from the app's sign-in screen fills the panel, its people standing on the panel's floor */
+/* never the browser's own play button over it: if a phone holds it back, it starts on the first touch */
+.hero__film::-webkit-media-controls,
+.hero__film::-webkit-media-controls-start-playback-button,
+.hero__film::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
 .hero__film {
   position: absolute;
+  pointer-events: none;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -1061,13 +1069,16 @@
 
 .wash {
   position: relative;
-  height: 400svh;
+  height: 640svh;
   background: var(--ivory);
 }
 .wash__stage {
   position: sticky;
   top: 0;
-  height: 100svh;
+  /* the large viewport: on phones the stage fills the screen with the browser's bars shown or tucked away,
+     never leaving the page's ivory above or below it */
+  height: 100vh;
+  height: 100lvh;
   overflow: hidden;
   isolation: isolate;
   --pad: max(var(--g), calc((100% - var(--wrap)) / 2));
@@ -1274,7 +1285,7 @@
   position: relative;
   overflow: hidden;
 }
-/* the step being shown: its tick fills while the page holds on it, then the scroll is free again */
+/* the step being shown: its tick fills as the page is scrolled through it */
 .wash__ticks i.is-on {
   width: 40px;
   background: rgba(255, 138, 31, 0.3);
@@ -1285,12 +1296,7 @@
   inset: 0;
   background: #ff8a1f;
   transform-origin: 0 50%;
-  animation: wash-hold var(--hold, 1.4s) linear both;
-}
-@keyframes wash-hold {
-  from {
-    transform: scaleX(0);
-  }
+  transform: scaleX(var(--fill, 0));
 }
 .wash__big {
   display: grid;
@@ -1365,8 +1371,9 @@
 }
 
 @media (max-width: 899px) {
+  /* a phone scrolls freely here (no hold), so each step gets more of the scroll to itself */
   .wash {
-    height: 340svh;
+    height: 700svh;
   }
   .wash__copy {
     top: 84px;
@@ -1387,7 +1394,9 @@
   }
   .wash__now {
     left: var(--g);
+    /* clear of the browser's bottom bar while it is shown */
     bottom: 24px;
+    bottom: calc(24px + 100lvh - 100svh);
   }
   .wash__at {
     font-size: 12.5px;
@@ -1899,6 +1908,36 @@
   overflow: hidden;
   border-radius: 22px;
   background: var(--halo);
+  box-shadow:
+    0 16px 36px -10px rgba(10, 28, 62, 0.16),
+    0 4px 12px -2px rgba(10, 28, 62, 0.06);
+  border: 1px solid rgba(10, 28, 62, 0.05);
+  transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
+}
+.journey__plate-arrow {
+  position: absolute;
+  top: calc(var(--plate) / 2);
+  left: calc(100% + var(--gap) / 2);
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(28px, 2.4vw, 34px);
+  height: clamp(28px, 2.4vw, 34px);
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--ink);
+  box-shadow:
+    0 6px 18px -2px rgba(10, 28, 62, 0.16),
+    0 2px 6px rgba(10, 28, 62, 0.08);
+  border: 1px solid rgba(10, 28, 62, 0.08);
+  pointer-events: none;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+.journey__plate-arrow svg {
+  display: block;
+  stroke: var(--ink);
 }
 .journey__phone {
   --pw: var(--phone);
@@ -2031,6 +2070,12 @@
 
 /* a quiet answer to the pointer: the screen rises a little out of its plate and its stop lights up */
 @media (hover: hover) {
+  .journey__step:hover .journey__plate {
+    transform: translateY(-4px);
+    box-shadow:
+      0 22px 42px -10px rgba(10, 28, 62, 0.20),
+      0 6px 16px -2px rgba(10, 28, 62, 0.08);
+  }
   .journey__step:hover .journey__phone {
     transform: translateY(-10px);
   }
@@ -2063,6 +2108,9 @@
 
 /* tablets and phones: one vertical path down the left, each step's screen and words beside its stop */
 @media (max-width: 899px) {
+  .journey__plate-arrow {
+    display: none;
+  }
   .book {
     --plate: 200px;
     --phone: 132px;

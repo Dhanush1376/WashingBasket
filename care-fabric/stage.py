@@ -166,6 +166,9 @@ def iron():
 SW, SH = 600, 400          # the cloth, in frame pixels
 FW, FH = 720, 520          # a frame: room round the cloth for its shadow and the loop
 OX, OY = (FW - SW) // 2, (FH - SH) // 2
+# the fold sheet, written twice: in full for large screens, and smaller for phones (a decoded sprite sheet
+# costs its full width x height in memory, and phones have little to spare)
+SHEETS = {"cloth-fold": 1.0, "cloth-fold-m": 0.6}
 
 
 def sheet_texture():
@@ -281,13 +284,14 @@ def fold_frames():
     tex[OY:OY + SH, OX:OX + SW] = np.clip(sheet_texture() * np.array([1.065, 1.019, 0.985], np.float32), 0, 255)
     al[OY:OY + SH, OX:OX + SW] = 1
     frames = []
-    n1, n2 = 16, 16
+    # 24 frames a fold (49 in all), so it reads as continuous motion
+    n1, n2 = 24, 24
     for i in range(n1 + 1):
         frames.append(fold_once(tex, al, i / n1, 0, r_max=46, r_min=2.5, wave=26))
     mid_tex, mid_a, _ = frames[-1]
     for i in range(1, n2 + 1):
         frames.append(fold_once(mid_tex, mid_a, i / n2, 1, r_max=38, r_min=4.0, wave=18))
-    cols = 6
+    cols = 7
     rows = int(np.ceil(len(frames) / cols))
     sheet = np.zeros((rows * FH, cols * FW, 4), np.float32)
     for k, (rgb, a, tb) in enumerate(frames):
@@ -297,9 +301,11 @@ def fold_frames():
         r_, c_ = divmod(k, cols)
         sheet[r_ * FH:(r_ + 1) * FH, c_ * FW:(c_ + 1) * FW] = np.dstack([col, A * 255])
     bgra = np.dstack([cv2.cvtColor(np.clip(sheet[..., :3], 0, 255).astype(np.uint8), cv2.COLOR_RGB2BGR), sheet[..., 3].astype(np.uint8)])
-    cv2.imwrite(os.path.join(OUT, "cloth-fold.webp"), bgra, [cv2.IMWRITE_WEBP_QUALITY, 80])
+    for name, k in SHEETS.items():
+        img = bgra if k == 1 else cv2.resize(bgra, (round(bgra.shape[1] * k), round(bgra.shape[0] * k)), interpolation=cv2.INTER_AREA)
+        cv2.imwrite(os.path.join(OUT, name + ".webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 80])
     # a strip of frames to look at
-    pick = [4, 8, 11, 16, 20, 24, 32]
+    pick = [6, 12, 18, 24, 30, 36, 48]
     strip = []
     for k in pick:
         rgb, a, tb = frames[k]
@@ -308,7 +314,7 @@ def fold_frames():
         bgc = bg * (1 - cs * 0.9)
         strip.append(cv2.cvtColor((rgb * a[..., None] + bgc * (1 - a[..., None])).astype(np.uint8), cv2.COLOR_RGB2BGR))
     cv2.imwrite(os.path.join(WORK, "fold-strip.jpg"), np.hstack([cv2.resize(s, (360, 260)) for s in strip]))
-    return dict(frames=len(frames), cols=cols, fw=FW, fh=FH, sw=SW, sh=SH, ox=OX, oy=OY)
+    return dict(frames=len(frames), cols=cols, fw=FW, fh=FH, sw=SW, sh=SH, scales=SHEETS)
 
 
 def main():
