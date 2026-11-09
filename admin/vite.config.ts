@@ -11,6 +11,8 @@ import { mockRelay } from './mock-relay.ts';
  * (../mobile/src/mock); `mockRelay` is the dev-only snapshot relay that keeps the two apps in step.
  */
 export default defineConfig({
+  // where it is served from: '/' on its own, '/admin/' when it is deployed inside the website
+  base: process.env.ADMIN_BASE || '/',
   plugins: [react(), mockRelay()],
   // Compile everything, including the shared files under ../mobile, with the portal's own tsconfig. Otherwise
   // Vite picks up mobile/tsconfig.json for those files, whose `extends: "expo/tsconfig.base"` it can't resolve.

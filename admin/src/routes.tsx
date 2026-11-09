@@ -69,4 +69,7 @@ export const router = createBrowserRouter([
       { path: '*', element: page(<NotFoundPage />) },
     ],
   },
-]);
+], {
+  // the portal may be served from a sub-path (washingbasket.in/admin); Vite's `base` sets it at build time
+  basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/',
+});

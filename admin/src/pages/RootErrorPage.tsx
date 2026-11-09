@@ -46,7 +46,7 @@ export function RootErrorPage() {
   };
 
   const handleGoHome = () => {
-    window.location.href = '/';
+    window.location.href = import.meta.env.BASE_URL;
   };
 
   return (
@@ -54,7 +54,7 @@ export function RootErrorPage() {
       <div className="root-error-container">
         {/* Header Branding */}
         <div className="root-error-brand">
-          <img src="/logo.png" alt="WashingBasket" width={40} height={40} className="root-error-logo" />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="WashingBasket" width={40} height={40} className="root-error-logo" />
           <div className="root-error-brand-text">
             <span className="root-error-wordmark">
               <span style={{ color: '#FFA742' }}>W</span>ashing<span style={{ color: '#FFA742' }}>B</span>asket

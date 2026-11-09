@@ -113,7 +113,7 @@ export function AdminLayout() {
 
       <aside className="sidebar" ref={sidebarRef} aria-label="Main menu">
         <div className="sidebar__brand">
-          <img src="/logo.png" alt="" width={38} height={38} className="sidebar__logo" />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" width={38} height={38} className="sidebar__logo" />
           <div className="sidebar__brand-text">
             <span className="sidebar__wordmark" aria-label="WashingBasket">
               <span className="sidebar__cap">W</span>ashing<span className="sidebar__cap">B</span>asket
@@ -163,7 +163,7 @@ export function AdminLayout() {
             tone="outline"
             size={40}
           />
-          <img src="/logo.png" alt="Washing Basket" width={46} height={46} className="topbar__logo" />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Washing Basket" width={46} height={46} className="topbar__logo" />
           <div className="topbar__context" aria-label="Current section">
             <span className="topbar__crumb">Washing Basket</span>
             <Icon name="chevronRight" size={13} className="topbar__chevron" aria-hidden />

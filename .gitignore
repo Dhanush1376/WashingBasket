@@ -1,20 +1,54 @@
-# Dependencies
+# ─────────────────────────────────────────────────────────────
+# Dependencies & Package Managers
+# ─────────────────────────────────────────────────────────────
 node_modules/
 .pnp
 .pnp.js
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnpm-store/
 
-# Production and build outputs
+# ─────────────────────────────────────────────────────────────
+# Production, Build Outputs & Bundler Caches
+# ─────────────────────────────────────────────────────────────
 dist/
+build/
 web-build/
-expo-env.d.ts
+out/
+.output/
+.cache/
+.parcel-cache/
+.turbo/
+.vite/
 *.tsbuildinfo
+.eslintcache
+.stylelintcache
 
-# Expo & React Native
+# ─────────────────────────────────────────────────────────────
+# Hosting & Cloud Deployment Artifacts
+# ─────────────────────────────────────────────────────────────
+.vercel/
+.netlify/
+.serverless/
+.wrangler/
+
+# ─────────────────────────────────────────────────────────────
+# Expo & React Native Build Artifacts
+# ─────────────────────────────────────────────────────────────
 .expo/
+.expo-shared/
+expo-env.d.ts
 /ios
 /android
+*.apk
+*.aab
+*.ipa
 
-# Native keys and credentials
+# ─────────────────────────────────────────────────────────────
+# Native Keys, Certificates & Credentials
+# ─────────────────────────────────────────────────────────────
 .kotlin/
 *.orig.*
 *.jks
@@ -22,12 +56,15 @@ expo-env.d.ts
 *.p8
 *.p12
 *.key
+*.pem
 *.mobileprovision
 credentials.json
 google-services.json
 GoogleService-Info.plist
 
-# Python build & cache artifacts
+# ─────────────────────────────────────────────────────────────
+# Python & Animation Render Working Directories
+# ─────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
@@ -36,37 +73,78 @@ __pycache__/
 env/
 venv/
 .venv/
-
-# Video / animation render caches & working directories
+*/work/
+*/backup/
 hero-loop/work/
 hero-loop/backup/
 brand-film/work/
-brand-film/__pycache__/
-brand-film/dist/
 care-fabric/work/
 workshop-loop/work/
 
-# Development relays & mock caches
+# ─────────────────────────────────────────────────────────────
+# Development Relays & Mock Caches
+# ─────────────────────────────────────────────────────────────
 .mock-relay/
 
-# Logs and debug files
+# ─────────────────────────────────────────────────────────────
+# Logs & Diagnostic Dumps
+# ─────────────────────────────────────────────────────────────
 *.log
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+pnpm-debug.*
 .metro-health-check*
 
-# Environment files (preserve templates)
+# ─────────────────────────────────────────────────────────────
+# Environment & Local Secrets (preserve templates)
+# ─────────────────────────────────────────────────────────────
 .env
 .env.*
 .env*.local
 !.env.example
 
-# Scratch and test files
-scratch*
-*.bak
+# ─────────────────────────────────────────────────────────────
+# Testing & Code Coverage Reports
+# ─────────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+blob-report/
+cypress/videos/
+cypress/screenshots/
 
-# OS-generated files
+# ─────────────────────────────────────────────────────────────
+# IDEs, Code Editors & Tooling
+# ─────────────────────────────────────────────────────────────
+.claude/
+.idea/
+.cursor/
+.zed/
+*.swp
+*.swo
+*~
+.vscode/*
+!.vscode/settings.json
+*.sublime-project
+*.sublime-workspace
+
+# ─────────────────────────────────────────────────────────────
+# Temporary, Backup & Scratch Files
+# ─────────────────────────────────────────────────────────────
+scratch/
+scratch*
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# ─────────────────────────────────────────────────────────────
+# Operating System Junk
+# ─────────────────────────────────────────────────────────────
 .DS_Store
 .DS_Store?
 ._*
@@ -74,4 +152,4 @@ scratch*
 .Trashes
 ehthumbs.db
 Thumbs.db
-
+Desktop.ini

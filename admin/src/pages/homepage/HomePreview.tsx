@@ -179,7 +179,7 @@ export function HomePreview({ home }: { home: HomepageContent }) {
     <div className="phone" role="img" aria-label="Preview of the customer app home page">
       <div className="phone__screen">
         <div className="hp-topbar">
-          <img src="/logo.png" alt="" />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" />
           <span className="hp-topbar__addr">
             <strong>
               <i /> {home1?.label ?? 'Home'}

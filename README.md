@@ -18,7 +18,7 @@ WashingBasket/
 ├── brand-film/             # Brand animation generator scripts
 ├── hero-loop/              # 15s seamless looping hero animation renderer
 ├── mobile/                 # Customer & laundry staff mobile app (React Native 0.88 + Expo SDK 58)
-└── package.json            # Monorepo root scripts & workspace orchestration
+└── package.json            # Root scripts that run each project (each folder keeps its own dependencies)
 ```
 
 ### Subsystems
@@ -45,8 +45,8 @@ You can run the entire test, lint, and build suite across all projects directly 
 
 | Command | Description |
 | :--- | :--- |
-| `npm run ci` | **Full CI Suite**: runs typechecking (admin + mobile), mobile linting, test scenarios, and admin build |
-| `npm run typecheck` | Type-checks both `admin` and `mobile` workspaces |
+| `npm run ci` | **Full CI Suite**: runs typechecking (admin + mobile), mobile linting, test scenarios, and the admin and website builds |
+| `npm run typecheck` | Type-checks both the `admin` and `mobile` projects |
 | `npm run typecheck:mobile` | Type-checks only the mobile project (`tsc --noEmit`) |
 | `npm run typecheck:admin` | Type-checks only the admin portal (`tsc --noEmit`) |
 | `npm run lint` | Runs Expo / ESLint checks across mobile |

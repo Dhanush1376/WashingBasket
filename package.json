@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "Washing Basket — Campus & door-to-door laundry service platform",
-  "workspaces": [
-    "mobile",
-    "admin"
-  ],
   "scripts": {
     "typecheck": "npm --prefix admin run typecheck && npm --prefix mobile run typecheck",
     "typecheck:admin": "npm --prefix admin run typecheck",
@@ -14,6 +10,7 @@
     "lint": "npm --prefix mobile run lint",
     "test": "npm --prefix mobile run test",
     "build:admin": "npm --prefix admin run build",
-    "ci": "npm run typecheck && npm run lint && npm run test && npm run build:admin"
+    "build:website": "npm --prefix website run build",
+    "ci": "npm run typecheck && npm run lint && npm run test && npm run build:admin && npm run build:website"
   }
 }
