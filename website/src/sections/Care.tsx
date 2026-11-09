@@ -32,6 +32,7 @@ import basketImg from '../assets/basket.webp';
 import basketRimImg from '../assets/basket-rim.webp';
 import woodImg from '../assets/table-wood.webp';
 import ironImg from '../assets/cloth-iron.webp';
+import ironShadowImg from '../assets/cloth-iron-shadow.webp';
 import washed from '../assets/cloth-washed.webp';
 import weave from '../assets/cloth-weave.webp';
 import { gsap, ScrollTrigger, useScene } from '../motion';
@@ -45,9 +46,16 @@ const FOLD = { frames: 49, cols: 7, fw: 720, fh: 520, sw: 600, sh: 400 };
 /** Phones load the sheet at 0.6 of full size (care-fabric/stage.py writes both). */
 const FOLD_SMALL = 0.6;
 /** The iron image: its width over its height. */
-const IRON_RATIO = 1080 / 476;
+const IRON_RATIO = 1080 / 468;
 /** Where its cord leaves the boot, out from the iron's middle toward its heel (of its width; care-fabric/iron3d.py). */
-const CORD_AT = 0.983 - 0.5;
+const CORD_AT = 0.9657 - 0.5;
+/** The iron in slices (care-fabric/iron3d.py): where it stands above each of these heights, in the image's
+ *  own width units (it is 1.2 of them wide), drawn one under another in the shadow sheet. */
+const IRON_SLICES = [0.02, 0.14, 0.26, 0.36, 0.45];
+const IRON_FRAME = 1.2;
+/** The light comes from the upper left, as high as it is far: shadows fall down and to the right, as long as
+ *  what casts them is high. */
+const SUN = { x: 0.633, y: 0.774, k: 1.05 };
 /** The close-up is drawn a little larger than the stage, so its edges never show. */
 const ZOOM = 1.06;
 /** The basket (care-fabric/basket3d.py), in the width of the flat piece: its opening fits the piece folded in four. */
@@ -95,6 +103,12 @@ export function Care() {
     const edgeRect = one<SVGRectElement>('.cloth__hem .edge');
     const cctx = cordCv.getContext('2d')!;
     let cordK = 1;
+    const ironSh = load(ironShadowImg);
+    // the iron's shadow is put together here (its slices joined), then laid soft on the cord's canvas
+    const shU = document.createElement('canvas');
+    shU.width = 2;
+    shU.height = 2;
+    const sctx = shU.getContext('2d')!;
     const fctx = foldCv.getContext('2d')!;
     const small = window.matchMedia('(pointer: coarse), (max-width: 899px)').matches;
     const foldIm = load(small ? foldSpriteSmall : foldSprite);
@@ -217,10 +231,65 @@ export function Care() {
     // the iron's cord, from the boot at its heel down to where it is plugged in, below the bottom of the screen:
     // straight out of the boot, then easing round to the socket, so it trails after the iron and swings as it
     // crosses. Drawn as a round flex: its shadow on the cloth, a darker body, a lighter core, a line of light
+    // the iron's shadow on the cloth, cast live so it falls the same way however the iron is turned: each slice of
+    // it moved away from the light by its height and joined, then laid down soft; a darker, tighter one right under
+    // the soleplate where it touches. Lifted (set down or taken away), it all falls further off and softer
+    const ironShadow = (at: { x: number; y: number; r: number }) => {
+      if (!ironSh.complete || !ironSh.naturalWidth) return;
+      const sc = gsap.getProperty(iron, 'scale') as number;
+      const raise = Math.max(0, (sc - 1) / 0.14) * 0.3; // (in the image's units, as the slices are)
+      const unit = (ironW * sc) / IRON_FRAME;
+      const iw = ironW * sc;
+      const ih = iw / IRON_RATIO;
+      const SWc = ironSh.naturalWidth;
+      const SHc = ironSh.naturalHeight / IRON_SLICES.length;
+      const k = shU.width / SW;
+      const slice = (c: CanvasRenderingContext2D, i: number, dx: number, dy: number, kk: number) => {
+        c.save();
+        c.setTransform(kk, 0, 0, kk, 0, 0);
+        c.translate(at.x + dx, at.y + dy);
+        c.rotate((at.r * Math.PI) / 180);
+        c.drawImage(ironSh, 0, i * SHc, SWc, SHc, -iw / 2, -ih / 2, iw, ih);
+        c.restore();
+      };
+      sctx.setTransform(1, 0, 0, 1, 0, 0);
+      sctx.clearRect(0, 0, shU.width, shU.height);
+      IRON_SLICES.forEach((z, i) => {
+        const d = (z + raise) * unit * SUN.k;
+        slice(sctx, i, SUN.x * d, SUN.y * d, k);
+        // (and half way to the next, so the joined shape has no steps)
+        if (i < IRON_SLICES.length - 1) {
+          const d2 = ((z + IRON_SLICES[i + 1]) / 2 + raise) * unit * SUN.k;
+          slice(sctx, i + 1, SUN.x * d2, SUN.y * d2, k);
+        }
+      });
+      const off = 20000;
+      cctx.save();
+      cctx.setTransform(1, 0, 0, 1, 0, 0);
+      cctx.shadowOffsetX = off;
+      cctx.shadowOffsetY = 0;
+      // the cast shadow, soft
+      cctx.shadowColor = `rgba(62, 32, 14, ${0.34 - raise * 0.4})`;
+      cctx.shadowBlur = iw * (0.035 + raise * 0.12) * cordK;
+      cctx.drawImage(shU, -off, 0, cordCv.width, cordCv.height);
+      cctx.restore();
+      // where it rests: tight and dark, just out from the soleplate's edge
+      if (raise < 0.05) {
+        cctx.save();
+        cctx.shadowColor = 'rgba(52, 26, 10, 0.5)';
+        cctx.shadowBlur = iw * 0.012 * cordK;
+        cctx.shadowOffsetX = off * cordK;
+        cctx.shadowOffsetY = 0;
+        slice(cctx, 0, SUN.x * iw * 0.006 - off, SUN.y * iw * 0.006, cordK);
+        cctx.restore();
+      }
+    };
     const cord = (at: { x: number; y: number; r: number }) => {
       if (!SW) return;
+      cctx.setTransform(1, 0, 0, 1, 0, 0);
+      cctx.clearRect(0, 0, cordCv.width, cordCv.height);
+      ironShadow(at);
       cctx.setTransform(cordK, 0, 0, cordK, 0, 0);
-      cctx.clearRect(0, 0, SW, SH);
       const a = (at.r * Math.PI) / 180;
       const hx = Math.cos(a);
       const hy = Math.sin(a);
@@ -239,16 +308,34 @@ export function Care() {
       const w = Math.max(3, ironW * 0.03);
       cctx.lineCap = 'round';
       cctx.lineJoin = 'round';
-      // its shadow, cast down and to the right like the iron's
+      // its shadow, cast down and to the right like the iron's: well out from it where it leaves the boot, up off
+      // the cloth, closing in as it comes down to lie on the cloth, and softer the higher it is
       const off = 20000;
-      cctx.shadowColor = 'rgba(70, 36, 16, 0.32)';
-      cctx.shadowBlur = w * 0.9;
-      cctx.shadowOffsetX = off + w * 0.5;
-      cctx.shadowOffsetY = w * 0.9;
-      cctx.strokeStyle = '#000';
-      cctx.lineWidth = w;
-      path(-off, 0);
-      cctx.stroke();
+      const lift = gsap.getProperty(iron, 'scale') as number;
+      const N = 36;
+      const pts: [number, number][] = [];
+      for (let i = 0; i <= N; i++) {
+        const t = i / N;
+        const u = 1 - t;
+        const bx = u * u * u * ex + 3 * u * u * t * c1x + 3 * u * t * t * c2x + t * t * t * ax;
+        const by = u * u * u * ey + 3 * u * u * t * c1y + 3 * u * t * t * c2y + t * t * t * ay;
+        const z = (ironW * 0.085 * lift) * Math.pow(Math.max(0, 1 - t * 2.4), 2) + w * 0.45;
+        pts.push([bx + SUN.x * z * SUN.k, by + SUN.y * z * SUN.k]);
+      }
+      const shadowLine = (alpha: number, blur: number, grow: number) => {
+        cctx.shadowColor = `rgba(62, 32, 14, ${alpha})`;
+        cctx.shadowBlur = blur * cordK;
+        cctx.shadowOffsetX = off * cordK;
+        cctx.shadowOffsetY = 0;
+        cctx.strokeStyle = '#000';
+        cctx.lineWidth = w * grow;
+        cctx.beginPath();
+        cctx.moveTo(pts[0][0] - off, pts[0][1]);
+        for (let i = 1; i <= N; i++) cctx.lineTo(pts[i][0] - off, pts[i][1]);
+        cctx.stroke();
+      };
+      shadowLine(0.36, w * 1.3, 1.1);
+      shadowLine(0.22, w * 0.5, 0.8);
       cctx.shadowColor = 'transparent';
       // the flex itself
       cctx.strokeStyle = '#8c939d';
@@ -337,6 +424,9 @@ export function Care() {
       cordK = Math.min(window.devicePixelRatio || 1, 2);
       cordCv.width = Math.round(SW * cordK);
       cordCv.height = Math.round(SH * cordK);
+      // (at half the cord canvas's size: it is blurred anyway)
+      shU.width = Math.max(2, Math.round(cordCv.width / 2));
+      shU.height = Math.max(2, Math.round(cordCv.height / 2));
       // the whole piece, when the view draws back: 3 : 2, in the middle of the stage, between the corners
       const c = copy.getBoundingClientRect();
       const n = now.getBoundingClientRect();
@@ -465,10 +555,10 @@ export function Care() {
       .to(u, { fluff: 1, duration: d * 0.45 }, L(2) + d * 0.55)
       .addLabel('s3', L(3))
       // iron: set down on the cloth, pushed and drawn back across it, lifted away
-      .fromTo(iron, { autoAlpha: 0, scale: 1.14 }, { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power2.out' }, L(3))
+      .fromTo(iron, { autoAlpha: 0, scale: 1.14 }, { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power2.out', onUpdate: () => cord(ironAt(state.p)) }, L(3))
       .fromTo(cordCv, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4, ease: 'power2.out' }, L(3))
       .to(state, { p: 1, duration: i3 - 0.75, ease: 'none', onUpdate: () => press(state.p) }, L(3) + 0.35)
-      .to(iron, { autoAlpha: 0, scale: 1.12, duration: 0.4, ease: 'power2.in' }, L(4) - 0.4)
+      .to(iron, { autoAlpha: 0, scale: 1.12, duration: 0.4, ease: 'power2.in', onUpdate: () => cord(ironAt(state.p)) }, L(4) - 0.4)
       .to(cordCv, { autoAlpha: 0, duration: 0.4, ease: 'power2.in' }, L(4) - 0.4)
       .addLabel('s4', L(4))
       // return: the camera draws back, the piece as it was and the table coming into view round it; it is folded,

@@ -3,19 +3,47 @@ import { Link } from 'react-router-dom';
 
 import { ButtonLink } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
+import { MiniSwitch } from '@/components/ui/Form';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { QueryView } from '@/components/ui/QueryView';
 import { EmptyState, Skeleton } from '@/components/ui/States';
+import { useToast } from '@/components/ui/Toast';
 import { ago, change, money } from '@/lib/format';
 import { useQuery } from '@/lib/query';
 import { ORDER_STATUS, TONES } from '@/lib/status';
 import { useOperationalLocation } from '@/hooks/useOperationalLocation';
+import { useLaundryState } from '@/laundry/store';
 import { dashboardApi, type ActivityKind, type Dashboard } from '@/services';
+import { setLocationStatus } from '@customer/mock/services/locationService';
 import { OrdersChart } from './OrdersChart';
 import { RevenueChart } from './RevenueChart';
 
 const ACTIVITY_ICON: Record<ActivityKind, IconName> = { order: 'bag', pickup: 'calendar', signup: 'user', wallet: 'wallet', support: 'headset' };
+
+const LOCATION_ORDER: Record<string, number> = {
+  'loc-nit': 1,
+  'loc-lpu': 2,
+  'loc-outside': 3,
+};
+
+const LOCATION_THEMES: Record<string, {
+  tag: string;
+  icon: IconName;
+}> = {
+  'loc-nit': {
+    tag: 'Tech Campus',
+    icon: 'sparkle',
+  },
+  'loc-lpu': {
+    tag: 'Campus Hub',
+    icon: 'mapPin',
+  },
+  'loc-outside': {
+    tag: 'City Store & Delivery',
+    icon: 'truck',
+  },
+};
 
 export default function OverviewPage() {
   const dashboard = useQuery('dashboard', dashboardApi.getDashboard);
@@ -115,6 +143,9 @@ function OverviewBody({
           </button>
         </div>
       )}
+
+      {/* ── 3 Locations Store Availability Toggles ── */}
+      <DashboardLocationToggles />
 
       <DashboardHero d={d} />
 
@@ -264,6 +295,108 @@ function OverviewBody({
             <EmptyState compact icon="list" title="No orders yet" message="Services will be ranked here once customers book." />
           )}
         </Card>
+      </div>
+    </div>
+  );
+}
+
+function DashboardLocationToggles() {
+  const state = useLaundryState();
+  const { show } = useToast();
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const rawLocations = state?.locations ?? [];
+  const locations = [...rawLocations].sort(
+    (a, b) => (LOCATION_ORDER[a.id] ?? a.sortOrder) - (LOCATION_ORDER[b.id] ?? b.sortOrder)
+  );
+
+  const openCount = locations.filter((l) => l.status === 'ACTIVE').length;
+
+  const toggle = async (id: string, active: boolean, name: string) => {
+    setBusyId(id);
+    try {
+      await setLocationStatus(id, active ? 'ACTIVE' : 'PAUSED');
+      show(
+        'success',
+        active ? `${name} store is now OPEN` : `${name} store is now CLOSED`,
+        active
+          ? 'Store is taking orders and bookable on the customer app.'
+          : 'Store is temporarily closed. New customer orders are paused.'
+      );
+    } catch (e) {
+      show('error', 'Update failed', e instanceof Error ? e.message : 'Please try again.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  if (!locations.length) return null;
+
+  return (
+    <div className="dash-stores-bar" role="region" aria-label="3 Locations store open and close controls">
+      <div className="dash-stores-bar__head">
+        <div className="dash-stores-bar__title-wrap">
+          <span className="dash-stores-bar__icon" aria-hidden>
+            <Icon name="mapPin" size={16} />
+          </span>
+          <div className="dash-stores-bar__titles">
+            <span className="dash-stores-bar__title">Store Availability</span>
+            <span className="dash-stores-bar__sub">
+              {openCount === locations.length
+                ? 'All 3 stores open & taking orders'
+                : `${openCount} of ${locations.length} stores open · ${locations.length - openCount} closed`}
+            </span>
+          </div>
+        </div>
+        <Link to="/laundry/locations" className="dash-stores-bar__link" title="Manage all store locations & staff">
+          <span>Manage hubs</span>
+          <Icon name="arrowRight" size={13} />
+        </Link>
+      </div>
+
+      <div className="dash-stores-bar__grid">
+        {locations.map((loc) => {
+          const isOpen = loc.status === 'ACTIVE';
+          const isBusy = busyId === loc.id;
+          const meta = LOCATION_THEMES[loc.id] ?? {
+            tag: 'Campus Hub',
+            icon: 'mapPin' as const,
+          };
+
+          return (
+            <div
+              key={loc.id}
+              className={`dash-store-card${isOpen ? ' dash-store-card--open' : ' dash-store-card--closed'}`}
+            >
+              <div className="dash-store-card__lead">
+                <span className={`dash-store-card__icon-squircle dash-store-card__icon-squircle--${loc.id}`} aria-hidden>
+                  <Icon name={meta.icon} size={15} />
+                </span>
+                <div className="dash-store-card__text">
+                  <div className="dash-store-card__name-row">
+                    <strong className="dash-store-card__name">{loc.shortName || loc.name}</strong>
+                    <span className="dash-store-card__pin">PIN {loc.pincode}</span>
+                  </div>
+                  <div className="dash-store-card__status-row">
+                    <span className={`dash-store-card__dot${isOpen ? ' dash-store-card__dot--open' : ''}`} />
+                    <span className="dash-store-card__status-text">
+                      {isOpen ? 'Open · Taking orders' : 'Closed · Paused'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="dash-store-card__switch">
+                <MiniSwitch
+                  checked={isOpen}
+                  disabled={isBusy}
+                  onChange={(active) => toggle(loc.id, active, loc.shortName || loc.name)}
+                  label={`Toggle store open or close for ${loc.name}`}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

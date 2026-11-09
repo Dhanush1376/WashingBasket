@@ -34,7 +34,8 @@ export const NAV: NavGroup[] = [
       { to: '/laundry/locations', label: 'Locations', icon: 'mapPin', hint: 'Campus stores & drop-off desks' },
       { to: '/laundry/staff', label: 'Staff', icon: 'shield', hint: 'Counter & delivery team' },
       { to: '/services', label: 'Services & prices', icon: 'list', hint: 'Service catalog & pricing' },
-      { to: '/schedule', label: 'Pickup times & areas', icon: 'clock', hint: 'Time slots & service PINs' },
+      { to: '/schedule?tab=slots', label: 'Pickup schedule', icon: 'clock', hint: 'Time slots & busy days' },
+      { to: '/schedule?tab=areas', label: 'Service areas', icon: 'mapPin', hint: 'Covered PIN codes & areas' },
     ],
   },
   {

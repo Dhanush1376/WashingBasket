@@ -796,6 +796,223 @@
 }
 /* ───────────── Overview ───────────── */
 
+/* ── Dashboard Store Availability Bar (3 Locations Toggles) ── */
+.dash-stores-bar {
+  background: #FFFFFF;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 3px rgba(10, 28, 62, 0.04), 0 4px 12px rgba(10, 28, 62, 0.03);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+
+.dash-stores-bar__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dash-stores-bar__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-stores-bar__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #F1F5F9;
+  color: var(--navy-deep);
+}
+
+.dash-stores-bar__titles {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dash-stores-bar__title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--navy-deep);
+  letter-spacing: -0.2px;
+}
+
+.dash-stores-bar__sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.dash-stores-bar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--navy);
+  text-decoration: none;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #F8FAFC;
+  transition: all 0.12s ease;
+}
+
+.dash-stores-bar__link:hover {
+  background: #EFF6FF;
+  color: #1D4ED8;
+}
+
+.dash-stores-bar__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dash-store-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #F8FAFC;
+  border: 1px solid var(--hairline);
+  border-radius: 11px;
+  transition: all 0.15s ease;
+}
+
+.dash-store-card--open {
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+}
+
+.dash-store-card--open:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 8px rgba(10, 28, 62, 0.04);
+}
+
+.dash-store-card--closed {
+  background: #FFFBEB;
+  border-color: #FDE68A;
+}
+
+.dash-store-card__lead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-store-card__icon-squircle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #0A1C3E;
+  color: #FFFFFF;
+}
+
+.dash-store-card__icon-squircle--loc-nit {
+  background: #0A1C3E;
+  color: #FFFFFF;
+}
+
+.dash-store-card__icon-squircle--loc-lpu {
+  background: #FFA742;
+  color: #0A1C3E;
+}
+
+.dash-store-card__icon-squircle--loc-outside {
+  background: #0284C7;
+  color: #FFFFFF;
+}
+
+.dash-store-card__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dash-store-card__name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dash-store-card__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy-deep);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-store-card__pin {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748B;
+  background: #F1F5F9;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.dash-store-card__status-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dash-store-card__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #D97706;
+}
+
+.dash-store-card__dot--open {
+  background: #16A34A;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+}
+
+.dash-store-card__status-text {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.dash-store-card--open .dash-store-card__status-text {
+  color: #15803D;
+}
+
+.dash-store-card--closed .dash-store-card__status-text {
+  color: #B45309;
+}
+
+.dash-store-card__switch {
+  flex: none;
+}
+
+@media (max-width: 900px) {
+  .dash-stores-bar__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .overview-layout {
   display: flex;
   flex-direction: column;
@@ -4789,30 +5006,54 @@ a.mini-row:hover {
 
 /* ───────────── Pickup times & areas ───────────── */
 
+.schedule-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.schedule-section-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 .schedule-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 
+/* Slot Card & Tiles */
 .slot-list,
 .area-list {
   display: flex;
   flex-direction: column;
+  gap: 8px;
 }
 
 .slot-row,
 .area-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 2px;
-  border-top: 1px solid var(--hairline);
+  gap: 12px;
+  padding: 12px 16px;
+  background: #FFFFFF;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  transition: all 0.15s ease;
 }
 
-.slot-row:first-child,
-.area-row:first-child {
-  border-top: 0;
+.slot-row:hover,
+.area-row:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 8px rgba(10, 28, 62, 0.03);
+}
+
+.slot-row--off {
+  background: #FAFAFC;
+  opacity: 0.75;
 }
 
 .slot-row--off > strong {
@@ -4822,9 +5063,17 @@ a.mini-row:hover {
 
 .slot-row__period {
   flex: none;
-  width: 84px;
-  font-size: 12px;
-  color: var(--ink-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: #F1F5F9;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .area-row .grow {
@@ -4833,11 +5082,92 @@ a.mini-row:hover {
 
 .area-row__pin {
   flex: none;
-  padding: 4px 9px;
+  padding: 5px 10px;
   border-radius: 8px;
-  background: var(--stone);
-  font-weight: 700;
-  font-size: 13px;
+  background: #0A1C3E;
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 13.5px;
+  letter-spacing: 0.5px;
+}
+
+/* Service Area Grid View */
+.schedule-area-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.schedule-area-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  background: #FFFFFF;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(10, 28, 62, 0.03);
+  transition: all 0.15s ease;
+}
+
+.schedule-area-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 12px rgba(10, 28, 62, 0.05);
+}
+
+.schedule-area-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.schedule-area-card__pin-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  padding: 6px 10px;
+  background: #0A1C3E;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: 9px;
+  letter-spacing: 0.5px;
+}
+
+.schedule-area-card__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.schedule-area-card__name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--navy-deep);
+}
+
+.schedule-area-card__sub {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.schedule-area-card__chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.schedule-area-card__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--hairline);
+  padding-top: 10px;
 }
 
 .full-grid-wrap {

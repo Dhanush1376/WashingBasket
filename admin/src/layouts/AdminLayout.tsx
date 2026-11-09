@@ -101,7 +101,16 @@ export function AdminLayout() {
 
   const badge = (item: NavItem) => (item.badge ? counts.data?.[item.badge] : undefined);
   const user = profile.data?.user;
-  const currentItem = NAV.flatMap((group) => group.items).find((item) => item.to === location.pathname);
+  const isMatch = (to: string) => {
+    if (to.includes('?')) {
+      const [path, search] = to.split('?');
+      return location.pathname === path && location.search.includes(search);
+    }
+    return location.pathname === to;
+  };
+  const currentItem =
+    NAV.flatMap((group) => group.items).find((item) => isMatch(item.to)) ??
+    NAV.flatMap((group) => group.items).find((item) => item.to.split('?')[0] === location.pathname);
 
   return (
     <div className="portal-wrap portal-wrap--has-ticker">
@@ -131,7 +140,7 @@ export function AdminLayout() {
                   const n = badge(item);
                   return (
                     <li key={item.to}>
-                      <NavLink to={item.to} end={item.to === '/'} className={({ isActive }) => `nav-link${isActive ? ' nav-link--on' : ''}`}>
+                      <NavLink to={item.to} end={item.to === '/'} className={({ isActive }) => `nav-link${(item.to.includes('?') ? isMatch(item.to) : isActive) ? ' nav-link--on' : ''}`}>
                         <Icon name={item.icon} size={17} />
                         <span className="nav-link__text">
                           <span className="nav-link__label">{item.label}</span>
