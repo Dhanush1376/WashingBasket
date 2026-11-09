@@ -55,7 +55,7 @@ const IRON_SLICES = [0.02, 0.14, 0.26, 0.36, 0.45];
 const IRON_FRAME = 1.2;
 /** The light comes from the upper left, as high as it is far: shadows fall down and to the right, as long as
  *  what casts them is high. */
-const SUN = { x: 0.633, y: 0.774, k: 1.05 };
+const SUN = { x: 0.633, y: 0.774, k: 0.8 };
 /** The close-up is drawn a little larger than the stage, so its edges never show. */
 const ZOOM = 1.06;
 /** The basket (care-fabric/basket3d.py), in the width of the flat piece: its opening fits the piece folded in four. */
@@ -99,6 +99,9 @@ export function Care() {
     const basket = one<HTMLElement>('.cloth__basket');
     const rim = one<HTMLElement>('.cloth__rim');
     const hem = one<SVGSVGElement>('.cloth__hem');
+    const over = one<HTMLElement>('.cloth__over');
+    const ext = one<HTMLElement>('.cloth__ext');
+    const flat = one<HTMLElement>('.cloth__flat');
     const hemRect = one<SVGRectElement>('.cloth__hem .stitch');
     const edgeRect = one<SVGRectElement>('.cloth__hem .edge');
     const cctx = cordCv.getContext('2d')!;
@@ -152,7 +155,7 @@ export function Care() {
     let verts: { x: number; y: number; r: number }[] = [];
     // the view drawn back (`dx`, `dy`, `k`), where the piece lies then (`sx`, `sy`), the basket beside it on the
     // table (`bx`, `by`) and how far the view pans across to it (`pan`)
-    const geo = { dx: 0, dy: 0, k: 1, cx: 0, cy: 0, sx: 0, sy: 0, bx: 0, by: 0, pan: 0, tw: 1 };
+    const geo = { dx: 0, dy: 0, k: 1, cx: 0, cy: 0, sx: 0, sy: 0, bx: 0, by: 0, pan: 0, tw: 1, flat: 0 };
     // the folded piece, as the fold leaves it: where it lies in a sprite cell (a quarter of the cloth, in the
     // lower right), so it can be brought to the middle as it folds
     const folded = { x: 0.75, y: 0.7, w: 0.42, h: 0.39 };
@@ -221,6 +224,12 @@ export function Care() {
         pctx.fill();
         pctx.shadowColor = 'transparent';
       }
+      // once it is done, all of it is pressed, the edges off screen too (under a phone's bottom bar, past the
+      // stroke ends), which the view drawing back will show
+      if (p >= 0.999) {
+        pctx.fillStyle = '#fff';
+        pctx.fillRect(0, 0, pressCv.width, pressCv.height);
+      }
       gl?.pressChanged();
       const h = ironW / IRON_RATIO;
       gsap.set(iron, { x: at.x - ironW / 2, y: at.y - h / 2 });
@@ -231,9 +240,10 @@ export function Care() {
     // the iron's cord, from the boot at its heel down to where it is plugged in, below the bottom of the screen:
     // straight out of the boot, then easing round to the socket, so it trails after the iron and swings as it
     // crosses. Drawn as a round flex: its shadow on the cloth, a darker body, a lighter core, a line of light
-    // the iron's shadow on the cloth, cast live so it falls the same way however the iron is turned: each slice of
-    // it moved away from the light by its height and joined, then laid down soft; a darker, tighter one right under
-    // the soleplate where it touches. Lifted (set down or taken away), it all falls further off and softer
+    // the iron's shadow on the cloth, cast live so it falls the same way however the iron is turned: the iron swept
+    // away from the light, each slice of it from its own height to the next, so the shadow is one unbroken shape
+    // joined to the soleplate where it stands; laid down soft, with a darker, tighter one all round where it
+    // touches. Lifted (set down or taken away), it all falls further off and softer
     const ironShadow = (at: { x: number; y: number; r: number }) => {
       if (!ironSh.complete || !ironSh.naturalWidth) return;
       const sc = gsap.getProperty(iron, 'scale') as number;
@@ -255,12 +265,13 @@ export function Care() {
       sctx.setTransform(1, 0, 0, 1, 0, 0);
       sctx.clearRect(0, 0, shU.width, shU.height);
       IRON_SLICES.forEach((z, i) => {
-        const d = (z + raise) * unit * SUN.k;
-        slice(sctx, i, SUN.x * d, SUN.y * d, k);
-        // (and half way to the next, so the joined shape has no steps)
-        if (i < IRON_SLICES.length - 1) {
-          const d2 = ((z + IRON_SLICES[i + 1]) / 2 + raise) * unit * SUN.k;
-          slice(sctx, i + 1, SUN.x * d2, SUN.y * d2, k);
+        // (the soleplate's slice from the cloth up; each from its height to the next one's, a step every pixel or so)
+        const z0 = i === 0 ? 0 : z;
+        const z1 = i < IRON_SLICES.length - 1 ? IRON_SLICES[i + 1] : z;
+        const steps = Math.max(1, Math.ceil(((z1 - z0) * unit * SUN.k * k) / 1.2));
+        for (let j = 0; j <= steps; j++) {
+          const d = (z0 + ((z1 - z0) * j) / steps + raise) * unit * SUN.k;
+          slice(sctx, i, SUN.x * d, SUN.y * d, k);
         }
       });
       const off = 20000;
@@ -269,18 +280,22 @@ export function Care() {
       cctx.shadowOffsetX = off;
       cctx.shadowOffsetY = 0;
       // the cast shadow, soft
-      cctx.shadowColor = `rgba(62, 32, 14, ${0.34 - raise * 0.4})`;
-      cctx.shadowBlur = iw * (0.035 + raise * 0.12) * cordK;
+      cctx.shadowColor = `rgba(62, 32, 14, ${0.3 - raise * 0.35})`;
+      cctx.shadowBlur = iw * (0.028 + raise * 0.12) * cordK;
       cctx.drawImage(shU, -off, 0, cordCv.width, cordCv.height);
       cctx.restore();
       // where it rests: tight and dark, just out from the soleplate's edge
       if (raise < 0.05) {
         cctx.save();
-        cctx.shadowColor = 'rgba(52, 26, 10, 0.5)';
-        cctx.shadowBlur = iw * 0.012 * cordK;
         cctx.shadowOffsetX = off * cordK;
         cctx.shadowOffsetY = 0;
-        slice(cctx, 0, SUN.x * iw * 0.006 - off, SUN.y * iw * 0.006, cordK);
+        // (the cloth darkened all round the soleplate where light cannot get in under it, then the line of contact)
+        cctx.shadowColor = 'rgba(52, 26, 10, 0.32)';
+        cctx.shadowBlur = iw * 0.02 * cordK;
+        slice(cctx, 0, SUN.x * iw * 0.004 - off, SUN.y * iw * 0.004, cordK);
+        cctx.shadowColor = 'rgba(44, 22, 8, 0.55)';
+        cctx.shadowBlur = iw * 0.006 * cordK;
+        slice(cctx, 0, SUN.x * iw * 0.003 - off, SUN.y * iw * 0.003, cordK);
         cctx.restore();
       }
     };
@@ -319,7 +334,7 @@ export function Care() {
         const u = 1 - t;
         const bx = u * u * u * ex + 3 * u * u * t * c1x + 3 * u * t * t * c2x + t * t * t * ax;
         const by = u * u * u * ey + 3 * u * u * t * c1y + 3 * u * t * t * c2y + t * t * t * ay;
-        const z = (ironW * 0.085 * lift) * Math.pow(Math.max(0, 1 - t * 2.4), 2) + w * 0.45;
+        const z = ((ironW / IRON_FRAME) * 0.07 * lift + (lift - 1) * ironW * 0.3) * Math.pow(Math.max(0, 1 - t * 2.2), 2) + w * 1.1;
         pts.push([bx + SUN.x * z * SUN.k, by + SUN.y * z * SUN.k]);
       }
       const shadowLine = (alpha: number, blur: number, grow: number) => {
@@ -334,8 +349,26 @@ export function Care() {
         for (let i = 1; i <= N; i++) cctx.lineTo(pts[i][0] - off, pts[i][1]);
         cctx.stroke();
       };
-      shadowLine(0.36, w * 1.3, 1.1);
-      shadowLine(0.22, w * 0.5, 0.8);
+      // the spring boot, thicker, joining the cord's shadow back into the iron's own
+      const z0 = (pts[0][0] - ex) / SUN.x;
+      const boot = (alpha: number, blur: number) => {
+        cctx.shadowColor = `rgba(62, 32, 14, ${alpha})`;
+        cctx.shadowBlur = blur * cordK;
+        cctx.shadowOffsetX = off * cordK;
+        cctx.shadowOffsetY = 0;
+        cctx.strokeStyle = '#000';
+        cctx.lineWidth = w * 1.8;
+        cctx.beginPath();
+        const sx = SUN.x * z0 - off;
+        const sy = SUN.y * z0;
+        cctx.moveTo(ex - hx * ironW * 0.09 + sx, ey - hy * ironW * 0.09 + sy);
+        cctx.lineTo(ex + sx, ey + sy);
+        cctx.stroke();
+      };
+      boot(0.34, w * 1.4);
+      boot(0.26, w * 0.5);
+      shadowLine(0.4, w * 1.3, 1.2);
+      shadowLine(0.34, w * 0.4, 0.85);
       cctx.shadowColor = 'transparent';
       // the flex itself
       cctx.strokeStyle = '#8c939d';
@@ -437,8 +470,9 @@ export function Care() {
       const tw = desktop
         ? Math.max(320, Math.min(SW * 0.56, SH * 0.66 * 1.5, 860))
         : Math.max(120, Math.min(SW * 0.72, SH * 0.42 * 1.5, room * 1.5, 620));
-      // the part of the close-up that becomes the piece: the largest 3 : 2 window in the stage
-      const ww = Math.min(SW, SH * 1.5);
+      // the whole piece, of which the close-up shows a part: the smallest 3 : 2 that covers the stage, so as the
+      // view draws back nothing is cropped; the piece only ever grows into view, its edges coming in from off screen
+      const ww = Math.max(SW, SH * 1.5);
       const wh = ww / 1.5;
       geo.cx = (SW - ww) / 2;
       geo.cy = (SH - wh) / 2;
@@ -462,22 +496,41 @@ export function Care() {
       geo.pan = Math.max(0, geo.bx + bw * 0.5 + Math.max(20, SW * 0.04) - SW);
       const TW = (SW + 2 * Math.abs(geo.dx) + 2 * geo.pan) / s + 8;
       const TH = (SH + 2 * Math.abs(geo.dy)) / s + 8;
-      // the piece's stitched hem, drawn on the live cloth so it meets the fold's first frame exactly
-      hem.setAttribute('viewBox', `0 0 ${SW} ${SH}`);
+      // the piece's stitched hem, drawn over the cloth so it meets the fold's first frame exactly (in the table's
+      // frame, which moves with the piece)
+      const ox = TW / 2 - ww / 2;
+      const oy = TH / 2 - wh / 2;
+      hem.setAttribute('viewBox', `0 0 ${TW} ${TH}`);
       const hi = ww / 60;
-      hemRect.setAttribute('x', String(geo.cx + hi));
-      hemRect.setAttribute('y', String(geo.cy + hi));
+      hemRect.setAttribute('x', String(ox + hi));
+      hemRect.setAttribute('y', String(oy + hi));
       hemRect.setAttribute('width', String(ww - 2 * hi));
       hemRect.setAttribute('height', String(wh - 2 * hi));
       hemRect.setAttribute('stroke-width', String(ww / 520));
       hemRect.setAttribute('stroke-dasharray', `${ww / 190} ${ww / 210}`);
       // (and the turned edge, a little darker, right at the edge)
-      edgeRect.setAttribute('x', String(geo.cx));
-      edgeRect.setAttribute('y', String(geo.cy));
+      edgeRect.setAttribute('x', String(ox));
+      edgeRect.setAttribute('y', String(oy));
       edgeRect.setAttribute('width', String(ww));
       edgeRect.setAttribute('height', String(wh));
       edgeRect.setAttribute('stroke-width', String(ww / 150));
       gsap.set(table, { width: TW, height: TH, left: SW / 2 - TW / 2, top: SH / 2 - TH / 2, backgroundSize: `${WOOD / s}px ${WOOD / s}px` });
+      gsap.set(over, { width: TW, height: TH, left: SW / 2 - TW / 2, top: SH / 2 - TH / 2 });
+      // the rest of the piece, beyond what the live cloth covers (the stage): by then it is washed and pressed flat,
+      // plain cotton, so it is the cloth's own weave at the same size and lined up with it thread for thread
+      const tile = 256 / Math.max(0.5, glCv.width / SW || 1);
+      gsap.set(ext, {
+        width: ww,
+        height: wh,
+        left: ox,
+        top: oy,
+        backgroundSize: `${tile}px ${tile}px`,
+        backgroundPosition: `${(ww - SW) / 2}px ${(wh - SH) / 2}px`,
+      });
+      // (seen from far enough back the threads blend to the cloth's even colour, as the live cloth's do: the drawn
+      // weave would shimmer instead, so it gives way to that colour the further back the view goes)
+      gsap.set(flat, { width: ww, height: wh, left: ox, top: oy });
+      geo.flat = 0.96 * Math.pow(Math.max(0, Math.min(1, (0.85 - s) / 0.6)), 0.8);
       gsap.set(lay, {
         width: ww,
         height: wh,
@@ -563,9 +616,9 @@ export function Care() {
       .addLabel('s4', L(4))
       // return: the camera draws back, the piece as it was and the table coming into view round it; it is folded,
       // softly, brought to the middle as it folds, slid across to the basket with the view following, and dropped in
-      .fromTo([table, hem], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, L(4))
+      .fromTo([table, over], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, L(4))
       .fromTo(
-        table,
+        [table, over],
         { x: 0, y: 0, scale: ZOOM },
         { x: () => geo.dx, y: () => geo.dy, scale: () => geo.k * ZOOM, duration: r5 * 0.24, ease: 'power2.inOut', immediateRender: false },
         L(4),
@@ -576,7 +629,6 @@ export function Care() {
           x: () => geo.dx,
           y: () => geo.dy,
           scale: () => geo.k * ZOOM,
-          clipPath: () => `inset(${geo.cy}px ${geo.cx}px ${geo.cy}px ${geo.cx}px round 3px)`,
           duration: r5 * 0.24,
           ease: 'power2.inOut',
         },
@@ -585,7 +637,8 @@ export function Care() {
       // (the live cloth handed over to the fold's first frame, the one fading into the other where they lie)
       // (only once the view has settled, so the two lie exactly over each other)
       .fromTo(foldCv, { autoAlpha: 0 }, { autoAlpha: 1, duration: r5 * 0.04, ease: 'none' }, L(4) + r5 * 0.245)
-      .to(piece, { autoAlpha: 0, duration: 0.01 }, L(4) + r5 * 0.285)
+      .fromTo(flat, { opacity: 0 }, { opacity: () => geo.flat, duration: r5 * 0.24, ease: 'power2.in', immediateRender: false }, L(4))
+      .to([piece, ext, flat, over], { autoAlpha: 0, duration: 0.01 }, L(4) + r5 * 0.285)
       // (the flat piece's shadow on the table goes with it; the folding cloth casts its own)
       .to(lay, { autoAlpha: 0, duration: r5 * 0.08, ease: 'none' }, L(4) + r5 * 0.29)
       .to(state, { f: 1, duration: r5 * 0.42, ease: 'sine.inOut', onUpdate: () => {
@@ -719,6 +772,7 @@ export function Care() {
         <div className="cloth" aria-hidden="true">
           <div className="cloth__table">
             <i className="cloth__lay" />
+            <i className="cloth__ext" />
             <img className="cloth__basket" src={basketImg} alt="" />
           </div>
           <div className="cloth__piece">
@@ -726,6 +780,9 @@ export function Care() {
             <i className="cloth__crumple" />
             <i className="cloth__dirt" />
             <canvas className="cloth__gl" />
+          </div>
+          <div className="cloth__over">
+            <i className="cloth__flat" />
             <svg className="cloth__hem" preserveAspectRatio="none">
               <rect className="edge" fill="none" />
               <rect className="stitch" fill="none" />

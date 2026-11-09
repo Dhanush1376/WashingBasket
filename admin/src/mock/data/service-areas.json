@@ -1,65 +1,82 @@
 [
   {
-    "pincode": "123456",
-    "area": "Demo test area",
-    "city": "Bengaluru",
+    "pincode": "144411",
+    "area": "LPU Campus & Uni Mall",
+    "city": "Phagwara, Punjab",
+    "hubId": "loc-lpu",
     "active": true,
-    "note": "Test PIN code the demo app accepts."
+    "note": "Shop 14, Uni Mall (Block 32). Campus drop-off desk & hostel delivery."
   },
   {
-    "pincode": "560102",
-    "area": "HSR Layout",
-    "city": "Bengaluru",
+    "pincode": "144411",
+    "area": "Law Gate & Student PGs",
+    "city": "Phagwara, Punjab",
+    "hubId": "loc-lpu",
     "active": true,
-    "note": ""
+    "note": "Off-campus student hostels & PGs along Law Gate road."
   },
   {
-    "pincode": "560095",
-    "area": "Koramangala 5th Block",
-    "city": "Bengaluru",
+    "pincode": "144411",
+    "area": "Chehru & GT Road Corridor",
+    "city": "Phagwara, Punjab",
+    "hubId": "loc-lpu",
     "active": true,
-    "note": ""
+    "note": "Residential apartments and university outer gate corridor."
   },
   {
-    "pincode": "560038",
-    "area": "Indiranagar",
-    "city": "Bengaluru",
+    "pincode": "144011",
+    "area": "NIT Jalandhar Mega Hostels",
+    "city": "Jalandhar, Punjab",
+    "hubId": "loc-nit",
     "active": true,
-    "note": ""
+    "note": "Ground floor Mega Boys Hostel complex & Girls Hostel counter."
   },
   {
-    "pincode": "560076",
-    "area": "BTM Layout 2nd Stage",
-    "city": "Bengaluru",
+    "pincode": "144011",
+    "area": "GT Road Bye-Pass & Suranussi",
+    "city": "Jalandhar, Punjab",
+    "hubId": "loc-nit",
     "active": true,
-    "note": ""
+    "note": "Faculty quarters, staff residences & campus gate."
   },
   {
-    "pincode": "560041",
-    "area": "Jayanagar 4th Block",
-    "city": "Bengaluru",
+    "pincode": "144003",
+    "area": "Model Town & Market",
+    "city": "Jalandhar, Punjab",
+    "hubId": "loc-outside",
     "active": true,
-    "note": ""
+    "note": "Central Store (SCO 21). Central storefront & 8 km doorstep delivery hub."
   },
   {
-    "pincode": "560066",
-    "area": "Whitefield",
-    "city": "Bengaluru",
+    "pincode": "144022",
+    "area": "Urban Estate Phase 1 & 2",
+    "city": "Jalandhar, Punjab",
+    "hubId": "loc-outside",
     "active": true,
-    "note": ""
+    "note": "Residential doorstep collection & delivery within 8 km Model Town radius."
   },
   {
-    "pincode": "560103",
-    "area": "Bellandur",
-    "city": "Bengaluru",
+    "pincode": "144001",
+    "area": "Civil Lines & BMC Chowk",
+    "city": "Jalandhar, Punjab",
+    "hubId": "loc-outside",
     "active": true,
-    "note": ""
+    "note": "Offices, institutions and residential doorstep collection."
   },
   {
-    "pincode": "560037",
-    "area": "Marathahalli",
-    "city": "Bengaluru",
+    "pincode": "144005",
+    "area": "Jalandhar Cantt & Rama Mandi",
+    "city": "Jalandhar, Punjab",
+    "hubId": "loc-outside",
+    "active": true,
+    "note": "Doorstep pickup and return within 8 km delivery coverage."
+  },
+  {
+    "pincode": "144401",
+    "area": "Phagwara City & Subhash Nagar",
+    "city": "Phagwara, Punjab",
+    "hubId": "loc-lpu",
     "active": false,
-    "note": "Opening once we have a second van."
+    "note": "Expansion territory for Phagwara residential. Opening with second van."
   }
 ]

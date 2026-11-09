@@ -121,9 +121,9 @@ export default function LoginPage() {
             <p className="login__lead">Sign in to manage pickups, orders and customers.</p>
 
             <form className="login__form" onSubmit={submit} noValidate>
-              <label className={`pill${emailError ? ' pill--error' : ''}`}>
+              <label className={`login-field-pill${emailError ? ' login-field-pill--error' : ''}`}>
                 <input
-                  className="pill__input"
+                  className="login-field-pill__input"
                   type="email"
                   inputMode="email"
                   autoComplete="username"
@@ -135,15 +135,15 @@ export default function LoginPage() {
                   readOnly={busy}
                   autoFocus
                 />
-                <span className="pill__divider" aria-hidden />
-                <span className="pill__badge" aria-hidden>
+                <span className="login-field-pill__divider" aria-hidden />
+                <span className="login-field-pill__badge" aria-hidden>
                   <Icon name="mail" size={13} color="#FFFFFF" strokeWidth={2.3} />
                 </span>
               </label>
 
-              <label className={`pill${passwordError ? ' pill--error' : ''}`}>
+              <label className={`login-field-pill${passwordError ? ' login-field-pill--error' : ''}`}>
                 <input
-                  className="pill__input"
+                  className="login-field-pill__input"
                   type={reveal ? 'text' : 'password'}
                   autoComplete="current-password"
                   placeholder="Password"
@@ -153,10 +153,10 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   readOnly={busy}
                 />
-                <span className="pill__divider" aria-hidden />
+                <span className="login-field-pill__divider" aria-hidden />
                 <button
                   type="button"
-                  className="pill__badge pill__badge--button"
+                  className="login-field-pill__badge login-field-pill__badge--button"
                   onClick={() => setReveal((r) => !r)}
                   aria-label={reveal ? 'Hide password' : 'Show password'}
                   aria-pressed={reveal}

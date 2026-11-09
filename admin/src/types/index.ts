@@ -89,7 +89,7 @@ export type AdminService = Service & { available: boolean; position: number };
 export type AdminPickupSlot = PickupSlot & { enabled: boolean };
 export type AdminPickupSlots = Omit<PickupSlots, 'slots'> & { slots: AdminPickupSlot[] };
 
-export type ServiceArea = { pincode: string; area: string; city: string; active: boolean; note: string };
+export type ServiceArea = { pincode: string; area: string; city: string; active: boolean; note: string; hubId?: string };
 
 export type AdminReferral = {
   id: string;

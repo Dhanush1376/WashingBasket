@@ -3,6 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 import { Icon } from '@/components/ui/Icon';
 import { LOCATIONS, useOperationalLocation, type LocationValue } from '@/hooks/useOperationalLocation';
 
+const LOGOS: Record<string, string> = {
+  'loc-nit': `${import.meta.env.BASE_URL}logos/nitj.png`,
+  'loc-lpu': `${import.meta.env.BASE_URL}logos/lpu.png`,
+  'loc-outside': `${import.meta.env.BASE_URL}logos/wb.png`,
+};
+
 export function LocationPicker() {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -43,7 +49,11 @@ export function LocationPicker() {
         title={`Filter: ${label}`}
       >
         <span className="location-select__icon-box">
-          <Icon name="mapPin" size={15} className="location-select__icon" />
+          {isFiltered && LOGOS[location] ? (
+            <img src={LOGOS[location]} alt="" className="location-select__logo-img" />
+          ) : (
+            <Icon name="mapPin" size={15} className="location-select__icon" />
+          )}
           {isFiltered ? <span className="location-select__dot" aria-hidden /> : null}
         </span>
         <span className="location-select__label">{label}</span>
@@ -64,7 +74,21 @@ export function LocationPicker() {
                 className={`location-dropdown__item${isSelected ? ' location-dropdown__item--selected' : ''}`}
                 onClick={() => select(loc.value)}
               >
-                <span className="location-dropdown__item-label">{loc.label}</span>
+                <span className="location-dropdown__item-left">
+                  {LOGOS[loc.value] ? (
+                    <span className="location-dropdown__logo-squircle">
+                      <img src={LOGOS[loc.value]} alt="" className="location-dropdown__logo-img" />
+                    </span>
+                  ) : (
+                    <span className="location-dropdown__logo-squircle location-dropdown__logo-squircle--all">
+                      <Icon name="mapPin" size={12} />
+                    </span>
+                  )}
+                  <span className="location-dropdown__item-info">
+                    <span className="location-dropdown__item-label">{loc.label}</span>
+                    {loc.hint ? <span className="location-dropdown__item-hint">{loc.hint}</span> : null}
+                  </span>
+                </span>
                 {isSelected ? (
                   <span className="location-dropdown__check" aria-hidden>
                     <Icon name="check" size={14} />

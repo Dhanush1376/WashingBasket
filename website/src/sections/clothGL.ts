@@ -504,6 +504,7 @@ float mudLayer(vec2 q, float cs, float seed, float tm, float most, float grow, i
     }
   return cov;
 }
+void mudClumpAt(int i, vec2 O, vec2 dirM, out vec2 g, out vec2 dd, out float r, out float ta);
 float mud(vec2 q, float tm) {
   // nothing outside the fan the spray came up in
   vec2 O, dirM;
@@ -514,6 +515,28 @@ float mud(vec2 q, float tm) {
   float c = mudLayer(q, gS * 0.05, 3.1, tm, 0.6, 0.17, 1);
   c = max(c, mudLayer(q, gS * 0.022, 7.7, tm, 0.75, 0.12, 0));
   c = max(c, mudLayer(q, gS * 0.010, 13.3, tm, 0.8, 0.10, 0));
+  // and the heavy clots, seen flying in: each lands as a ragged blot, spreading a little, a streak thrown on ahead
+  for (int i = 0; i < 18; i++) {
+    if (lv < gS * 0.36) break;
+    // (cheap first: is this clot down yet, and anywhere near this far out along the fan)
+    vec2 hh = hash2(vec2(float(i) * 2.31 + 0.7, 77.0));
+    float dist = mix(0.5, 1.05, hh.x);
+    if (tm < clamp((dist - 0.35) * 0.7, 0.0, 0.75) || abs(lv - dist * gS) > gS * 0.15) continue;
+    vec2 g, dd; float r, ta;
+    mudClumpAt(i, O, dirM, g, dd, r, ta);
+    if (r <= 0.0 || tm < ta) continue;
+    vec2 dq = q - g;
+    if (dot(dq, dq) > r * r * 16.0) continue;
+    float rr = r * (0.8 + 0.4 * min(1.0, (tm - ta) / 0.04));
+    float jag = (vnoise(dq / max(rr * 0.5, 0.8) + float(i) * 3.1) - 0.5) * rr * 0.6;
+    vec2 l = vec2(dot(dq, dd), dot(dq, vec2(-dd.y, dd.x)));
+    float m = 1.0 - smoothstep(-0.9, 0.9, length(vec2(l.x / 1.35, l.y)) - rr - jag);
+    if (l.x > 0.0 && l.x < rr * 2.6) {
+      float w = rr * 0.3 * (1.0 - l.x / (rr * 2.6)) + 0.4;
+      m = max(m, (1.0 - smoothstep(w - 0.7, w + 0.7, abs(l.y))) * 0.85);
+    }
+    c = max(c, m);
+  }
   return c;
 }
 
@@ -556,12 +579,107 @@ const vec4 SP[2] = vec4[2](
 const vec4 SD[2] = vec4[2](
   vec4(0.98, -0.22, 4.0, 5.6),
   vec4(0.40, 0.92, 3.0, 2.9));
+
+// ---- in the air: every drop on its way to the cloth is drawn by one model, as a camera a little way above would
+// see it. Nearer the lens it is larger, pushed out from the middle of the view and out of focus; its shadow lies on
+// the cloth below and to the right, further off and softer the higher it is, and closes in under it as it lands.
+// A drop of liquid from above is dark where it is deep, lighter at its thin edge, with a small sharp highlight of
+// the light on the near side and, for a clear liquid, the light coming through it glowing on the far side
+float DCAM; // the camera's height over the cloth, px (set in main)
+const vec2 SUN = vec2(0.6, 0.8); // the way shadows fall
+// The drops of one throw are not drawn one by one: like liquid, where two touch they run together, so each adds to
+// one field (a soft blob around it, stretched along its flight) and the surface is where the field passes a level.
+// Its slope gives the surface's tilt, which is what is lit: deep and dark in the middle, thin and lighter at the edge,
+// a hard little highlight where it faces between the light and the eye, the sky caught along its rim and, for a
+// clear liquid, the light passing through it pooling on the far side. A: field, its gradient, field-weighted
+// height; B: field-weighted size, its shadow
+const float AIRT = 0.5625;
+void airAdd(inout vec4 A, inout vec4 B, vec2 p, vec2 g, float z, float r, vec2 dir, float st) {
+  float zn = clamp(z / DCAM, 0.0, 0.92);
+  // its shadow on the cloth: below and to the right, further off, larger, softer and fainter the higher it is
+  vec2 sp = g + SUN * z * 0.32;
+  float sr = r * (0.9 + zn * 1.6);
+  float sb = r * 0.3 + z * 0.04 + 0.8;
+  float ds = length(p - sp);
+  if (ds < sr + sb) B.y = max(B.y, (1.0 - smoothstep(sr - sb, sr + sb, ds)) / (1.0 + zn * 9.0));
+  // the drop, through the lens
+  float m = 1.0 / (1.0 - zn);
+  vec2 C = uRes * 0.5;
+  vec2 c = C + (g - C) * m;
+  float rr = r * m;
+  vec2 d = p - c;
+  vec2 pr = vec2(-dir.y, dir.x);
+  vec2 l = vec2(dot(d, dir) / st, dot(d, pr));
+  float R2 = 2.0 * rr;
+  float x2 = dot(l, l) / (R2 * R2);
+  if (x2 >= 1.0) return;
+  float k = 1.0 - x2;
+  float fv = k * k;
+  vec2 gl = -4.0 * k * l / (R2 * R2); // d f / d l
+  A += vec4(fv, (gl.x / st) * dir + gl.y * pr, fv * zn);
+  B.x += fv * rr;
+}
+void airShade(inout vec3 col, vec2 p, vec4 A, vec4 B, vec3 liq, float glow, float spec, float rough) {
+  if (B.y > 0.0) {
+    col *= 1.0 - 0.32 * B.y;
+    col = mix(col, col * (0.55 + liq), B.y * 0.3 * glow);
+  }
+  if (A.x < AIRT * 0.4) return;
+  float F = A.x * (1.0 + rough * (vnoise(p / 5.0) - 0.5) + rough * 0.5 * (vnoise(p / 2.0) - 0.5));
+  float zn = A.w / A.x;
+  float rr = B.x / A.x;
+  float bl = 0.6 + rr * zn * 0.9;
+  float gm = max(length(A.yz), 1e-4);
+  float sd = (F - AIRT) / gm; // ~ px inside the surface
+  float a = smoothstep(-bl, bl, sd) * (1.0 - 0.4 * zn);
+  if (a <= 0.0) return;
+  float h = sqrt(clamp((F - AIRT) / (1.0 - AIRT), 0.0, 1.0)); // how deep, 0 at the edge
+  vec2 n2 = -A.yz / gm;                                       // outward, across the cloth
+  vec3 N = normalize(vec3(n2 * (1.0 - h) * 1.6, max(h, 0.08)));
+  vec3 Lt = normalize(vec3(-SUN * 0.75, 0.66));
+  vec3 H = normalize(Lt + vec3(0.0, 0.0, 1.0));
+  vec3 body = liq * mix(1.55, 0.6, h);
+  float dif = 0.75 + 0.35 * dot(N, Lt);
+  body *= dif;
+  float back = max(0.0, dot(n2, SUN)) * (1.0 - h);
+  body += liq * 1.6 * glow * back * smoothstep(0.0, 0.5, h + 0.2);
+  float sp = pow(max(dot(N, H), 0.0), mix(160.0, 40.0, clamp(bl / 6.0, 0.0, 1.0)));
+  body += vec3(1.0, 0.97, 0.92) * spec * sp;
+  body += vec3(1.0, 0.97, 0.92) * spec * 0.14 * pow(max(dot(N, H), 0.0), 6.0);
+  float fr = pow(1.0 - max(N.z, 0.0), 3.0);
+  body = mix(body, vec3(0.93, 0.9, 0.86), fr * 0.2 * spec * (0.15 + 0.85 * max(0.0, dot(n2, -SUN))));
+  col = mix(col, body, a);
+}
+// a drop thrown from the viewer's side, s (0 → 1) of the way in: coming down from high over the cloth and on along
+// from, onto g. Where it is over the cloth, and how high
+void approach(vec2 g, vec2 from, float L, float h0, float s, out vec2 at, out float z) {
+  at = g - from * L * (1.0 - s);
+  z = DCAM * h0 * (1.0 - s) * (1.0 - 0.3 * s);
+}
+// the moment the coffee's front reaches sj of the way along its sweep
+float coffeeArrive(float sj) {
+  float x = clamp(sj / 1.12, 0.0, 1.0);
+  return 0.3 * (0.5 - sin(asin(1.0 - 2.0 * x) / 3.0));
+}
+// the heavy clots of mud thrown up by the wheel: where each lands, the way it flew, its size, when it lands
+const int NMUD = 18;
+void mudClumpAt(int i, vec2 O, vec2 dirM, out vec2 g, out vec2 dd, out float r, out float ta) {
+  vec2 h = hash2(vec2(float(i) * 2.31 + 0.7, 77.0));
+  float dist = mix(0.5, 1.05, h.x);
+  float ang = (h.y - 0.5) * 0.5;
+  dd = vec2(dirM.x * cos(ang) - dirM.y * sin(ang), dirM.x * sin(ang) + dirM.y * cos(ang));
+  g = O + dd * dist * gS;
+  r = gS * (0.010 + 0.022 * pow(hash(h + 3.0), 1.5)) * mix(1.3, 0.7, (dist - 0.5) / 0.55);
+  ta = clamp((dist - 0.35) * 0.7, 0.0, 0.75) + 0.05 * hash(h + 2.2);
+  if (tall() && g.y > uRes.y * 0.6) r = 0.0;
+}
 void main() {
   vec2 p = vUv * uRes;
   float t = uTime;
 
   float S = min(uRes.x * 1.25, uRes.y);
   gS = S;
+  DCAM = 2.2 * S;
 
   // ---- the waterline: it is lowered in, the water climbing over it, a little aslant and never still
   float xl = p.x / uRes.y;
@@ -840,166 +958,123 @@ void main() {
   }
 
   if (uStain > 0.001 && uStain < 0.999) {
-    // ---- the coffee in the air: the slug leaving the glass, stretching into a ribbon of drops that comes in
-    // toward the cloth, the part of it still in the air further off (larger, softer, higher), its shadow beneath
+    // ---- the coffee: flung from a glass on the viewer's side, it comes down out of the air as a sheet breaking up
+    // into globs, the heaviest in the middle, each landing where the front of the stain reaches as it does
     float tc = (uStain - TC) / DC;
-    if (tc > -0.14 && tc < 0.36) {
+    vec3 COF = vec3(0.40, 0.21, 0.08);
+    if (tc > -0.15 && tc < 0.36) {
       vec2 A, u, n; float L, R;
       coffeePath(A, u, n, L, R);
-      float front = coffeeFront(tc);
-      float on = smoothstep(-0.14, -0.02, tc);
-      // the stretch of it still in the air, as points along its way: joined into one ribbon near the cloth,
-      // broken into separate drops at its far end
-      float dmin = 1e5, hmin = 1e5, shade = 0.0;
-      vec2 pc = vec2(0.0); float pr = 0.0, poff = 0.0;
-      for (int b = 0; b < 11; b++) {
-        float sb = front + 0.03 + float(b) * 0.05;
-        if (sb > 1.06) break;
-        float off = sb - front;
-        float bulk = 0.05 + 0.24 * exp(-pow((sb - 0.45) / 0.22, 2.0));
-        vec2 c0 = coffeeAt(A, u, n, L, sb);
-        // its shadow, on the cloth under where it will land
-        float sh = 1.0 - smoothstep(R * bulk * 0.5, R * bulk * (1.6 + off * 5.0), length(p - c0 - vec2(0.2, 0.35) * R * off * 3.0));
-        shade = max(shade, sh * (1.0 - min(1.0, off * 2.5)));
-        vec2 c = c0 + vec2(-0.35, -0.85) * R * off * 5.0;
-        float r = R * bulk * (1.0 + off * 1.6) * (b > 6 ? 0.6 : 1.0);
-        // the drop at this point, joined to the last by the ribbon's body (a capsule between them); and the
-        // same again a little down and to the right, so what lies outside that is its lit upper edge
-        vec2 p2 = p - vec2(0.3, 0.42) * R * 0.05;
-        float dd0 = length(p - c) - r;
-        float dd2 = length(p2 - c) - r;
-        if (b > 0 && b <= 6) {
-          vec2 e = c - pc;
-          float k = clamp(dot(p - pc, e) / dot(e, e), 0.0, 1.0);
-          dd0 = min(dd0, length(p - pc - e * k) - mix(pr, r, k));
-          float k2 = clamp(dot(p2 - pc, e) / dot(e, e), 0.0, 1.0);
-          dd2 = min(dd2, length(p2 - pc - e * k2) - mix(pr, r, k2));
-        }
-        if (dd0 < dmin) { dmin = dd0; poff = off; }
-        hmin = min(hmin, dd2);
-        pc = c; pr = r;
+      vec4 FA = vec4(0.0), FB = vec4(0.0);
+      for (int j = 0; j < 22; j++) {
+        vec2 h = hash2(vec2(float(j) * 1.91 + 0.4, 5.0));
+        float sj = (float(j) + 0.3 + 0.4 * h.x) / 22.0 * 1.06 - 0.01;
+        float FD = 0.13 + 0.04 * h.y;
+        float sf = (tc - (coffeeArrive(sj) - FD)) / FD;
+        if (sf <= 0.0 || sf >= 1.0) continue;
+        float bulk = 0.06 + 0.32 * exp(-pow((sj - 0.45) / 0.2, 2.0));
+        vec2 g = coffeeAt(A, u, n, L, sj) + n * (h.y - 0.5) * R * 0.25;
+        vec2 at; float z;
+        approach(g, u, R * 1.4, 0.62, sf, at, z);
+        airAdd(FA, FB, p, at, z, R * bulk * (0.8 + 0.4 * hash(h + 2.0)), u, 1.5 + 0.6 * (1.0 - sf));
       }
-      col *= 1.0 - 0.16 * shade * on;
-      float bl = 0.8 + R * min(0.16, poff * 0.4);
-      float ba = (1.0 - smoothstep(-bl, bl, dmin)) * on;
-      vec3 bc = vec3(0.29, 0.15, 0.065);
-      bc = mix(bc, vec3(0.45, 0.27, 0.13), smoothstep(-R * 0.08, 0.0, dmin)); // thinner, lighter at its edge
-      bc += vec3(1.0, 0.93, 0.82) * 0.38 * smoothstep(-bl, bl, hmin);
-      col = mix(col, bc, ba * 0.96);
+      airShade(col, p, FA, FB, COF, 0.8, 0.85, 0.0);
     }
-    // ---- the splash, in the air over the cloth
+    // ---- where the bulk of it strikes: the liquid spreads out flat and fast in a raised rim, its edge pulled into
+    // fingers (this rim is the stain's own edge, growing), and drops are flung off the fingers on low arcs, larger
+    // and further from their shadows as they rise, landing as the splash's spots
     float ts = (tc - TSPL) / SPL;
     if (ts > 0.0 && ts < 1.0) {
       vec2 A, u, n; float L, R;
       coffeePath(A, u, n, L, R);
       vec2 P0 = coffeeAt(A, u, n, L, 0.45);
       vec2 dp = p - P0;
-      if (dot(dp, dp) < R * R * 26.0) {
-        vec2 sun = normalize(vec2(0.45, 0.6)); // shadows fall down and to the right
-        vec3 cof = vec3(0.30, 0.165, 0.07);
-        // the crown: a wall of coffee thrown up round the strike, leaning out, its rim pulled into fingers.
-        // From above it is a ring, lit on the side toward the light, dark on the other, thin and bright at its rim
-        float tcw = clamp(ts / 0.55, 0.0, 1.0);
-        float zc = R * 0.9 * sin(PI * tcw) * (1.0 - 0.3 * tcw);
-        float rc = R * (0.42 + 0.6 * (1.0 - exp(-ts * 5.0)));
-        float ang = atan(dp.y, dp.x);
-        // (fingers of every size, unevenly round it)
-        float fing = pow(fbm3(vec2(ang * 3.2, 3.3)), 2.0) * 1.6 * (0.6 + 0.4 * vnoise(vec2(ang * 13.0, 9.1)));
-        float rin = rc - R * 0.05;
-        float rout = rc + zc * (0.3 + 0.55 * fing);
-        // its shadow on the cloth, cast out past it
-        vec2 sp = dp - sun * zc * 0.8;
-        float sl = length(sp);
-        float csh = smoothstep(rin - R * 0.1, rin + R * 0.05, sl) * (1.0 - smoothstep(rout - R * 0.05, rout + R * 0.25, sl));
-        col *= 1.0 - 0.28 * csh * smoothstep(0.0, 0.2, zc / R);
-        float rl = length(dp);
-        // inside it, the coffee that struck, still a pool of liquid: deep brown, a glint of the light in it,
-        // rocking as the crown rises and falls
-        // (once the crown has fallen it spreads out ragged and soaks in, becoming the stain)
-        float rp = mix(rin, rc * (0.85 + 0.45 * fbm3(vec2(ang * 2.4, 5.1))), smoothstep(0.35, 0.6, ts));
-        if (rl < rp + 2.0) {
-          float pa = (1.0 - smoothstep(rp - 2.0, rp + 1.0, rl)) * (1.0 - smoothstep(0.45, 0.8, ts));
-          vec2 wob = dp / R + 0.06 * vec2(sin(ts * 30.0 + rl / R * 9.0), cos(ts * 26.0 + rl / R * 7.0));
-          vec3 pc = cof * (0.8 + 0.25 * smoothstep(0.0, rin, rl));
-          pc += vec3(1.0, 0.95, 0.88) * 0.4 * (1.0 - smoothstep(0.0, 0.16, length(wob + vec2(0.17, 0.22))));
-          col = mix(col, pc, pa * 0.92);
+      if (dot(dp, dp) < R * R * 30.0) {
+        float g = smoothstep(0.12, 0.42, tc) * (1.0 + 0.1 * smoothstep(0.42, 1.0, tc));
+        float rimT = 1.0 - smoothstep(0.08, 0.55, ts);
+        if (g > 0.0 && rimT > 0.0) {
+          float sdS = splatSD(dp, u, R, g, 1.3);
+          float rk = exp(-pow((sdS + 2.2) / 2.0, 2.0)) * rimT;
+          vec2 nr = dp / max(length(dp), 1.0);
+          float lit = dot(nr, -SUN);
+          col *= 1.0 - 0.3 * rk * max(-lit, 0.0) - 0.12 * rk;
+          col += vec3(1.0, 0.95, 0.88) * 0.42 * rk * max(lit, 0.0);
+          // (the rim's shadow just outside it, on the side away from the light)
+          float rs = exp(-pow((sdS - 3.0) / 3.0, 2.0)) * rimT * max(-lit, 0.0);
+          col *= 1.0 - 0.18 * rs;
         }
-        if (zc > 0.5 && rl > rin - 2.0 && rl < rout + 2.0) {
-          float k = clamp((rl - rin) / max(rout - rin, 1.0), 0.0, 1.0); // 0 at its foot, 1 at its rim
-          float body = smoothstep(rin - 1.5, rin + 1.5, rl) * (1.0 - smoothstep(rout - 1.5, rout + 1.0, rl));
-          vec2 rad = dp / max(rl, 1.0);
-          float lit = dot(rad, -sun); // the outside of the wall facing the light
-          vec3 cc = cof * (0.75 + 0.5 * k);                             // thinner and lighter toward the rim
-          cc = mix(cc, vec3(0.55, 0.33, 0.16), k * k * 0.6);            // the light through its thin rim
-          cc *= 0.8 + 0.35 * lit;
-          cc += vec3(1.0, 0.92, 0.8) * 0.35 * pow(max(lit, 0.0), 3.0) * smoothstep(0.2, 0.6, k) * (1.0 - smoothstep(0.75, 0.95, k));
-          cc += vec3(1.0, 0.95, 0.88) * 0.3 * exp(-pow((rl - rout + 2.0) / 1.6, 2.0));
-          // (a thin sheet: the cloth shows through it a little, more toward its rim)
-          col = mix(col, cc, body * (0.92 - 0.3 * k * k) * smoothstep(0.0, 0.1, zc / R));
-        }
-        // the jet bouncing up out of the middle, a little after
-        float tj = (ts - 0.25) / 0.4;
-        if (tj > 0.0 && tj < 1.0) {
-          float zj = R * 1.4 * sin(PI * tj);
-          float rj = R * (0.13 + 0.08 * sin(PI * tj));
-          float jsh = 1.0 - smoothstep(rj * 0.6, rj * 1.8, length(dp - sun * zj * 0.8));
-          col *= 1.0 - 0.25 * jsh;
-          vec2 jp = dp;
-          float jd = length(vec2(jp.x, jp.y)) - rj * (1.0 + zj / (R * 6.0));
-          float ja = 1.0 - smoothstep(-1.5, 1.5, jd);
-          vec3 jc = cof * (0.85 + 0.3 * dot(normalize(jp + 0.001), -sun));
-          jc += vec3(1.0, 0.95, 0.88) * 0.5 * (1.0 - smoothstep(0.0, rj * 0.45, length(jp + sun * rj * 0.35)));
-          col = mix(col, jc, ja);
-        }
-        // the drops in flight: each where it is over the cloth, its shadow further from it the higher it is;
-        // larger and softer as it rises toward the eye, drawn out the way it flies
+        vec4 FA = vec4(0.0), FB = vec4(0.0);
         for (int i = 0; i < NSPL; i++) {
           vec2 dir; float r0, v, w, t0, sz;
           splashDrop(i, u, R, dir, r0, v, w, t0, sz);
-          float fd = splashFlight(w);
-          float sf = (ts - t0) / fd;
+          float sf = (ts - t0) / splashFlight(w);
           if (sf <= 0.0 || sf >= 1.0) continue;
-          vec2 g = P0 + dir * (r0 + v * sf);
+          vec2 gg = P0 + dir * (r0 + v * sf);
           float z = R * 1.3 * w * 4.0 * sf * (1.0 - sf);
-          vec2 sh = g + sun * z * 0.8;
-          float ss = 1.0 - smoothstep(sz * 0.4, sz * (1.4 + z / R), length(p - sh));
-          col *= 1.0 - 0.3 * ss * (1.0 - min(1.0, z / (R * 2.5)));
-          float r = sz * (1.0 + z / (R * 2.2));
-          float bl = 0.8 + z * 0.03;
-          vec2 d = p - g;
-          // stretched along its path, more while it is fast (leaving and landing)
-          float st = 1.0 + 0.9 * abs(1.0 - 2.0 * sf);
-          vec2 l = vec2(dot(d, dir) / st, dot(d, vec2(-dir.y, dir.x)));
-          float da = 1.0 - smoothstep(r - bl, r + bl, length(l));
-          if (da > 0.001) {
-            vec3 dc = cof * (0.8 + 0.3 * dot(normalize(d + 0.001), -sun));
-            dc += vec3(1.0, 0.95, 0.88) * 0.55 * (1.0 - smoothstep(0.0, r * 0.45, length(d + sun * r * 0.4)));
-            col = mix(col, dc, da);
-          }
+          airAdd(FA, FB, p, gg, z, sz * 0.8, dir, 1.0 + 1.6 * abs(1.0 - 2.0 * sf));
         }
+        airShade(col, p, FA, FB, COF, 0.8, 0.9, 0.0);
       }
     }
-    // ---- the wine and the turmeric coming in from the viewer's side, large and soft, smaller and sharper as
-    // they near, the shadow drawing in under them
+    // ---- the mud: the heavy clots thrown up by the wheel come over and down onto the cloth, each onto its blot
+    float tm = (uStain - TM) / DM;
+    if (tm > -0.15 && tm < 0.81) {
+      vec2 O, dirM;
+      mudFrom(O, dirM);
+      vec4 FA = vec4(0.0), FB = vec4(0.0);
+      for (int i = 0; i < NMUD; i++) {
+        vec2 g, dd; float r, ta;
+        mudClumpAt(i, O, dirM, g, dd, r, ta);
+        float FD = 0.12;
+        float sf = (tm - (ta - FD)) / FD;
+        if (r <= 0.0 || sf <= 0.0 || sf >= 1.0) continue;
+        vec2 at; float z;
+        approach(g, dd, gS * 0.3, 0.5, sf, at, z);
+        airAdd(FA, FB, p, at, z, r * 1.5, dd, 1.25 + 0.5 * (1.0 - sf));
+      }
+      airShade(col, p, FA, FB, vec3(0.40, 0.31, 0.20), 0.12, 0.6, 0.3);
+    }
+    // ---- the ink: each flick sends its drops down in a line, the fat one first, the small ones after
+    float ti = (uStain - TI) / DI;
+    if (ti > -0.1 && ti < 0.69) {
+      float R = 0.08 * gS;
+      vec4 FA = vec4(0.0), FB = vec4(0.0);
+      for (int f = 0; f < 2; f++) {
+        float ff = float(f);
+        vec2 A = stainAt(vec2(tall() ? 0.22 : 0.50, 0.55)) + vec2(R * 0.5, R * 1.1) * ff;
+        float ang = 0.22 + 0.2 * ff;
+        vec2 u = vec2(cos(ang), sin(ang));
+        vec2 n = vec2(-u.y, u.x);
+        float L = R * (5.6 - 1.4 * ff);
+        for (int j = 0; j < 16; j++) {
+          vec2 h = hash2(vec2(float(j) + 0.5, 41.0 + ff * 7.0));
+          float sj = pow((float(j) + h.x * 0.9) / 16.0, 1.35);
+          float FD = 0.07;
+          float sf = (ti - (ff * 0.42 + 0.38 * sj * 0.7 - FD)) / FD;
+          if (sf <= 0.0 || sf >= 1.0) continue;
+          vec2 c = A + u * sj * L + n * (sin(PI * sj) * 0.1 * L + (h.y - 0.5) * R * 0.55 * sj);
+          float r = R * (0.03 + 0.3 * pow(1.0 - sj, 2.5)) * (0.55 + 0.6 * hash(h + 3.0));
+          vec2 at; float z;
+          approach(c, u, R * 1.5, 0.5, sf, at, z);
+          airAdd(FA, FB, p, at, z, r * 0.9, u, 1.3 + 0.8 * (1.0 - sf));
+        }
+      }
+      airShade(col, p, FA, FB, vec3(0.08, 0.10, 0.32), 0.55, 0.95, 0.0);
+    }
+    // ---- the wine and the turmeric, coming in the same way
     for (int i = 0; i < 2; i++) {
       float fl = (uStain - SP[i].w + 0.05) / 0.05;
       if (fl <= 0.0 || fl >= 1.0) continue;
       vec2 c = stainAt(SP[i].xy - vec2(tall() && i == 0 ? 0.1 : 0.0, 0.0));
       float R = SP[i].z * S;
       vec2 dir = SD[i].xy;
-      float n = 1.0 - fl;
-      float sd = length(p - c - vec2(0.35, 0.55) * R * n * 2.5);
-      col *= 1.0 - 0.22 * fl * (1.0 - smoothstep(R * 0.2, R * mix(2.4, 0.7, fl), sd));
-      vec2 at = c - dir * R * 4.0 * n - vec2(0.0, R * 2.0) * n * n;
-      float br = R * mix(1.5, 0.42, fl);
-      float bl = R * mix(0.8, 0.06, fl);
-      vec2 rel = p - at;
-      vec2 rl = vec2(dot(rel, dir) * mix(0.75, 0.9, fl), dot(rel, vec2(-dir.y, dir.x)));
-      float ba = (1.0 - smoothstep(br - bl, br + bl, length(rl))) * smoothstep(0.0, 0.25, fl);
-      vec3 tint = stainTint(SD[i].z);
-      vec3 bc = tint * tint * 0.85;
-      bc += vec3(1.0) * 0.45 * (1.0 - smoothstep(0.0, br * 0.45, length(rel + vec2(0.3, 0.38) * br)));
-      col = mix(col, bc, ba);
+      vec2 at; float z;
+      approach(c, dir, R * 3.0, 0.6, fl, at, z);
+      vec3 liq = i == 0 ? vec3(0.42, 0.05, 0.12) : vec3(0.9, 0.58, 0.1);
+      vec4 FA = vec4(0.0), FB = vec4(0.0);
+      airAdd(FA, FB, p, at, z, R * 0.42, dir, 1.4);
+      airAdd(FA, FB, p, at - dir * R * 0.5 * (1.0 - fl), z * 1.1, R * 0.25, dir, 1.6);
+      airShade(col, p, FA, FB, liq, i == 0 ? 0.7 : 0.3, 0.8, 0.0);
     }
   }
 

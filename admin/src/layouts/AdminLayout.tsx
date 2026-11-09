@@ -12,6 +12,7 @@ import { AlertTicker } from './AlertTicker';
 import { LocationPicker } from './LocationPicker';
 import { MOBILE_TABS, NAV, type NavItem } from './navigation';
 import { QuickFind } from './QuickFind';
+import { TopProgressBar } from '@/components/ui/TopProgressBar';
 
 /**
  * The portal's frame. Roomy, accessible sidebar with quick navigation and notifications.
@@ -114,6 +115,7 @@ export function AdminLayout() {
 
   return (
     <div className="portal-wrap portal-wrap--has-ticker">
+      <TopProgressBar />
       <AlertTicker d={dashboard.data} />
       <div className={`shell${collapsed ? ' shell--collapsed' : ''}${menuOpen ? ' shell--menu' : ''}`}>
       <a href="#main" className="skip-link">
@@ -206,7 +208,9 @@ export function AdminLayout() {
 
         <main id="main" className="main" tabIndex={-1}>
           <ErrorBoundary resetKey={location.pathname}>
-            <Outlet />
+            <div key={location.pathname} className="portal-page-enter">
+              <Outlet />
+            </div>
           </ErrorBoundary>
         </main>
       </div>

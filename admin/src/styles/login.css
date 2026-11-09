@@ -171,7 +171,7 @@
 }
 
 /* pill field: cream fill, soft edge, ink edge when focused, a hairline then a round ink badge at the end */
-.pill {
+.login-field-pill {
   display: flex;
   align-items: center;
   height: 56px;
@@ -184,21 +184,21 @@
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.pill:hover {
+.login-field-pill:hover {
   border-color: #A9A291;
 }
 
-.pill:focus-within {
+.login-field-pill:focus-within {
   border-color: var(--ink);
   box-shadow: 0 0 0 3px rgba(10, 28, 62, 0.06);
 }
 
-.pill--error,
-.pill--error:hover {
+.login-field-pill--error,
+.login-field-pill--error:hover {
   border-color: #C8102E;
 }
 
-.pill__input {
+.login-field-pill__input {
   flex: 1;
   min-width: 0;
   height: 100%;
@@ -210,20 +210,20 @@
   color: var(--ink);
 }
 
-.pill__input::placeholder {
+.login-field-pill__input::placeholder {
   color: #667085;
   font-weight: 400;
 }
 
-.pill__input:-webkit-autofill,
-.pill__input:-webkit-autofill:hover,
-.pill__input:-webkit-autofill:focus {
+.login-field-pill__input:-webkit-autofill,
+.login-field-pill__input:-webkit-autofill:hover,
+.login-field-pill__input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 1000px #F4F2EB inset;
   -webkit-text-fill-color: #0A1C3E;
   transition: background-color 99999s ease-out 0s;
 }
 
-.pill__divider {
+.login-field-pill__divider {
   flex: none;
   width: 1px;
   height: 26px;
@@ -231,7 +231,7 @@
   background: #CBD5E1;
 }
 
-.pill__badge {
+.login-field-pill__badge {
   flex: none;
   display: grid;
   place-items: center;
@@ -241,15 +241,15 @@
   background: var(--ink);
 }
 
-.pill__badge--button {
+.login-field-pill__badge--button {
   transition: transform 120ms ease, background 160ms ease;
 }
 
-.pill__badge--button:hover {
+.login-field-pill__badge--button:hover {
   background: #1D3461;
 }
 
-.pill__badge--button:active {
+.login-field-pill__badge--button:active {
   transform: scale(0.92);
 }
 

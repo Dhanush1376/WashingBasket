@@ -27,23 +27,17 @@ const LOCATION_ORDER: Record<string, number> = {
   'loc-outside': 3,
 };
 
-const LOCATION_THEMES: Record<string, {
-  tag: string;
-  icon: IconName;
-}> = {
-  'loc-nit': {
-    tag: 'Tech Campus',
-    icon: 'sparkle',
-  },
-  'loc-lpu': {
-    tag: 'Campus Hub',
-    icon: 'mapPin',
-  },
-  'loc-outside': {
-    tag: 'City Store & Delivery',
-    icon: 'truck',
-  },
-};
+function getStoreLogo(locId: string, name?: string): string {
+  const id = locId.toLowerCase();
+  const n = (name || '').toLowerCase();
+  if (id === 'loc-nit' || n.includes('nit')) {
+    return `${import.meta.env.BASE_URL}logos/nitj.png`;
+  }
+  if (id === 'loc-lpu' || n.includes('lpu') || n.includes('lovely')) {
+    return `${import.meta.env.BASE_URL}logos/lpu.png`;
+  }
+  return `${import.meta.env.BASE_URL}logos/wb.png`;
+}
 
 export default function OverviewPage() {
   const dashboard = useQuery('dashboard', dashboardApi.getDashboard);
@@ -358,10 +352,6 @@ function DashboardLocationToggles() {
         {locations.map((loc) => {
           const isOpen = loc.status === 'ACTIVE';
           const isBusy = busyId === loc.id;
-          const meta = LOCATION_THEMES[loc.id] ?? {
-            tag: 'Campus Hub',
-            icon: 'mapPin' as const,
-          };
 
           return (
             <div
@@ -370,7 +360,11 @@ function DashboardLocationToggles() {
             >
               <div className="dash-store-card__lead">
                 <span className={`dash-store-card__icon-squircle dash-store-card__icon-squircle--${loc.id}`} aria-hidden>
-                  <Icon name={meta.icon} size={15} />
+                  <img
+                    src={getStoreLogo(loc.id, loc.shortName || loc.name)}
+                    alt={loc.name}
+                    className="dash-store-card__logo-img"
+                  />
                 </span>
                 <div className="dash-store-card__text">
                   <div className="dash-store-card__name-row">

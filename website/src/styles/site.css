@@ -1157,10 +1157,35 @@
 .cloth__hem .edge {
   stroke: rgba(170, 108, 76, 0.22);
 }
-.cloth__piece > .cloth__hem {
-  pointer-events: none;
+.cloth__over {
+  position: absolute;
   visibility: hidden;
   opacity: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.cloth__over svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+/* the rest of the piece beyond the live cloth, once it is flat: its own weave, and its even colour from afar */
+.cloth__flat {
+  position: absolute;
+  display: block;
+  opacity: 0;
+  background: rgb(251, 224, 203);
+}
+.cloth__ext {
+  position: absolute;
+  display: block;
+  background-color: #f2d4c0;
+  background-image: var(--weave);
+  background-repeat: repeat;
+  /* (the live cloth is drawn a touch lighter than its weave texture; measured against it, so they meet unseen) */
+  filter: brightness(1.048);
 }
 /* the table the piece lies on, and the basket beside it: seen once the view draws back */
 .cloth__table {

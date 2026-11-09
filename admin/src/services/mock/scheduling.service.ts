@@ -68,7 +68,7 @@ export const areaExists = (pincode: string, except?: string) => db.serviceAreas.
 /** SIMULATED */
 export function saveServiceArea(input: ServiceArea, originalPincode?: string): Promise<ServiceArea> {
   const existing = originalPincode ? db.serviceAreas.find((a) => a.pincode === originalPincode) : undefined;
-  const clean = { ...input, area: input.area.trim(), city: input.city.trim(), note: input.note.trim() };
+  const clean: ServiceArea = { ...input, area: input.area.trim(), city: input.city.trim(), note: input.note.trim(), hubId: input.hubId };
   if (existing) Object.assign(existing, clean);
   else db.serviceAreas.push(clean);
   return respond(clean, '', 400);

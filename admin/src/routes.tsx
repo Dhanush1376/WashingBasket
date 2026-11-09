@@ -16,6 +16,7 @@ const ReferralsPage = lazy(() => import('@/pages/referrals/ReferralsPage'));
 const OffersPage = lazy(() => import('@/pages/offers/OffersPage'));
 const ServicesPage = lazy(() => import('@/pages/services/ServicesPage'));
 const SchedulePage = lazy(() => import('@/pages/schedule/SchedulePage'));
+const ServiceAreasPage = lazy(() => import('@/pages/schedule/ServiceAreasPage'));
 const LaundryLocationsPage = lazy(() => import('@/pages/laundry/LaundryLocationsPage'));
 const LaundryStaffPage = lazy(() => import('@/pages/laundry/LaundryStaffPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -62,6 +63,7 @@ export const router = createBrowserRouter([
       { path: 'offers', element: page(<OffersPage />) },
       { path: 'services', element: page(<ServicesPage />) },
       { path: 'schedule', element: page(<SchedulePage />) },
+      { path: 'service-areas', element: page(<ServiceAreasPage />) },
       { path: 'laundry', element: <Navigate to="/" replace /> },
       { path: 'laundry/orders', element: <Navigate to="/orders" replace /> },
       { path: 'laundry/locations', element: page(<LaundryLocationsPage />) },
