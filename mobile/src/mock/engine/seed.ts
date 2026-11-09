@@ -25,7 +25,7 @@ import type {
 import { addMinutes, clone } from './util.ts';
 
 /** Bump when the shape changes: stored demo data with another version is replaced by a fresh seed. */
-export const SCHEMA_VERSION = 15;
+export const SCHEMA_VERSION = 19;
 
 type RawItem = { id: string; name: string; icon: string; unit: 'piece' | 'pair' | 'kg'; price?: number; note?: string; menuRef?: { section: string; item: string; column?: 0 | 1 } };
 export type RawPriceList = {

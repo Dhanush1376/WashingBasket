@@ -36,8 +36,18 @@ function submitAndPay(time: string, input: ops.SubmitInput) {
   return o.id;
 }
 
+/** The wash-floor steps after sorting, spread evenly between `from` and `until`, up to and including `upTo`. */
+const STAGES = ['WASHING', 'DRYING', 'IRONING', 'QUALITY_CHECK'] as const;
+function washStages(id: string, staffId: string, from: string, until: string, upTo: (typeof STAGES)[number] = 'QUALITY_CHECK') {
+  const steps = STAGES.slice(0, STAGES.indexOf(upTo) + 1);
+  const a = Date.parse(from);
+  const span = (Date.parse(until) - a) / (steps.length + 1);
+  steps.forEach((to, i) => ops.advanceStage(s, at(new Date(a + span * (i + 1)).toISOString()), { orderId: id, staffId, to }));
+}
+
 function deliver(id: string, staffId: string, times: { processing: string; ready: string; confirm: string; deliver: string }) {
   ops.startProcessing(s, at(times.processing), { orderId: id, staffId });
+  washStages(id, staffId, times.processing, times.ready);
   ops.markReady(s, at(times.ready), { orderId: id, staffId });
   ops.confirmClothes(s, at(times.confirm), { orderId: id, customerId: order(id).customerId, received: received(id) });
   ops.confirmDelivery(s, at(times.deliver), { orderId: id, staffId, qrId: order(id).deliveryQrId! });
@@ -57,6 +67,7 @@ deliver(b, LPU, { processing: '2026-11-01T14:00:00+05:30', ready: '2026-11-02T17
 const c = submitAndPay('2026-11-02T12:00:00+05:30', { customerId: 'u-1002', locationId: 'loc-lpu', serviceMode: 'OFFICE_DROP_OFF', basket: [{ itemId: 'wi-normal', qty: 4 }, { itemId: 'wi-whites', qty: 2 }] });
 ops.acceptOrder(s, at('2026-11-02T12:09:00+05:30'), { orderId: c, staffId: LPU, qrId: order(c).intakeQrId });
 ops.startProcessing(s, at('2026-11-02T15:00:00+05:30'), { orderId: c, staffId: LPU });
+washStages(c, LPU, '2026-11-02T15:00:00+05:30', '2026-11-04T16:00:00+05:30');
 ops.markReady(s, at('2026-11-04T16:00:00+05:30'), { orderId: c, staffId: LPU });
 ops.reportIssue(s, at('2026-11-04T18:30:00+05:30'), { orderId: c, customerId: 'u-1002', kind: 'MISSING_ITEMS', received: received(c, { 'wi-normal': 3 }), note: 'One white formal shirt is missing.' });
 
@@ -71,12 +82,15 @@ const d = submitAndPay('2026-11-02T19:00:00+05:30', {
 });
 ops.acceptOrder(s, at('2026-11-03T08:40:00+05:30'), { orderId: d, staffId: OUT, qrId: order(d).intakeQrId });
 ops.startProcessing(s, at('2026-11-03T13:00:00+05:30'), { orderId: d, staffId: OUT });
+washStages(d, OUT, '2026-11-03T13:00:00+05:30', '2026-11-04T18:00:00+05:30');
 ops.markReady(s, at('2026-11-04T18:00:00+05:30'), { orderId: d, staffId: OUT });
 
 // WB-1005 · Arjun · NIT · processing
 const e = submitAndPay('2026-11-03T09:40:00+05:30', { customerId: 'u-1003', locationId: 'loc-nit', serviceMode: 'OFFICE_DROP_OFF', basket: [{ itemId: 'ow-normal', qty: 4 }, { itemId: 'ow-whites', qty: 3 }, { itemId: 'sb-machine', qty: 1 }] });
 ops.acceptOrder(s, at('2026-11-03T09:50:00+05:30'), { orderId: e, staffId: NIT, qrId: order(e).intakeQrId });
 ops.startProcessing(s, at('2026-11-03T12:00:00+05:30'), { orderId: e, staffId: NIT });
+// the wash floor has it at drying
+washStages(e, 'st-nit-03', '2026-11-03T12:00:00+05:30', '2026-11-04T12:00:00+05:30', 'DRYING');
 
 // WB-1006 · Sana · LPU · rejected, refunded
 const f = submitAndPay('2026-11-04T16:00:00+05:30', { customerId: 'u-1008', locationId: 'loc-lpu', serviceMode: 'OFFICE_DROP_OFF', basket: [{ itemId: 'st-colour', qty: 2 }, { itemId: 'dc-basic', qty: 1 }] });

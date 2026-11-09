@@ -36,14 +36,22 @@
   font-family: 'PlusJakartaSans_800ExtraBold', 'Plus Jakarta Sans', 'Inter_800ExtraBold', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
 }
 
-.staggered-menu-wrapper:not([data-open]) {
+.staggered-menu-wrapper:not([data-open]):not([data-closing]) {
   visibility: hidden;
   pointer-events: none !important;
 }
 
-.staggered-menu-wrapper[data-open] {
+.staggered-menu-wrapper[data-open],
+.staggered-menu-wrapper[data-closing] {
   visibility: visible;
+}
+
+.staggered-menu-wrapper[data-open] {
   pointer-events: auto !important;
+}
+
+.staggered-menu-wrapper[data-closing] {
+  pointer-events: none !important;
 }
 
 .staggered-menu-wrapper.fixed-wrapper {
@@ -68,14 +76,17 @@
   -webkit-backdrop-filter: blur(4px);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
   z-index: 4;
 }
 
 .staggered-menu-wrapper[data-open] .sm-backdrop {
-  opacity: 1 !important;
+  opacity: 1;
   pointer-events: auto !important;
   cursor: pointer;
+}
+
+.staggered-menu-wrapper[data-closing] .sm-backdrop {
+  pointer-events: none !important;
 }
 
 /* 3/4th Width Drawer Panel */
@@ -99,13 +110,16 @@
   font-family: 'PlusJakartaSans_800ExtraBold', 'Plus Jakarta Sans', 'Inter_800ExtraBold', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
 }
 
-.staggered-menu-wrapper[data-open] .staggered-menu-panel {
+.staggered-menu-wrapper[data-open] .staggered-menu-panel,
+.staggered-menu-wrapper[data-closing] .staggered-menu-panel {
   opacity: 1 !important;
   pointer-events: auto !important;
 }
 
 .staggered-menu-wrapper[data-open] .sm-prelayers,
-.staggered-menu-wrapper[data-open] .sm-prelayer {
+.staggered-menu-wrapper[data-open] .sm-prelayer,
+.staggered-menu-wrapper[data-closing] .sm-prelayers,
+.staggered-menu-wrapper[data-closing] .sm-prelayer {
   opacity: 1 !important;
 }
 
@@ -125,12 +139,14 @@
   border-radius: 0;
 }
 
-/* Shadow only while open: parked off-screen, it would bleed a grey strip onto every page. */
-[data-open][data-position='left'] .staggered-menu-panel {
+/* Shadow only while open or closing: parked off-screen, it would bleed a grey strip onto every page. */
+[data-open][data-position='left'] .staggered-menu-panel,
+[data-closing][data-position='left'] .staggered-menu-panel {
   box-shadow: 12px 0 40px rgba(0, 0, 0, 0.22);
 }
 
-[data-open][data-position='right'] .staggered-menu-panel {
+[data-open][data-position='right'] .staggered-menu-panel,
+[data-closing][data-position='right'] .staggered-menu-panel {
   box-shadow: -12px 0 40px rgba(0, 0, 0, 0.22);
 }
 
@@ -268,7 +284,7 @@
   justify-content: center;
   cursor: pointer;
   color: #0A1C3E;
-  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
 .sm-panel-close-btn:hover {
@@ -294,25 +310,25 @@
 .sm-user-badge {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 12px 14px;
   background: #F4F5F7;
-  border-radius: 14px;
+  border-radius: 16px;
   margin-bottom: 0.2rem;
   font-family: 'Inter', -apple-system, sans-serif !important;
 }
 
 .sm-user-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
+  width: 42px;
+  height: 42px;
+  border-radius: 21px;
   background: #013E86;
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15.5px;
   font-family: 'Inter', -apple-system, sans-serif !important;
 }
 
@@ -326,7 +342,7 @@
 .sm-user-name {
   font-family: 'Inter', -apple-system, sans-serif !important;
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: 15px;
   color: #0A1C3E;
   white-space: nowrap;
   overflow: hidden;
@@ -335,7 +351,7 @@
 
 .sm-user-sub {
   font-family: 'Inter', -apple-system, sans-serif !important;
-  font-size: 11px;
+  font-size: 12.5px;
   color: #8C93A1;
   margin-top: 1px;
 }
@@ -361,9 +377,9 @@
   color: #0A1C3E;
   font-family: 'Inter_700Bold', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
   font-weight: 700 !important;
-  font-size: 17.5px;
-  line-height: 22px;
-  letter-spacing: -0.4px;
+  font-size: 20px;
+  line-height: 26px;
+  letter-spacing: -0.5px;
   cursor: pointer;
   transition: color 0.2s ease;
   display: block;
@@ -372,7 +388,7 @@
   background: transparent;
   border: none;
   text-align: left;
-  padding: 7px 4px;
+  padding: 9px 4px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -385,13 +401,13 @@
 .sm-panel-itemLabel {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   will-change: transform;
   transform-origin: 50% 100%;
 }
 
 .sm-panel-itemIcon {
-  width: 20px; height: 20px;
+  width: 24px; height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -407,15 +423,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 11px;
+  gap: 9px;
+  padding: 14px;
   background: #F4F5F7;
   border: none;
   border-radius: 14px;
   color: #0A1C3E;
   font-family: 'Inter', -apple-system, sans-serif !important;
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: 15px;
   cursor: pointer;
   margin-top: 0.4rem;
   transition: background 0.2s ease, transform 0.15s ease;
@@ -460,7 +476,7 @@
 
 .sm-socials-link {
   font-family: 'Inter', -apple-system, sans-serif !important;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #0A1C3E;
   text-decoration: none;
@@ -484,9 +500,9 @@
     max-width: 340px;
   }
   .sm-panel-item {
-    font-size: 17px;
-    line-height: 21px;
-    padding: 6.5px 4px;
+    font-size: 19px;
+    line-height: 24px;
+    padding: 8.5px 4px;
   }
 }
 

@@ -1,0 +1,21 @@
+/*
+ * Browsers paint their own white (or blue) box behind a field they autofill, e.g. a saved name or email.
+ * Keep our cream field colour and ink text instead: an inset shadow covers the autofill background, and the
+ * long transition stops the browser's colour from ever showing.
+ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #f4f2eb inset !important;
+  box-shadow: 0 0 0 1000px #f4f2eb inset !important;
+  -webkit-text-fill-color: #0a1c3e !important;
+  caret-color: #0a1c3e;
+  border-radius: 999px;
+  transition: background-color 99999s ease-out 0s;
+}
+
+input:autofill {
+  background-color: transparent !important;
+}

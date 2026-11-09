@@ -41,6 +41,7 @@
     "../mobile/src/theme/index.ts",
     "../mobile/src/types/models.ts",
     "../mobile/src/lib/format.ts",
+    "../mobile/src/components/logo/logoGeometry.ts",
     "../mobile/src/mock/**/*.ts",
     "../mobile/src/mock/**/*.json"
   ]

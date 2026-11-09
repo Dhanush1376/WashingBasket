@@ -1,18 +1,19 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { BackHandler, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, type SharedValue, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, IconName } from '../components/app/Icon';
-import { Avatar, Button } from '../components/app/primitives';
+import { LogoutConfirm } from '../components/app/LogoutConfirm';
 import { WashingBasketLogo } from '../components/logo/WashingBasketLogo';
 import { StaggeredMenu, StaggeredMenuItem } from '../components/navigation/StaggeredMenu';
 import { BottomSheet } from '../components/ui/BottomSheet';
 import { useAppUser } from '../hooks/useAppUser';
 import { useSession } from '../session/session';
-import { app, colors, fonts, space, text } from '../theme';
+import { fonts, space } from '../theme';
 import { navigationRef } from './ref';
-import type { MainTabParamList, RootStackParamList } from './types';
+import type { MainTabParamList, RootStackParamList, StaffTabParamList } from './types';
 
 type Ctx = { open: () => void; close: () => void; toggle: () => void; isOpen: boolean };
 const DrawerContext = createContext<Ctx>({ open: () => {}, close: () => {}, toggle: () => {}, isOpen: false });
@@ -22,7 +23,7 @@ type Destination = {
   label: string;
   icon: IconName;
   /** A root screen, or a tab inside Main. */
-  go: { screen: keyof RootStackParamList } | { tab: keyof MainTabParamList };
+  go: { screen: keyof RootStackParamList } | { tab: keyof MainTabParamList } | { staffTab: keyof StaffTabParamList };
 };
 
 const DESTINATIONS: Destination[] = [
@@ -36,15 +37,40 @@ const DESTINATIONS: Destination[] = [
   { label: 'Support', icon: 'headset', go: { screen: 'Support' } },
 ];
 
-const IN_MS = 380;
-const OUT_MS = 280;
-const EASE = Easing.bezier(0.22, 1, 0.36, 1);
+/** The staff app's menu: its five tabs plus the pages that live outside them. */
+const STAFF_DESTINATIONS: Destination[] = [
+  { label: 'Home', icon: 'home', go: { staffTab: 'StaffHome' } },
+  { label: 'Orders', icon: 'bag', go: { staffTab: 'StaffOrders' } },
+  { label: 'Scan', icon: 'scan', go: { staffTab: 'StaffScan' } },
+  { label: 'Schedule', icon: 'calendar', go: { staffTab: 'StaffSchedule' } },
+  { label: 'Salary', icon: 'wallet', go: { screen: 'StaffSalary' } },
+  { label: 'Notifications', icon: 'bell', go: { screen: 'StaffNotifications' } },
+  { label: 'Profile', icon: 'user', go: { staffTab: 'StaffProfile' } },
+];
 
-/** Side drawer for the signed-in app: StaggeredMenu with GSAP on web, Reanimated on native. */
+/** Staff see the staff menu; everyone else the customer one. */
+function useDestinations() {
+  const { session } = useSession();
+  return session?.role === 'staff' ? STAFF_DESTINATIONS : DESTINATIONS;
+}
+const destKey = (d: Destination) => ('tab' in d.go ? d.go.tab : 'staffTab' in d.go ? d.go.staffTab : d.go.screen);
+function navigateTo(d: Destination) {
+  if (!navigationRef.isReady()) return;
+  if ('tab' in d.go) navigationRef.navigate('Main', { screen: d.go.tab });
+  else if ('staffTab' in d.go) navigationRef.navigate('StaffTabs', { screen: d.go.staffTab } as never);
+  else navigationRef.navigate(d.go.screen as never);
+}
+
+const OUT_MS = 380;
+
+/** Side drawer for the signed-in app: StaggeredMenu with GSAP on web, the same design drawn with Reanimated on phones. */
 export function DrawerProvider({ children }: { children: React.ReactNode }) {
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
+  /** Opening timeline, 0 → 1 (phones). */
   const t = useSharedValue(0);
+  /** Closing slide, 0 → 1 (phones). */
+  const exit = useSharedValue(0);
 
   const open = useCallback(() => {
     setMounted(true);
@@ -60,18 +86,21 @@ export function DrawerProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (visible) {
-      t.value = withTiming(1, { duration: IN_MS, easing: EASE });
+      // the timeline runs evenly; each part applies its own easing (see DrawerPanel)
+      exit.value = 0;
+      t.value = 0;
+      t.value = withTiming(1, { duration: SHOW_MS, easing: Easing.linear });
       return;
     }
     if (!mounted) return;
-    t.value = withTiming(0, { duration: OUT_MS, easing: Easing.in(Easing.cubic) });
+    exit.value = withTiming(1, { duration: OUT_MS, easing: Easing.inOut(Easing.cubic) });
     const id = setTimeout(() => setMounted(false), OUT_MS + 30);
     return () => clearTimeout(id);
-  }, [visible, mounted, t]);
+  }, [visible, mounted, t, exit]);
 
   // Android back closes the drawer first
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || Platform.OS !== 'android') return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
       close();
       return true;
@@ -86,7 +115,7 @@ export function DrawerProvider({ children }: { children: React.ReactNode }) {
       {Platform.OS === 'web' ? (
         <WebStaggeredDrawer visible={visible} onClose={close} />
       ) : mounted ? (
-        <DrawerPanel progress={t} onClose={close} />
+        <DrawerPanel progress={t} exit={exit} onClose={close} />
       ) : null}
     </DrawerContext.Provider>
   );
@@ -101,18 +130,17 @@ function WebStaggeredDrawer({ visible, onClose }: { visible: boolean; onClose: (
 
   const go = (d: Destination) => {
     onClose();
-    if (!navigationRef.isReady()) return;
-    if ('tab' in d.go) navigationRef.navigate('Main', { screen: d.go.tab });
-    else navigationRef.navigate(d.go.screen as never);
+    navigateTo(d);
   };
 
-  const isActive = (d: Destination) => ('tab' in d.go ? d.go.tab : d.go.screen) === active;
+  const isActive = (d: Destination) => destKey(d) === active;
+  const destinations = useDestinations();
 
   const menuItems: StaggeredMenuItem[] = useMemo(() => {
-    const list: StaggeredMenuItem[] = DESTINATIONS.map((d) => ({
+    const list: StaggeredMenuItem[] = destinations.map((d) => ({
       label: d.label,
       active: isActive(d),
-      icon: <Icon name={d.icon} size={19} color={isActive(d) ? '#FE8701' : '#1F2430'} strokeWidth={2} />,
+      icon: <Icon name={d.icon} size={22} color={isActive(d) ? '#FE8701' : '#1F2430'} strokeWidth={2} />,
       onClick: () => go(d),
     }));
 
@@ -140,7 +168,7 @@ function WebStaggeredDrawer({ visible, onClose }: { visible: boolean; onClose: (
 
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, guest]);
+  }, [active, guest, destinations]);
 
   return (
     <>
@@ -163,234 +191,235 @@ function WebStaggeredDrawer({ visible, onClose }: { visible: boolean; onClose: (
       />
 
       <BottomSheet visible={confirmLogout} onClose={() => setConfirmLogout(false)}>
-        <Text style={text.h1}>Log out of Washing Basket?</Text>
-        <Text style={[text.body, { marginTop: 4 }]} numberOfLines={1}>
-          You&apos;ll need your phone to sign back in.
-        </Text>
-        <View style={styles.sheetButtons}>
-          <Button
-            label="Cancel"
-            variant="outline"
-            onPress={() => setConfirmLogout(false)}
-            style={{ flex: 1 }}
-          />
-          <Button
-            label="Log out"
-            variant="dark"
-            onPress={() => {
-              setConfirmLogout(false);
-              onClose();
-              signOut();
-            }}
-            style={{ flex: 1 }}
-          />
-        </View>
+        <LogoutConfirm
+          onCancel={() => setConfirmLogout(false)}
+          onConfirm={() => {
+            setConfirmLogout(false);
+            onClose();
+            signOut();
+          }}
+        />
       </BottomSheet>
     </>
   );
 }
 
-/** Native fallback for Android & iOS using react-native-reanimated */
+/* ───────────── Phones (iOS & Android) ─────────────
+ * The same menu as on the web (StaggeredMenu): a white panel led in by an orange and a navy layer,
+ * the logo and wordmark with a round close button, bold items that rise in one after another
+ * (the current page in orange), and Log out under a divider. Drawn with Reanimated.
+ */
+
+/** The opening plays out over this time; each part takes its own slice of it. */
+const SHOW_MS = 900;
+/** Panel width, as on the web: clamp(260px, 75vw, 340px). */
+const panelWidth = (w: number) => Math.min(Math.max(260, w * 0.75), 340);
+const LAYERS = ['#FE8701', '#013E86'];
+const INK = '#0A1C3E';
+const ACCENT = '#FE8701';
+const DANGER = '#D30D24';
+const HAIRLINE = '#EAE6DB';
+
+/** GSAP's power4.out, as a worklet: quick start, long soft settle. */
+function power4Out(x: number) {
+  'worklet';
+  return 1 - Math.pow(1 - x, 4);
+}
+/** 0 → 1 between two moments of the opening (in ms), eased. */
+function phase(t: number, fromMs: number, toMs: number) {
+  'worklet';
+  const x = (t * SHOW_MS - fromMs) / (toMs - fromMs);
+  return power4Out(Math.min(1, Math.max(0, x)));
+}
+
+type MenuItem = { key: string; label: string; icon: IconName; on: boolean; danger?: boolean; divider?: boolean; onPress: () => void };
+
 function DrawerPanel({
   progress,
+  exit,
   onClose,
 }: {
-  progress: ReturnType<typeof useSharedValue<number>>;
+  progress: SharedValue<number>;
+  exit: SharedValue<number>;
   onClose: () => void;
 }) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const panelW = Math.min(width * 0.82, 320);
-  const { name, phone, guest } = useAppUser();
+  const panelW = panelWidth(width);
+  const compact = width <= 640;
+  const { guest } = useAppUser();
   const { signOut } = useSession();
   const [confirmLogout, setConfirmLogout] = useState(false);
   const active = navigationRef.isReady() ? navigationRef.getCurrentRoute()?.name : undefined;
 
-  const backdrop = useAnimatedStyle(() => ({ opacity: progress.value * 0.5 }));
-  const panel = useAnimatedStyle(() => ({
-    transform: [{ translateX: (progress.value - 1) * (panelW + 24) }],
-  }));
-
   const go = (d: Destination) => {
     onClose();
-    if (!navigationRef.isReady()) return;
-    if ('tab' in d.go) navigationRef.navigate('Main', { screen: d.go.tab });
-    else navigationRef.navigate(d.go.screen as never);
+    navigateTo(d);
   };
+  const isActive = (d: Destination) => destKey(d) === active;
+  const destinations = useDestinations();
 
-  const isActive = (d: Destination) => ('tab' in d.go ? d.go.tab : d.go.screen) === active;
+  // the backdrop fades in with the panel and out as everything slides away
+  const backdrop = useAnimatedStyle(() => ({ opacity: phase(progress.value, 0, 300) * (1 - exit.value) }));
+  // closing: everything leaves together, like the web's single quick slide
+  const whole = useAnimatedStyle(() => ({ transform: [{ translateX: -exit.value * (panelW + 40) }] }));
+  const layer0 = useAnimatedStyle(() => ({ transform: [{ translateX: (phase(progress.value, 0, 450) - 1) * panelW }] }));
+  const layer1 = useAnimatedStyle(() => ({ transform: [{ translateX: (phase(progress.value, 60, 510) - 1) * panelW }] }));
+  const panel = useAnimatedStyle(() => ({ transform: [{ translateX: (phase(progress.value, 130, 710) - 1) * (panelW + 24) }] }));
+  const header = useAnimatedStyle(() => {
+    const e = phase(progress.value, 190, 590);
+    return { opacity: e, transform: [{ translateY: (1 - e) * -10 }] };
+  });
+
+  const items: MenuItem[] = [
+    ...destinations.map((d) => ({ key: d.label, label: d.label, icon: d.icon, on: isActive(d), onPress: () => go(d) })),
+    {
+      key: 'account',
+      label: guest ? 'Sign in' : 'Log out',
+      icon: guest ? 'user' : 'logout',
+      on: false,
+      danger: !guest,
+      divider: true,
+      onPress: () => {
+        if (guest) {
+          onClose();
+          signOut();
+        } else setConfirmLogout(true);
+      },
+    },
+  ];
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-      <Animated.View style={[StyleSheet.absoluteFill, styles.backdrop, backdrop]}>
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={onClose}
-          accessibilityLabel="Close menu"
-        />
+      <Animated.View style={[StyleSheet.absoluteFill, backdrop]}>
+        <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
+        <View style={[StyleSheet.absoluteFill, styles.backdrop]} />
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close menu" />
       </Animated.View>
-      <Animated.View
-        style={[
-          styles.panel,
-          {
-            width: panelW,
-            paddingTop: insets.top + space.lg,
-            paddingBottom: insets.bottom + space.lg,
-          },
-          panel,
-        ]}
-        accessibilityViewIsModal
-      >
-        <View style={styles.top}>
-          <View style={styles.logoTile}>
-            <WashingBasketLogo width={42} />
-          </View>
-          <Pressable
-            onPress={onClose}
-            hitSlop={10}
-            accessibilityLabel="Close menu"
-            style={styles.closeBtn}
-          >
-            <Icon name="x" size={20} color="#FFFFFF" />
-          </Pressable>
-        </View>
 
-        <View style={styles.profile}>
-          <Avatar name={guest ? 'Guest' : name || 'You'} size={48} tone="navy" />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name} numberOfLines={1}>
-              {guest ? 'Guest' : name}
-            </Text>
-            <Text style={styles.phone}>
-              {guest ? 'Browsing without an account' : phone}
-            </Text>
-          </View>
-        </View>
+      <Animated.View style={[styles.stack, { width: panelW }, whole]} pointerEvents="box-none">
+        {LAYERS.map((c, i) => (
+          <Animated.View key={c} style={[StyleSheet.absoluteFill, { backgroundColor: c }, i === 0 ? layer0 : layer1]} pointerEvents="none" />
+        ))}
 
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingVertical: space.sm }}
-          showsVerticalScrollIndicator={false}
+        <Animated.View
+          style={[styles.panel, { paddingTop: insets.top + 18, paddingBottom: insets.bottom + 18, paddingHorizontal: compact ? 18 : 21 }, panel]}
+          accessibilityViewIsModal
         >
-          {DESTINATIONS.map((d) => {
-            const on = isActive(d);
-            return (
-              <Pressable
-                key={d.label}
-                onPress={() => go(d)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: on }}
-                style={({ pressed }) => [
-                  styles.item,
-                  on && styles.itemOn,
-                  pressed && !on && styles.itemPressed,
-                ]}
-              >
-                <Icon
-                  name={d.icon}
-                  size={20}
-                  color={on ? colors.orange : 'rgba(255,255,255,0.78)'}
-                />
-                <Text style={[styles.itemText, on && styles.itemTextOn]}>
-                  {d.label}
-                </Text>
-                {on ? <View style={styles.activeDot} /> : null}
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+          <Animated.View style={[styles.top, header]}>
+            <View style={styles.brand}>
+              <WashingBasketLogo width={48} shine={false} />
+              <Text style={styles.brandTitle} accessibilityRole="header" accessibilityLabel="Washing Basket">
+                <Text style={styles.brandCap}>W</Text>ashing<Text style={styles.brandCap}>B</Text>asket
+              </Text>
+            </View>
+            <Pressable
+              onPress={onClose}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Close menu"
+              style={({ pressed }) => [styles.closeBtn, pressed && styles.closeBtnPressed]}
+            >
+              <Icon name="x" size={16} color={INK} strokeWidth={2.4} />
+            </Pressable>
+          </Animated.View>
 
-        <Pressable
-          onPress={() => (guest ? signOut() : setConfirmLogout(true))}
-          accessibilityRole="button"
-          style={({ pressed }) => [
-            styles.logout,
-            guest && styles.signIn,
-            pressed && { opacity: 0.8 },
-          ]}
-        >
-          <Icon
-            name={guest ? 'user' : 'logout'}
-            size={19}
-            color={guest ? colors.ink : '#FFFFFF'}
-          />
-          <Text style={[styles.logoutText, guest && { color: colors.ink }]}>
-            {guest ? 'Sign in' : 'Log out'}
-          </Text>
-        </Pressable>
+          <ScrollView style={styles.flex} contentContainerStyle={styles.list} showsVerticalScrollIndicator={false} bounces={false}>
+            {items.map((it, i) => (
+              <MenuRow key={it.key} index={i} progress={progress} compact={compact} item={it} />
+            ))}
+          </ScrollView>
+        </Animated.View>
       </Animated.View>
 
       <BottomSheet visible={confirmLogout} onClose={() => setConfirmLogout(false)}>
-        <Text style={text.h1}>Log out of Washing Basket?</Text>
-        <Text style={[text.body, { marginTop: 4 }]} numberOfLines={1}>
-          You&apos;ll need your phone to sign back in.
-        </Text>
-        <View style={styles.sheetButtons}>
-          <Button
-            label="Cancel"
-            variant="outline"
-            onPress={() => setConfirmLogout(false)}
-            style={{ flex: 1 }}
-          />
-          <Button
-            label="Log out"
-            variant="dark"
-            onPress={() => {
-              setConfirmLogout(false);
-              onClose();
-              signOut();
-            }}
-            style={{ flex: 1 }}
-          />
-        </View>
+        <LogoutConfirm
+          onCancel={() => setConfirmLogout(false)}
+          onConfirm={() => {
+            setConfirmLogout(false);
+            onClose();
+            signOut();
+          }}
+        />
       </BottomSheet>
     </View>
   );
 }
 
+/** One item: rises from below its own line with a slight tilt, a beat after the one above. */
+function MenuRow({ index, progress, compact, item }: { index: number; progress: SharedValue<number>; compact: boolean; item: MenuItem }) {
+  const rise = useAnimatedStyle(() => {
+    const from = 210 + index * 40;
+    const e = phase(progress.value, from, from + 380);
+    return { transform: [{ translateY: (1 - e) * 34 }, { rotate: `${(1 - e) * 8}deg` }] };
+  });
+  return (
+    <View style={[styles.rowWrap, item.divider && styles.rowDivider]}>
+      <Pressable onPress={item.onPress} accessibilityRole="button" accessibilityState={{ selected: item.on }} accessibilityLabel={item.label}>
+        {({ pressed }) => {
+          const label = item.on || (pressed && !item.danger) ? ACCENT : pressed ? DANGER : INK;
+          const icon = item.danger ? DANGER : item.on || pressed ? ACCENT : '#1F2430';
+          return (
+            <Animated.View style={[styles.row, rise]}>
+              <View style={styles.rowIcon}>
+                <Icon name={item.icon} size={22} strokeWidth={2} color={icon} />
+              </View>
+              <Text style={[styles.rowText, compact && styles.rowTextCompact, { color: label }]}>{item.label}</Text>
+            </Animated.View>
+          );
+        }}
+      </Pressable>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  backdrop: { backgroundColor: '#0B1220' },
+  flex: { flex: 1 },
+  backdrop: { backgroundColor: 'rgba(11, 18, 32, 0.45)' },
+  stack: { position: 'absolute', left: 0, top: 0, bottom: 0 },
   panel: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    backgroundColor: app.navyDeep,
-    paddingHorizontal: space.lg,
-    ...(Platform.OS === 'web' ? ({ boxShadow: '12px 0 40px rgba(0,0,0,0.25)' } as object) : {}),
+    position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000000',
+    shadowOffset: { width: 12, height: 0 },
+    shadowOpacity: 0.22,
+    shadowRadius: 20,
+    elevation: 24,
   },
-  top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space.xs },
-  logoTile: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-  closeBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' },
-  profile: {
+  top: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.md,
-    marginTop: space.xl,
-    marginBottom: space.md,
-    padding: space.md,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    justifyContent: 'space-between',
+    marginBottom: 13,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: HAIRLINE,
   },
-  name: { fontFamily: fonts.semibold, fontSize: 16, color: '#FFFFFF' },
-  phone: { fontFamily: fonts.regular, fontSize: 13, color: 'rgba(255,255,255,0.65)', marginTop: 2 },
-  item: { flexDirection: 'row', alignItems: 'center', gap: space.md, height: 48, paddingHorizontal: space.md, borderRadius: 16 },
-  itemOn: { backgroundColor: 'rgba(255,255,255,0.1)' },
-  itemPressed: { backgroundColor: 'rgba(255,255,255,0.05)' },
-  itemText: { flex: 1, fontFamily: fonts.medium, fontSize: 15, color: 'rgba(255,255,255,0.82)' },
-  itemTextOn: { color: '#FFFFFF', fontFamily: fonts.semibold },
-  activeDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.orange },
-  logout: {
-    flexDirection: 'row',
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1 },
+  brandTitle: { fontFamily: fonts.displayBold, fontSize: 18, lineHeight: 24, letterSpacing: -0.35, color: INK },
+  brandCap: { fontFamily: fonts.display, fontSize: 23, lineHeight: 24, color: INK },
+  closeBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: HAIRLINE,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: space.sm,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    marginTop: space.sm,
+    shadowColor: '#14213D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  signIn: { backgroundColor: '#FFFFFF' },
-  logoutText: { fontFamily: fonts.semibold, fontSize: 15, color: '#FFFFFF' },
+  closeBtnPressed: { backgroundColor: '#F1EDE4', transform: [{ scale: 0.95 }] },
+  list: { gap: 2, paddingBottom: 8 },
+  rowWrap: { overflow: 'hidden' },
+  rowDivider: { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: HAIRLINE },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 9, paddingHorizontal: 4, transformOrigin: 'center bottom' },
+  rowIcon: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  rowText: { fontFamily: fonts.bold, fontSize: 20, lineHeight: 26, letterSpacing: -0.5 },
+  rowTextCompact: { fontSize: 19, lineHeight: 24 },
   sheetButtons: { flexDirection: 'row', gap: space.md, marginTop: space.xxl },
 });

@@ -50,13 +50,15 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   onMenuClose,
 }) => {
   const [open, setOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const openRef = useRef(false);
+  const isClosingRef = useRef(false);
   const panelRef = useRef<HTMLElement | null>(null);
   const preLayersRef = useRef<HTMLDivElement | null>(null);
   const preLayerElsRef = useRef<HTMLElement[]>([]);
 
   const openTlRef = useRef<gsap.core.Timeline | null>(null);
-  const closeTweenRef = useRef<gsap.core.Tween | null>(null);
+  const closeTlRef = useRef<gsap.core.Timeline | null>(null);
   const busyRef = useRef(false);
   const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
 
@@ -94,23 +96,24 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     }
 
     openTlRef.current?.kill();
-    if (closeTweenRef.current) {
-      closeTweenRef.current.kill();
-      closeTweenRef.current = null;
-    }
+    closeTlRef.current?.kill();
     itemEntranceTweenRef.current?.kill();
 
     const itemEls = Array.from(panel.querySelectorAll('.sm-panel-itemLabel')) as HTMLElement[];
     const panelTop = panel.querySelector('.sm-panel-top');
+    const backdrop = panel.parentElement?.querySelector('.sm-backdrop');
 
     const offscreen = position === 'left' ? -100 : 100;
     const layerStates = (layers || []).map((el) => ({ el, start: offscreen }));
     const panelStart = offscreen;
 
     // Ensure full visibility during animation
-    gsap.set([panel, ...(layers || [])], { opacity: 1 });
+    gsap.set([panel, ...(layers || [])], { opacity: 1, xPercent: offscreen });
     if (preLayersRef.current) {
-      gsap.set(preLayersRef.current, { opacity: 1 });
+      gsap.set(preLayersRef.current, { opacity: 1, xPercent: 0 });
+    }
+    if (backdrop) {
+      gsap.set(backdrop, { opacity: 0 });
     }
 
     if (itemEls.length) {
@@ -121,6 +124,19 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     }
 
     const tl = gsap.timeline({ paused: true });
+
+    // Smooth backdrop fade-in synchronized with drawer entry
+    if (backdrop) {
+      tl.to(
+        backdrop,
+        {
+          opacity: 1,
+          duration: 0.38,
+          ease: 'power2.out',
+        },
+        0
+      );
+    }
 
     layerStates.forEach((ls, i) => {
       tl.fromTo(
@@ -174,6 +190,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   const playOpen = useCallback(() => {
     busyRef.current = true;
+    setIsClosing(false);
+    isClosingRef.current = false;
     const tl = buildOpenTimeline();
     if (tl) {
       tl.eventCallback('onComplete', () => {
@@ -185,61 +203,156 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     }
   }, [buildOpenTimeline]);
 
-  const playClose = useCallback(() => {
-    openTlRef.current?.kill();
-    openTlRef.current = null;
-    itemEntranceTweenRef.current?.kill();
-
+  const buildCloseTimeline = useCallback(() => {
     const panel = panelRef.current;
+    if (!panel) return null;
+
     let layers = preLayerElsRef.current;
     if ((!layers || !layers.length) && preLayersRef.current) {
       layers = Array.from(preLayersRef.current.querySelectorAll('.sm-prelayer')) as HTMLElement[];
       preLayerElsRef.current = layers;
     }
-    if (!panel) return;
 
-    const all = [...(layers || []), panel];
-    closeTweenRef.current?.kill();
+    openTlRef.current?.kill();
+    openTlRef.current = null;
+    closeTlRef.current?.kill();
+    itemEntranceTweenRef.current?.kill();
+
+    const panelTop = panel.querySelector('.sm-panel-top');
+    const backdrop = panel.parentElement?.querySelector('.sm-backdrop');
     const offscreen = position === 'left' ? -100 : 100;
-    closeTweenRef.current = gsap.to(all, {
-      xPercent: offscreen,
-      duration: 0.28,
-      ease: 'power3.in',
-      overwrite: 'auto',
+
+    const tl = gsap.timeline({
+      paused: true,
       onComplete: () => {
+        setIsClosing(false);
+        setOpen(false);
+        openRef.current = false;
+        isClosingRef.current = false;
+        busyRef.current = false;
+
         const itemEls = Array.from(panel.querySelectorAll('.sm-panel-itemLabel'));
         if (itemEls.length) {
           gsap.set(itemEls, { yPercent: 140, rotate: 8 });
         }
-        busyRef.current = false;
+        if (panelTop) {
+          gsap.set(panelTop, { opacity: 0, y: -10 });
+        }
+        gsap.set([panel, ...(layers || [])], { xPercent: offscreen });
+        if (backdrop) {
+          gsap.set(backdrop, { opacity: 0 });
+        }
+
+        onMenuClose?.();
       },
     });
-  }, [position]);
+
+    // 1. Top header (logo & X button): gently fade out in harmony with panel exit
+    if (panelTop) {
+      tl.to(
+        panelTop,
+        {
+          opacity: 0,
+          y: -6,
+          duration: 0.22,
+          ease: 'power2.in',
+        },
+        0
+      );
+    }
+
+    // 2. White drawer panel: glides offscreen smoothly with graceful power3.inOut
+    tl.to(
+      panel,
+      {
+        xPercent: offscreen,
+        duration: 0.45,
+        ease: 'power3.inOut',
+      },
+      0
+    );
+
+    // 3. Prelayers: reverse-stagger smoothly behind the panel
+    if (layers && layers.length) {
+      const reversedLayers = [...layers].reverse();
+      reversedLayers.forEach((layer, idx) => {
+        tl.to(
+          layer,
+          {
+            xPercent: offscreen,
+            duration: 0.42,
+            ease: 'power3.inOut',
+          },
+          0.03 * (idx + 1)
+        );
+      });
+    }
+
+    // 4. Backdrop: smoothly fades out over the exact same duration
+    if (backdrop) {
+      tl.to(
+        backdrop,
+        {
+          opacity: 0,
+          duration: 0.42,
+          ease: 'power2.inOut',
+        },
+        0
+      );
+    }
+
+    closeTlRef.current = tl;
+    return tl;
+  }, [position, onMenuClose]);
+
+  const playClose = useCallback(() => {
+    if (isClosingRef.current) return;
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      if (panelRef.current?.contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+    }
+    isClosingRef.current = true;
+    setIsClosing(true);
+    busyRef.current = true;
+
+    const tl = buildCloseTimeline();
+    if (tl) {
+      tl.play(0);
+    } else {
+      setIsClosing(false);
+      setOpen(false);
+      openRef.current = false;
+      isClosingRef.current = false;
+      busyRef.current = false;
+      onMenuClose?.();
+    }
+  }, [buildCloseTimeline, onMenuClose]);
 
   const closeMenu = useCallback(() => {
-    if (openRef.current) {
-      openRef.current = false;
-      setOpen(false);
-      onMenuClose?.();
+    if (openRef.current || open) {
       playClose();
     }
-  }, [playClose, onMenuClose]);
+  }, [playClose, open]);
 
   // Sync with controlled `isOpen` prop
   useEffect(() => {
     if (controlledOpen === undefined) return;
     if (controlledOpen !== openRef.current) {
-      openRef.current = controlledOpen;
-      setOpen(controlledOpen);
       if (controlledOpen) {
+        openRef.current = true;
+        setOpen(true);
+        setIsClosing(false);
+        isClosingRef.current = false;
         onMenuOpen?.();
         playOpen();
       } else {
-        onMenuClose?.();
-        playClose();
+        if (!isClosingRef.current && (openRef.current || open)) {
+          playClose();
+        }
       }
     }
-  }, [controlledOpen, playOpen, playClose, onMenuOpen, onMenuClose]);
+  }, [controlledOpen, playOpen, playClose, onMenuOpen, open]);
 
   // Handle click outside panel on backdrop to close
   useEffect(() => {
@@ -272,7 +385,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       }
       style={accentColor ? ({ ['--sm-accent']: accentColor } as React.CSSProperties) : undefined}
       data-position={position}
-      data-open={open || undefined}
+      data-open={open && !isClosing ? '' : undefined}
+      data-closing={isClosing ? '' : undefined}
     >
       {/* Semi-transparent dimmed backdrop covering remaining 1/4th of screen */}
       <div className="sm-backdrop" onClick={closeMenu} aria-hidden="true" />
@@ -297,7 +411,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         id="staggered-menu-panel"
         ref={panelRef}
         className="staggered-menu-panel"
-        aria-hidden={!open}
+        aria-hidden={!open ? true : undefined}
+        {...(!open ? ({ inert: '' } as any) : {})}
       >
         {/* Panel Internal Header: Logo + Brand Name + Close Button */}
         <div className="sm-panel-top">

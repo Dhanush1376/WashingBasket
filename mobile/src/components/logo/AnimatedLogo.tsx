@@ -20,20 +20,20 @@ import { LOGO_ASPECT } from './WashingBasketLogo';
 
 /** Choreography start times in ms, measured from the moment `play` begins. */
 export const INTRO_TIMELINE = {
-  basket: 60,
-  towel: 720,
-  red: 1250,
-  orange: 1780,
-  sparkleLarge: 2270,
-  sparkleSmall: 2410,
+  basket: 50,
+  towel: 560,
+  red: 980,
+  orange: 1400,
+  sparkleLarge: 1790,
+  sparkleSmall: 1910,
   /** Cinematic reveal: logo glides left and wordmark reveals right */
-  wordmark: 2850,
-  /** Complete choreography cycle including 2.0s hold */
-  complete: 5800,
+  wordmark: 2250,
+  /** Complete choreography cycle including rest hold */
+  complete: 4400,
 } as const;
 
 const T = INTRO_TIMELINE;
-const LOADER_DURATION = 1900; // Faster, punchy clothes drop phase (requested)
+const LOADER_DURATION = 1500; // Faster, punchy clothes drop phase (snappy)
 const FALL = 0.15; // A cloth fall takes ~285ms (accelerating gravity)
 const RED_AT = 0.28;
 const ORANGE_AT = 0.56;
@@ -90,13 +90,13 @@ export const AnimatedLogo = memo(
       // Phase 1 — Basket glides in smoothly from the RIGHT (or left if negative enterFromX),
       // tilting naturally with momentum and settling upright onto its base.
       const tiltDir = enterFromX > 0 ? -1 : 1;
-      basketX.value = withDelay(T.basket, withTiming(0, { duration: 620, easing: easeDecel }));
+      basketX.value = withDelay(T.basket, withTiming(0, { duration: 480, easing: easeDecel }));
       basketTilt.value = withDelay(
         T.basket,
         withSequence(
-          withTiming(tiltDir * 2.6, { duration: 320, easing: Easing.out(Easing.quad) }),
-          withTiming(tiltDir * -0.8, { duration: 180, easing: Easing.inOut(Easing.quad) }),
-          withTiming(0, { duration: 120, easing: Easing.out(Easing.quad) }),
+          withTiming(tiltDir * 2.6, { duration: 250, easing: Easing.out(Easing.quad) }),
+          withTiming(tiltDir * -0.8, { duration: 140, easing: Easing.inOut(Easing.quad) }),
+          withTiming(0, { duration: 90, easing: Easing.out(Easing.quad) }),
         ),
       );
 
@@ -106,7 +106,7 @@ export const AnimatedLogo = memo(
         withTiming(1, { duration: LOADER_DURATION, easing: Easing.linear }),
       );
 
-      shadow.value = withDelay(T.complete, withTiming(0, { duration: 700, easing: easeInOut }));
+      shadow.value = withDelay(T.complete, withTiming(0, { duration: 500, easing: easeInOut }));
 
       return () => {
         cancelAnimation(basketX);

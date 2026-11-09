@@ -38,16 +38,32 @@ export type RootStackParamList = {
   Receipt: { orderId: string };
   VerifyClothes: { orderId: string };
   // staff (signed in with the demo staff number)
-  StaffHome: undefined;
-  StaffScan: { intent?: 'ANY' | 'INTAKE' | 'DELIVERY'; orderId?: string } | undefined;
+  StaffTabs: NavigatorScreenParams<StaffTabParamList> | undefined;
   StaffReview: { orderId: string; qrId: string };
   StaffOrder: { orderId: string };
   StaffDelivery: { orderId: string; qrId: string };
+  StaffNotifications: undefined;
+  StaffSalary: undefined;
+};
+
+/** The staff app's five tabs. */
+export type StaffTabParamList = {
+  StaffHome: undefined;
+  StaffOrders: { filter?: import('../staff/work').OrdersFilter } | undefined;
+  /** `orderId` + `intent` when started from an order: a code for another order or purpose is refused. */
+  StaffScan: { intent?: 'ANY' | 'INTAKE' | 'DELIVERY'; orderId?: string; nonce?: number } | undefined;
+  StaffSchedule: undefined;
+  StaffProfile: undefined;
 };
 
 export type ScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<RootStackParamList, T>;
 
 export type TabProps<T extends keyof MainTabParamList> = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, T>,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export type StaffTabProps<T extends keyof StaffTabParamList> = CompositeScreenProps<
+  BottomTabScreenProps<StaffTabParamList, T>,
   NativeStackScreenProps<RootStackParamList>
 >;

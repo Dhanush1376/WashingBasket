@@ -1,7 +1,9 @@
 import * as Clipboard from 'expo-clipboard';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Image, LayoutAnimation, Platform, Pressable, ScrollView, StyleSheet, Text, UIManager, View } from 'react-native';
-import Animated, { FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { Image, LayoutAnimation, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, UIManager, useWindowDimensions, View } from 'react-native';
+import Animated, { Easing, FadeIn, FadeOut, interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -222,6 +224,7 @@ export function LaundryOrderScreen({ navigation, route }: ScreenProps<'LaundryOr
   const [cancelling, setCancelling] = useState(false);
   const [copied, setCopied] = useState(false);
   const [toppingUp, setToppingUp] = useState(false);
+  const [zoomQrPayload, setZoomQrPayload] = useState<string | null>(null);
 
   const [appliedOffer, setAppliedOffer] = useState<Offer | null>(null);
   const [showOffersPicker, setShowOffersPicker] = useState(true);
@@ -448,15 +451,30 @@ export function LaundryOrderScreen({ navigation, route }: ScreenProps<'LaundryOr
         {/* Dashed perforation line */}
         <View style={styles.ticketDashed} />
 
-        {/* QR Code well */}
-        <View style={styles.qrWellThemed}>
+        {/* QR Code well - tap to enlarge into focus modal */}
+        <Pressable
+          onPress={() => {
+            if (!opts.locked && !expired) {
+              haptic.tap();
+              setZoomQrPayload(qrPayload(q));
+            }
+          }}
+          disabled={opts.locked || expired}
+          accessibilityRole="button"
+          accessibilityLabel={opts.locked ? 'QR code, locked until payment' : expired ? 'QR code, expired' : 'Enlarge QR code'}
+          style={({ pressed }) => [
+            styles.qrWellThemed,
+            !opts.locked && !expired && webCursor,
+            pressed && !opts.locked && !expired && { opacity: 0.92, transform: [{ scale: 0.985 }] },
+          ]}
+        >
           <QrFrame
             value={qrPayload(q)}
             locked={!!opts.locked || expired}
             size={184}
             label={opts.locked ? 'QR code, locked until payment' : expired ? 'QR code, expired' : `QR code for order ${order.id}`}
           />
-        </View>
+        </Pressable>
 
         {!opts.locked ? (
           <>
@@ -1080,9 +1098,83 @@ export function LaundryOrderScreen({ navigation, route }: ScreenProps<'LaundryOr
           <Button label="Cancel order" variant="dark" onPress={cancel} loading={cancelling} style={[styles.flex, { backgroundColor: brand.red, borderColor: brand.red }]} />
         </View>
       </BottomSheet>
+
+      <QrRevealModal
+        value={zoomQrPayload}
+        onClose={() => setZoomQrPayload(null)}
+      />
     </AppScreen>
   );
 }
+
+
+/* ───────────── QR Reveal Modal: expands into a dark blurred stage like Offers coupon ───────────── */
+
+function QrRevealModal({ value, onClose }: { value: string | null; onClose: () => void }) {
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const reduced = useReducedMotion();
+  const t = useSharedValue(reduced ? 1 : 0);
+
+  useEffect(() => {
+    if (!value) return;
+    if (reduced) {
+      t.value = 1;
+      return;
+    }
+    t.value = 0;
+    t.value = withTiming(1, { duration: 380, easing: Easing.bezier(0.16, 1, 0.3, 1) });
+  }, [value, reduced, t]);
+
+  const close = () => {
+    if (reduced) {
+      onClose();
+      return;
+    }
+    haptic.tap();
+    t.value = withTiming(0, { duration: 220, easing: Easing.in(Easing.cubic) });
+    setTimeout(onClose, 230);
+  };
+
+  const shade = useAnimatedStyle(() => ({ opacity: t.value }));
+  const cardStyle = useAnimatedStyle(() => ({
+    opacity: t.value,
+    transform: [{ scale: 0.86 + 0.14 * t.value }],
+  }));
+  const uiStyle = useAnimatedStyle(() => ({ opacity: t.value }));
+
+  if (!value) return null;
+
+  const qrSize = Math.min(264, Math.round(width - 96));
+
+  return (
+    <Modal transparent visible animationType="none" statusBarTranslucent onRequestClose={close}>
+      <Animated.View style={[StyleSheet.absoluteFill, shade]}>
+        <BlurView intensity={45} tint="dark" style={StyleSheet.absoluteFill} />
+        <Pressable style={[StyleSheet.absoluteFill, styles.qrModalShade]} onPress={close} accessibilityLabel="Close QR" />
+      </Animated.View>
+
+      <View style={[StyleSheet.absoluteFill, styles.qrModalCenter]} pointerEvents="box-none">
+        <Animated.View style={[styles.qrModalCard, cardStyle]}>
+          <QrCode value={value} size={qrSize} />
+        </Animated.View>
+      </View>
+
+      <Animated.View style={[styles.qrModalCloseWrap, { top: insets.top + 14 }, uiStyle]}>
+        <Pressable
+          onPress={close}
+          style={({ pressed }) => [styles.qrModalCloseBtn, webCursor, pressed && { opacity: 0.7 }]}
+          accessibilityRole="button"
+          accessibilityLabel="Close QR"
+        >
+          <Icon name="x" size={20} color="#FFFFFF" />
+        </Pressable>
+      </Animated.View>
+    </Modal>
+  );
+}
+
+
 
 /* ───────────── pieces ───────────── */
 
@@ -1193,7 +1285,7 @@ const styles = StyleSheet.create({
   qrTitle: { fontFamily: fonts.bold, fontSize: 18, letterSpacing: -0.4, color: colors.ink },
   qrSubtitle: { fontFamily: fonts.semibold, fontSize: 13.5, color: '#0A1C3E', marginTop: 4 },
   ticketDashed: { width: '100%', height: 1, borderTopWidth: 1.5, borderColor: 'rgba(10, 28, 62, 0.18)', borderStyle: 'dashed', marginVertical: space.md },
-  qrStatusPillLocked: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 26, borderRadius: 13, backgroundColor: '#FFF2E5', borderWidth: 1, borderColor: 'rgba(254, 135, 1, 0.25)' },
+  qrStatusPillLocked: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 26, borderRadius: 13, backgroundColor: '#FFF2E5', borderWidth: 1, borderColor: 'rgba(255, 167, 66, 0.25)' },
   qrStatusPillLabelLocked: { fontFamily: fonts.semibold, fontSize: 11.5, color: brand.orange },
   qrStatusPillReady: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 26, borderRadius: 13, backgroundColor: '#E8F8EE', borderWidth: 1, borderColor: 'rgba(13, 122, 33, 0.2)' },
   qrStatusDotReady: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.success },
@@ -2219,6 +2311,31 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web'
       ? ({ boxShadow: '0 4px 14px rgba(10, 28, 62, 0.08)' } as object)
       : { shadowColor: '#0A1C3E', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 }),
+  },
+  qrModalShade: { backgroundColor: 'rgba(4, 7, 14, 0.86)' },
+  qrModalCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: space.xl,
+  },
+  qrModalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 32,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 24px 60px rgba(0, 0, 0, 0.5), 0 4px 14px rgba(0, 0, 0, 0.3)' } as object)
+      : { shadowColor: '#000000', shadowOffset: { width: 0, height: 18 }, shadowOpacity: 0.45, shadowRadius: 30, elevation: 18 }),
+  },
+  qrModalCloseWrap: { position: 'absolute', right: 20 },
+  qrModalCloseBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   lockedQrWellThemed: {
     alignItems: 'center',

@@ -352,7 +352,7 @@
 }
 
 .overview-tag__dot--orange {
-  background: #FE8701;
+  background: #FFA742;
 }
 
 .overview-hero-tabs {
@@ -544,11 +544,11 @@
   background: #FFA742;
   color: #0A1C3E;
   border: 1px solid rgba(199, 106, 0, 0.4);
-  box-shadow: 0 1px 3px rgba(10, 28, 62, 0.06), 0 6px 16px rgba(254, 135, 1, 0.2);
+  box-shadow: 0 1px 3px rgba(10, 28, 62, 0.06), 0 6px 16px rgba(255, 167, 66, 0.2);
 }
 
 .overview-sub-card--orange:hover {
-  box-shadow: 0 3px 8px rgba(254, 135, 1, 0.25), 0 10px 24px rgba(254, 135, 1, 0.26);
+  box-shadow: 0 3px 8px rgba(255, 167, 66, 0.25), 0 10px 24px rgba(255, 167, 66, 0.26);
 }
 
 .overview-sub-card--light {
@@ -1712,7 +1712,7 @@ button.pipeline__row:hover {
 
 button.pipeline__row.is-selected-area {
   background: #FFF7ED;
-  box-shadow: inset 3px 0 0 #FE8701;
+  box-shadow: inset 3px 0 0 #FFA742;
 }
 
 .customers-top-list {
@@ -1855,7 +1855,7 @@ button.pipeline__row.is-selected-area {
   }
 
   .customers-table-scroll-hint svg {
-    color: #FE8701;
+    color: #FFA742;
   }
 
   .customers-directory-card .table-wrap {
@@ -2001,7 +2001,7 @@ button.pipeline__row.is-selected-area {
 }
 
 .customers-stats-dot--orange {
-  background: #FE8701;
+  background: #FFA742;
 }
 
 .customers-stats-dot--green {
@@ -2261,11 +2261,11 @@ button.pipeline__row.is-selected-area {
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: #FE8701;
+  background: #FFA742;
   color: #FFFFFF;
   font-size: 11px;
   font-weight: 750;
-  box-shadow: 0 1px 3px rgba(254, 135, 1, 0.35);
+  box-shadow: 0 1px 3px rgba(255, 167, 66, 0.35);
   margin-left: 2px;
 }
 
@@ -2891,7 +2891,7 @@ a.mini-row:hover {
 }
 
 .wallet-view-tabs--inline .wallet-view-tab.is-active .wallet-tab-count {
-  background: #FE8701;
+  background: #FFA742;
   color: #FFFFFF;
 }
 
@@ -2961,12 +2961,12 @@ a.mini-row:hover {
 }
 
 .wallet-source-select:focus {
-  border-color: #FE8701;
-  box-shadow: 0 0 0 2px rgba(254, 135, 1, 0.15);
+  border-color: #FFA742;
+  box-shadow: 0 0 0 2px rgba(255, 167, 66, 0.15);
 }
 
 .wallet-drawer-link {
-  color: #FE8701;
+  color: #FFA742;
   font-weight: 600;
   text-decoration: none;
 }
@@ -3737,7 +3737,7 @@ a.mini-row:hover {
   height: 130px;
   transform: translateY(-50%);
   border-radius: 50%;
-  background: rgba(254, 135, 1, 0.12);
+  background: rgba(255, 167, 66, 0.12);
 }
 
 .hp-booking__art {
@@ -3935,7 +3935,7 @@ a.mini-row:hover {
 .svc-row--on,
 .svc-row--on:hover {
   background: var(--orange-tint);
-  border-color: rgba(254, 135, 1, 0.35);
+  border-color: rgba(255, 167, 66, 0.35);
 }
 
 .svc-row--off .svc-row__art {
@@ -4206,7 +4206,7 @@ a.mini-row:hover {
   height: 34px;
   border-radius: 10px;
   background: #FFF7ED;
-  color: #FE8701;
+  color: #FFA742;
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -4321,8 +4321,8 @@ a.mini-row:hover {
 }
 
 .reward-stepper-box:focus-within {
-  border-color: #FE8701;
-  box-shadow: 0 0 0 3px rgba(254, 135, 1, 0.12);
+  border-color: #FFA742;
+  box-shadow: 0 0 0 3px rgba(255, 167, 66, 0.12);
 }
 
 .reward-stepper-btn {
@@ -4617,9 +4617,9 @@ a.mini-row:hover {
 }
 
 .reward-step-item:focus-within {
-  border-color: #FE8701;
+  border-color: #FFA742;
   background: #FFFFFF;
-  box-shadow: 0 0 0 2px rgba(254, 135, 1, 0.1);
+  box-shadow: 0 0 0 2px rgba(255, 167, 66, 0.1);
 }
 
 .reward-step-badge {
@@ -4674,7 +4674,7 @@ a.mini-row:hover {
 
 .reward-add-step-btn:hover {
   background: #FFF7ED;
-  border-color: #FE8701;
+  border-color: #FFA742;
   color: #EA580C;
 }
 
@@ -4709,7 +4709,7 @@ a.mini-row:hover {
 }
 
 .reward-save-btn:hover:not(:disabled) {
-  background: #FE8701;
+  background: #FFA742;
 }
 
 .reward-save-btn:disabled {

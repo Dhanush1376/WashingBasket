@@ -1,0 +1,23 @@
+{
+  "_note": "DEMO DATA for the staff app's leave requests. Entitlements are illustrative values, not a real HR policy.",
+  "entitlements": {
+    "year": 2026,
+    "source": "demo",
+    "types": [
+      { "id": "CASUAL", "label": "Casual leave", "perYear": 12 },
+      { "id": "SICK", "label": "Sick leave", "perYear": 8 },
+      { "id": "EARNED", "label": "Earned leave", "perYear": 15 }
+    ]
+  },
+  "requests": [
+    { "id": "lv-1001", "staffId": "st-lpu-01", "type": "CASUAL", "from": "2026-10-14", "to": "2026-10-15", "days": 2, "reason": "Family function in Ludhiana", "status": "APPROVED", "requestedAt": "2026-10-06T10:12:00+05:30", "decidedBy": "st-lpu-03", "decidedAt": "2026-10-06T15:40:00+05:30" },
+    { "id": "lv-1002", "staffId": "st-lpu-01", "type": "SICK", "from": "2026-09-08", "to": "2026-09-08", "days": 1, "reason": "Fever", "status": "APPROVED", "requestedAt": "2026-09-08T07:05:00+05:30", "decidedBy": "st-lpu-03", "decidedAt": "2026-09-08T08:30:00+05:30" },
+    { "id": "lv-1003", "staffId": "st-lpu-01", "type": "CASUAL", "from": "2026-11-27", "to": "2026-11-27", "days": 1, "reason": "Bank and document work", "status": "PENDING", "requestedAt": "2026-11-05T18:20:00+05:30" },
+    { "id": "lv-1004", "staffId": "st-lpu-02", "type": "EARNED", "from": "2026-11-16", "to": "2026-11-18", "days": 3, "reason": "Visiting family in Amritsar", "status": "PENDING", "requestedAt": "2026-11-04T12:00:00+05:30" },
+    { "id": "lv-1005", "staffId": "st-lpu-04", "type": "CASUAL", "from": "2026-10-27", "to": "2026-10-27", "days": 1, "reason": "Personal work", "status": "DECLINED", "requestedAt": "2026-10-24T09:30:00+05:30", "decidedBy": "st-lpu-03", "decidedAt": "2026-10-24T13:10:00+05:30", "note": "Two people already off that day. Please pick another date." },
+    { "id": "lv-1006", "staffId": "st-nit-01", "type": "SICK", "from": "2026-10-22", "to": "2026-10-22", "days": 1, "reason": "Doctor’s appointment", "status": "APPROVED", "requestedAt": "2026-10-21T19:45:00+05:30", "decidedBy": "st-nit-04", "decidedAt": "2026-10-21T20:30:00+05:30" },
+    { "id": "lv-1007", "staffId": "st-nit-03", "type": "CASUAL", "from": "2026-11-20", "to": "2026-11-21", "days": 2, "reason": "Sister’s wedding preparations", "status": "PENDING", "requestedAt": "2026-11-06T11:15:00+05:30" },
+    { "id": "lv-1008", "staffId": "st-out-01", "type": "CASUAL", "from": "2026-10-09", "to": "2026-10-09", "days": 1, "reason": "Vehicle service", "status": "APPROVED", "requestedAt": "2026-10-05T17:00:00+05:30", "decidedBy": "st-out-05", "decidedAt": "2026-10-05T18:10:00+05:30" },
+    { "id": "lv-1009", "staffId": "st-out-04", "type": "EARNED", "from": "2026-11-12", "to": "2026-11-13", "days": 2, "reason": "Travelling home", "status": "PENDING", "requestedAt": "2026-11-03T16:40:00+05:30" }
+  ]
+}

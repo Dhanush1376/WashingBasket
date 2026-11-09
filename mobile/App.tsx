@@ -22,6 +22,7 @@ import { NetworkLoader } from './src/components/app/NetworkLoader';
 import { IntroSplashScreen } from './src/components/splash/IntroSplashScreen';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { LogoPreviewScreen } from './src/screens/LogoPreviewScreen';
+import { preloadAppAssets } from './src/services/preloadAssets';
 import { SessionProvider } from './src/session/session';
 import { shouldPlayIntro, markIntroPlayed } from './src/session/introSession';
 import { colors } from './src/theme';
@@ -36,30 +37,35 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
         background-color: #FFFFFF !important;
       }
       ::selection {
-        background-color: #FE8701 !important;
+        background-color: #FFA742 !important;
         color: #FFFFFF !important;
       }
       ::-moz-selection {
-        background-color: #FE8701 !important;
+        background-color: #FFA742 !important;
         color: #FFFFFF !important;
       }
       input, textarea, select {
         outline: none !important;
         outline-style: none !important;
+        background-color: transparent !important;
         -webkit-tap-highlight-color: transparent !important;
       }
       input:focus, textarea:focus, select:focus {
         outline: none !important;
         outline-style: none !important;
         box-shadow: none !important;
+        background-color: transparent !important;
       }
       input:-webkit-autofill,
       input:-webkit-autofill:hover, 
       input:-webkit-autofill:focus,
       input:-webkit-autofill:active {
-        -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
-        -webkit-text-fill-color: #14213D !important;
-        transition: background-color 5000s ease-in-out 0s;
+        -webkit-box-shadow: 0 0 0 1000px #F4F2EB inset !important;
+        box-shadow: 0 0 0 1000px #F4F2EB inset !important;
+        -webkit-text-fill-color: #0A1C3E !important;
+        caret-color: #0A1C3E !important;
+        background-color: transparent !important;
+        transition: background-color 50000s ease-in-out 0s;
       }
     `;
     document.head.appendChild(style);
@@ -69,6 +75,9 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
 /** Development-only: open the web app with `?logo` to check the logo animations on their own. */
 const LOGO_PREVIEW =
   __DEV__ && Platform.OS === 'web' && typeof location !== 'undefined' && new URLSearchParams(location.search).has('logo');
+
+// Start fetching the sign-in film and brand pictures right away, while the intro plays.
+preloadAppAssets();
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({

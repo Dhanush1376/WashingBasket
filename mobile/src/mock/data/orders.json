@@ -1,5 +1,97 @@
 [
   {
+    "id": "WB-1011",
+    "customerId": "u-1011",
+    "locationId": "loc-lpu",
+    "serviceMode": "OFFICE_DROP_OFF",
+    "status": "AWAITING_STAFF_ACCEPTANCE",
+    "lines": [
+      {
+        "itemId": "dc-kurta",
+        "name": "Silk Kurta",
+        "icon": "kurta",
+        "categoryId": "dry-clean",
+        "categoryName": "Dry clean",
+        "unit": "piece",
+        "unitPrice": 120,
+        "qty": 2,
+        "amount": 240
+      },
+      {
+        "itemId": "ow-bedsheet",
+        "name": "Double Bedsheet",
+        "icon": "blanket",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
+        "unit": "piece",
+        "unitPrice": 80,
+        "qty": 2,
+        "amount": 160
+      }
+    ],
+    "pieces": 4,
+    "subtotal": 400,
+    "serviceCharge": 0,
+    "total": 400,
+    "payment": {
+      "status": "COMPLETED",
+      "amount": 400,
+      "method": "WALLET",
+      "failedAttempts": 0,
+      "txnId": "wt-1011",
+      "paidAt": "2026-11-08T01:00:00.000Z"
+    },
+    "intakeQrId": "qr-1011",
+    "createdAt": "2026-11-08T01:00:00.000Z",
+    "updatedAt": "2026-11-08T01:00:00.000Z"
+  },
+  {
+    "id": "WB-1014",
+    "customerId": "u-1014",
+    "locationId": "loc-lpu",
+    "serviceMode": "OFFICE_DROP_OFF",
+    "status": "AWAITING_STAFF_ACCEPTANCE",
+    "lines": [
+      {
+        "itemId": "wi-shirt",
+        "name": "Formal Shirt",
+        "icon": "shirt",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
+        "unit": "piece",
+        "unitPrice": 55,
+        "qty": 3,
+        "amount": 165
+      },
+      {
+        "itemId": "wi-trouser",
+        "name": "Cotton Trousers",
+        "icon": "pants",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
+        "unit": "piece",
+        "unitPrice": 65,
+        "qty": 2,
+        "amount": 130
+      }
+    ],
+    "pieces": 5,
+    "subtotal": 295,
+    "serviceCharge": 0,
+    "total": 295,
+    "payment": {
+      "status": "COMPLETED",
+      "amount": 295,
+      "method": "WALLET",
+      "failedAttempts": 0,
+      "txnId": "wt-1014",
+      "paidAt": "2026-11-08T01:30:00.000Z"
+    },
+    "intakeQrId": "qr-1014",
+    "createdAt": "2026-11-08T01:30:00.000Z",
+    "updatedAt": "2026-11-08T01:30:00.000Z"
+  },
+  {
     "id": "WB-1010",
     "customerId": "u-1006",
     "locationId": "loc-lpu",
@@ -104,42 +196,49 @@
   },
   {
     "id": "WB-1008",
-    "customerId": "u-1009",
-    "locationId": "loc-outside",
+    "customerId": "u-1008",
+    "locationId": "loc-lpu",
     "serviceMode": "OFFICE_DROP_OFF",
-    "status": "PAYMENT_PENDING",
+    "status": "AWAITING_STAFF_ACCEPTANCE",
     "lines": [
       {
-        "itemId": "bl-normal-double",
-        "name": "Normal wash · Double",
-        "icon": "blanket",
-        "categoryId": "blanket",
-        "categoryName": "Blanket",
+        "itemId": "wi-shirt",
+        "name": "Casual Shirt",
+        "icon": "shirt",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
         "unit": "piece",
-        "unitPrice": 300,
-        "qty": 1,
-        "amount": 300
+        "unitPrice": 55,
+        "qty": 4,
+        "amount": 220
+      },
+      {
+        "itemId": "wi-trouser",
+        "name": "Denim Jeans",
+        "icon": "jeans",
+        "categoryId": "wash-iron",
+        "categoryName": "Wash & iron",
+        "unit": "piece",
+        "unitPrice": 65,
+        "qty": 2,
+        "amount": 130
       }
     ],
-    "pieces": 1,
-    "subtotal": 300,
+    "pieces": 6,
+    "subtotal": 350,
     "serviceCharge": 0,
-    "total": 300,
+    "total": 350,
     "payment": {
-      "status": "FAILED",
-      "amount": 300,
+      "status": "COMPLETED",
+      "amount": 350,
       "method": "WALLET",
-      "failedAttempts": 1,
-      "lastFailure": {
-        "at": "2026-11-05T03:01:00.000Z",
-        "reason": "Insufficient wallet balance",
-        "balance": 150,
-        "shortfall": 150
-      }
+      "failedAttempts": 0,
+      "txnId": "wt-1008",
+      "paidAt": "2026-11-08T00:30:00.000Z"
     },
-    "intakeQrId": "qr-10",
-    "createdAt": "2026-11-05T03:00:00.000Z",
-    "updatedAt": "2026-11-05T03:01:00.000Z"
+    "intakeQrId": "qr-1008",
+    "createdAt": "2026-11-08T00:30:00.000Z",
+    "updatedAt": "2026-11-08T00:30:00.000Z"
   },
   {
     "id": "WB-1007",
@@ -311,11 +410,12 @@
     },
     "intakeQrId": "qr-7",
     "createdAt": "2026-11-03T04:10:00.000Z",
-    "updatedAt": "2026-11-03T06:30:00.000Z",
+    "updatedAt": "2026-11-03T22:30:00.000Z",
     "acceptedBy": "st-nit-01",
     "acceptedAt": "2026-11-03T04:20:00.000Z",
     "receiptId": "rc-WB-1005",
-    "processingBy": "st-nit-01"
+    "processingBy": "st-nit-03",
+    "processingStage": "DRYING"
   },
   {
     "id": "WB-1004",
@@ -386,58 +486,62 @@
     "acceptedAt": "2026-11-03T03:10:00.000Z",
     "receiptId": "rc-WB-1004",
     "processingBy": "st-out-01",
+    "processingStage": "QUALITY_CHECK",
     "readyBy": "st-out-01"
   },
   {
     "id": "WB-1003",
-    "customerId": "u-1002",
+    "customerId": "u-1003",
     "locationId": "loc-lpu",
-    "serviceMode": "OFFICE_DROP_OFF",
-    "status": "AWAITING_CUSTOMER_VERIFICATION",
+    "serviceMode": "HOME_PICKUP",
+    "status": "AWAITING_STAFF_ACCEPTANCE",
     "lines": [
       {
-        "itemId": "wi-normal",
-        "name": "Normal wash",
-        "icon": "shirt",
-        "categoryId": "wash-iron",
-        "categoryName": "Wash & iron",
+        "itemId": "ow-normal",
+        "name": "Daily wash & fold",
+        "icon": "wash",
+        "categoryId": "only-wash",
+        "categoryName": "Only wash",
         "unit": "kg",
-        "unitPrice": 55,
-        "qty": 4,
-        "amount": 220
+        "unitPrice": 40,
+        "qty": 6,
+        "amount": 240
       },
       {
-        "itemId": "wi-whites",
-        "name": "Whites wash",
-        "icon": "shirt",
-        "categoryId": "wash-iron",
-        "categoryName": "Wash & iron",
-        "unit": "kg",
-        "unitPrice": 70,
-        "qty": 2,
-        "amount": 140
+        "itemId": "dc-jacket",
+        "name": "Winter Jacket",
+        "icon": "jacket",
+        "categoryId": "dry-clean",
+        "categoryName": "Dry clean",
+        "unit": "piece",
+        "unitPrice": 180,
+        "qty": 1,
+        "amount": 180
       }
     ],
-    "pieces": 6,
-    "subtotal": 360,
+    "pieces": 7,
+    "subtotal": 420,
     "serviceCharge": 0,
-    "total": 360,
+    "total": 420,
+    "pickup": {
+      "date": "2026-11-08",
+      "slot": "SLOT_09_12",
+      "slotLabel": "Morning (9 AM - 12 PM)",
+      "address": "Plot 88, Green Glen Layout, Phagwara",
+      "landmark": "Near Main Gate",
+      "contactPhone": "+91 98450 98765"
+    },
     "payment": {
       "status": "COMPLETED",
-      "amount": 360,
+      "amount": 420,
       "method": "WALLET",
       "failedAttempts": 0,
-      "txnId": "wt-12",
-      "paidAt": "2026-11-02T06:31:00.000Z"
+      "txnId": "wt-1003",
+      "paidAt": "2026-11-07T23:30:00.000Z"
     },
-    "intakeQrId": "qr-5",
-    "createdAt": "2026-11-02T06:30:00.000Z",
-    "updatedAt": "2026-11-04T13:00:00.000Z",
-    "acceptedBy": "st-lpu-01",
-    "acceptedAt": "2026-11-02T06:39:00.000Z",
-    "receiptId": "rc-WB-1003",
-    "processingBy": "st-lpu-01",
-    "readyBy": "st-lpu-01"
+    "intakeQrId": "qr-1003",
+    "createdAt": "2026-11-07T23:30:00.000Z",
+    "updatedAt": "2026-11-07T23:30:00.000Z"
   },
   {
     "id": "WB-1002",
@@ -500,6 +604,7 @@
     "acceptedAt": "2026-11-01T04:42:00.000Z",
     "receiptId": "rc-WB-1002",
     "processingBy": "st-lpu-01",
+    "processingStage": "QUALITY_CHECK",
     "readyBy": "st-lpu-01",
     "verification": {
       "confirmedAt": "2026-11-03T05:30:00.000Z",
@@ -569,6 +674,7 @@
     "acceptedAt": "2026-10-31T04:44:00.000Z",
     "receiptId": "rc-WB-1001",
     "processingBy": "st-nit-01",
+    "processingStage": "QUALITY_CHECK",
     "readyBy": "st-nit-01",
     "verification": {
       "confirmedAt": "2026-11-02T05:30:00.000Z",

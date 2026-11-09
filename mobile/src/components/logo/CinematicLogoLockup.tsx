@@ -13,18 +13,18 @@ import { colors, fonts } from '../../theme';
 import { AnimatedLogo, AnimatedLogoHandle } from './AnimatedLogo';
 
 export const CINEMATIC_TIMELINE = {
-  basket: 60,
-  towel: 720,
-  red: 1250,
-  orange: 1780,
+  basket: 50,
+  towel: 560,
+  red: 980,
+  orange: 1400,
   /** Sparkles pop only AFTER clothes have fallen and settled into the basket */
-  sparkles: 2270,
+  sparkles: 1790,
   /** Logo glides left and wordmark slowly reveals out from behind it to the right */
-  reveal: 2850,
-  /** Lockup settles into resting horizontal alignment (950ms reveal) */
-  settled: 3800,
-  /** Complete choreography cycle: holds for a full 2.0 seconds after animation settles! */
-  complete: 5800,
+  reveal: 2250,
+  /** Lockup settles into resting horizontal alignment (750ms reveal) */
+  settled: 3000,
+  /** Complete choreography cycle */
+  complete: 4400,
 } as const;
 
 const easeOutExpo = Easing.bezier(0.16, 1, 0.3, 1);
@@ -84,19 +84,19 @@ export const CinematicLogoLockup = memo(
       // 1. Logo glides from center (+SHIFT) to the left (0 in lockup row)
       logoX.value = withDelay(
         CINEMATIC_TIMELINE.reveal,
-        withTiming(0, { duration: 950, easing: easeOutExpo }),
+        withTiming(0, { duration: 750, easing: easeOutExpo }),
       );
 
       // 2. Wordmark slowly slides out from behind the logo (-SHIFT) to the right (0 in lockup row)
       wordmarkX.value = withDelay(
         CINEMATIC_TIMELINE.reveal,
-        withTiming(0, { duration: 950, easing: easeOutExpo }),
+        withTiming(0, { duration: 750, easing: easeOutExpo }),
       );
 
       // 3. Wordmark fades in smoothly as it emerges from behind the basket
       wordmarkOpacity.value = withDelay(
-        CINEMATIC_TIMELINE.reveal + 80,
-        withTiming(1, { duration: 650, easing: easeOutExpo }),
+        CINEMATIC_TIMELINE.reveal + 60,
+        withTiming(1, { duration: 520, easing: easeOutExpo }),
       );
 
       // 4. Holds at rest for 2.0 full seconds (from 4050ms to 6050ms) before onComplete

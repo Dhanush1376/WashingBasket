@@ -36,6 +36,13 @@ type Props = {
   bell?: boolean;
   /** Adds the page's side padding (off when the parent already pads). */
   padded?: boolean;
+  /** Where the logo goes (default: the customer Home tab). The staff app passes its own. */
+  onHome?: () => void;
+  /** Overrides the bell: where it opens and its unread count (default: the customer's notifications). */
+  onBell?: () => void;
+  unread?: number;
+  /** Replaces the menu button at the far right (the staff app shows the person's avatar there). */
+  trailing?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -43,16 +50,17 @@ type Props = {
  * The app's one top bar, on every page: the logo mark (or a back button), a hairline, the page's name, and two round
  * buttons on the right, notifications (with an unread dot) and the menu.
  */
-export function TopBar({ title, titleLabel, eyebrow, subtitle, dot, onPressTitle, leading = 'logo', onBack, actions, bell = true, padded = true, style }: Props) {
+export function TopBar({ title, titleLabel, eyebrow, subtitle, dot, onPressTitle, leading = 'logo', onBack, actions, bell = true, padded = true, style, onHome, onBell, unread: unreadOverride, trailing }: Props) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const drawer = useDrawer();
   const notifications = useQuery(keys.notifications, listNotifications);
-  const unread = notifications.data?.filter((n) => !n.read).length ?? 0;
+  const unread = unreadOverride ?? notifications.data?.filter((n) => !n.read).length ?? 0;
   const plain = titleLabel ?? (typeof title === 'string' ? title : '');
 
   const goHome = () => {
     haptic.tap();
-    navigation.navigate('Main', { screen: 'Home' });
+    if (onHome) onHome();
+    else navigation.navigate('Main', { screen: 'Home' });
   };
 
   const body = (
@@ -88,6 +96,7 @@ export function TopBar({ title, titleLabel, eyebrow, subtitle, dot, onPressTitle
             haptic.tap();
             if (onBack) onBack();
             else if (navigation.canGoBack()) navigation.goBack();
+            else if (onHome) onHome();
             else navigation.navigate('Main', { screen: 'Orders' });
           }}
           accessible
@@ -126,8 +135,8 @@ export function TopBar({ title, titleLabel, eyebrow, subtitle, dot, onPressTitle
 
       <View style={styles.actions}>
         {actions}
-        {bell ? <RoundButton icon="bell" label="Notifications" badge={unread} onPress={() => navigation.navigate('Notifications')} /> : null}
-        <RoundButton icon="menu" label="Open menu" onPress={drawer.toggle} />
+        {bell ? <RoundButton icon="bell" label="Notifications" badge={unread} onPress={onBell ?? (() => navigation.navigate('Notifications'))} /> : null}
+        {trailing ?? <RoundButton icon="menu" label="Open menu" onPress={drawer.toggle} />}
       </View>
     </View>
   );

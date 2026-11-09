@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Image, Platform, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 
-import { colors, fonts, shape, space } from '../../theme';
+import { brand, colors, fonts, shape, space } from '../../theme';
 import { Icon } from '../app/Icon';
 import { haptic } from '../../lib/haptics';
 
@@ -94,20 +94,21 @@ export function ReferCard({
       accessibilityLabel={`Refer and earn. Give ₹${friendReward}, get ₹${reward}`}
       style={({ pressed }) => [styles.card, liftShadow, webCursor, pressed && { transform: [{ scale: 0.99 }] }]}
     >
-      {/* ── Header: Gift badge, Value Proposition headline, Arrow button ── */}
-      <View style={styles.head}>
-        <View style={styles.iconCircle}>
-          <Icon name="gift" size={20} color={colors.orange} strokeWidth={2.3} />
-        </View>
-        <View style={styles.headMeta}>
-          <Text style={styles.title}>
-            Give ₹{friendReward}, get <Text style={styles.titleAccent}>₹{reward}</Text>
-          </Text>
-          <Text style={styles.sub}>Earn instant wallet cash for every friend</Text>
+      {/* ── Top Header Row: Gift badge on left, Arrow button on right ── */}
+      <View style={styles.headTop}>
+        <View style={styles.tileIcon}>
+          <Icon name="gift" size={19} color={brand.navy} strokeWidth={2.2} />
         </View>
         <View style={styles.goBtn}>
-          <Icon name="arrowUpRight" size={16} color="#FFFFFF" strokeWidth={2.4} />
+          <Icon name="arrowUpRight" size={15} color={colors.ink} strokeWidth={2.2} />
         </View>
+      </View>
+
+      {/* ── Value Proposition: Category Kicker, Hero Headline, Subtitle ── */}
+      <View style={styles.heroWrap}>
+        <Text style={styles.kicker}>REFER & EARN</Text>
+        <Text style={styles.title}>Give ₹{friendReward}, get ₹{reward}</Text>
+        <Text style={styles.sub}>Earn instant wallet cash for every friend who joins</Text>
       </View>
 
       {/* ── Code & Action Bar ── */}
@@ -220,51 +221,54 @@ const styles = StyleSheet.create({
           elevation: 3,
         }),
   },
-  head: {
+  headTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 15,
-    backgroundColor: '#FFF6E5',
-    borderWidth: 1,
-    borderColor: '#FFE2B8',
+  tileIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.navyTint,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headMeta: {
-    flex: 1,
-  },
-  title: {
-    fontFamily: fonts.bold,
-    fontSize: 17,
-    lineHeight: 21,
-    letterSpacing: -0.4,
-    color: INK,
-  },
-  titleAccent: {
-    fontFamily: fonts.bold,
-    color: colors.orange,
-  },
-  sub: {
-    fontFamily: fonts.regular,
-    fontSize: 12.5,
-    color: '#64748B',
-    marginTop: 2,
-  },
   goBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.orange,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F4F2EE',
     alignItems: 'center',
     justifyContent: 'center',
     ...(Platform.OS === 'web'
-      ? ({ boxShadow: '0 2px 6px rgba(254, 135, 1, 0.3)' } as object)
-      : { shadowColor: colors.orange, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 2 }),
+      ? ({ boxShadow: '0 1px 3px rgba(10, 28, 62, 0.06)' } as object)
+      : { shadowColor: INK, shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3, elevation: 1 }),
+  },
+  heroWrap: {
+    gap: 2,
+  },
+  kicker: {
+    fontFamily: fonts.bold,
+    fontSize: 11,
+    letterSpacing: 1.2,
+    color: brand.navy,
+    textTransform: 'uppercase',
+  },
+  title: {
+    fontFamily: fonts.extrabold,
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: -0.6,
+    color: INK,
+  },
+  sub: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#64748B',
+    marginTop: 2,
   },
 
   codeRow: {

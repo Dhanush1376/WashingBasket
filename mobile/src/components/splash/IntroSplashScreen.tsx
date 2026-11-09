@@ -35,7 +35,7 @@ export const IntroSplashScreen = memo(function IntroSplashScreen({
   useEffect(() => {
     const timer = setTimeout(() => {
       dismiss();
-    }, CINEMATIC_TIMELINE.complete + 500);
+    }, CINEMATIC_TIMELINE.complete + 300);
     return () => clearTimeout(timer);
   }, [dismiss]);
 

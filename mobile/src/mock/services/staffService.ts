@@ -1,5 +1,6 @@
 /** Staff work: accept, reject, process, hand over and deliver. SIMULATED operations on the shared mock store. */
 import * as ops from '../engine/ops.ts';
+import type { IssueKind, ProcessingStage } from '../types.ts';
 import { mockStore, simulateLatency } from '../store/mockStore.ts';
 
 export async function signIn(phone: string, pincode: string) {
@@ -21,6 +22,22 @@ export async function rejectOrder(orderId: string, staffId: string, qrId: string
 export async function startProcessing(orderId: string, staffId: string) {
   await simulateLatency(500);
   return mockStore.transact((s, ctx) => ops.startProcessing(s, ctx, { orderId, staffId }).id);
+}
+
+/** Moves a processing order to `to`, the step shown on screen (refused if a colleague already moved it). */
+export async function advanceStage(orderId: string, staffId: string, to: ProcessingStage) {
+  await simulateLatency(450);
+  return mockStore.transact((s, ctx) => ops.advanceStage(s, ctx, { orderId, staffId, to }).id);
+}
+
+export async function assignOrder(orderId: string, supervisorId: string, staffId: string | null) {
+  await simulateLatency(450);
+  return mockStore.transact((s, ctx) => ops.assignOrder(s, ctx, { orderId, supervisorId, staffId }).id);
+}
+
+export async function reportIssue(orderId: string, staffId: string, kind: IssueKind, note: string, counts?: Record<string, number>) {
+  await simulateLatency(700);
+  return mockStore.transact((s, ctx) => ops.reportStaffIssue(s, ctx, { orderId, staffId, kind, note, counts }).id);
 }
 
 export async function markReady(orderId: string, staffId: string) {

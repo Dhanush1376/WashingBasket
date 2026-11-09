@@ -47,7 +47,7 @@ export function HomePreview({ home }: { home: HomepageContent }) {
         <div className="hp-tile hp-tile--dark">
           <div className="hp-row">
             <span className="hp-chip hp-chip--dark">
-              <i style={{ background: '#FE8701' }} /> In progress
+              <i style={{ background: '#FFA742' }} /> In progress
             </span>
             <span className="hp-chip hp-chip--dark">
               <i style={{ background: '#12AD2B' }} /> {d?.orders.filter((o) => o.status === 'delivered').length ?? 0} done
@@ -103,7 +103,7 @@ export function HomePreview({ home }: { home: HomepageContent }) {
         <img src={ART[home.booking.art] ?? ART.steam} alt="" className="hp-booking__art" />
         <div className="hp-booking__body">
           <span className="hp-chip hp-chip--white">
-            <i style={{ background: '#FE8701' }} /> {home.booking.kicker}
+            <i style={{ background: '#FFA742' }} /> {home.booking.kicker}
           </span>
           <strong className="hp-booking__title">{home.booking.title}</strong>
           <span className="hp-booking__cta">

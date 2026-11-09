@@ -5,7 +5,7 @@ export const LOCATIONS = [
   { value: 'all', label: 'All locations', hint: 'All campus & outside hubs' },
   { value: 'loc-lpu', label: 'LPU', hint: 'LPU main campus' },
   { value: 'loc-nit', label: 'NIT Jalandhar', hint: 'NIT Jalandhar campus' },
-  { value: 'loc-outside', label: 'Outside Campus', hint: 'City pickup & delivery' },
+  { value: 'loc-outside', label: 'Model Town (Jalandhar)', hint: 'City pickup & delivery' },
 ] as const;
 
 export type LocationValue = (typeof LOCATIONS)[number]['value'];

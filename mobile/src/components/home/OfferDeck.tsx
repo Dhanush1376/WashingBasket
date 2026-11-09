@@ -44,20 +44,18 @@ export function OfferDeck({
   const drag = useSharedValue(0);
   const busy = useSharedValue(false); // true while the top coupon flies off
   const quiet = useSharedValue(0); // shuffles to sit out, after the customer swipes or taps a dot
-  const count = useSharedValue(n);
-  useEffect(() => {
-    count.set(n);
-  }, [n, count]);
+  const countRef = useRef(n);
+  countRef.current = n;
 
   const { pan, fling, settle } = useMemo(() => {
     const settle = () => drag.set(withSpring(0, SPRING));
     const advance = () => {
-      setTop((t) => (t + 1) % Math.max(count.get(), 1));
+      setTop((t) => (t + 1) % Math.max(countRef.current, 1));
       drag.set(0);
       busy.set(false);
     };
     const fling = (dir: number) => {
-      if (busy.get() || count.get() < 2) return settle();
+      if (busy.get() || countRef.current < 2) return settle();
       busy.set(true);
       drag.set(
         withTiming(dir * 460, { duration: 230 }, (finished) => {
@@ -80,7 +78,7 @@ export function OfferDeck({
       onPanResponderTerminate: settle,
     });
     return { pan: responder, fling, settle };
-  }, [drag, busy, count, quiet]);
+  }, [drag, busy, quiet]);
 
   // On web the deck follows the pointer itself (mouse, pen or finger), from anywhere on it: the coupons' own SVG and
   // text otherwise took the drag, so only their corners could be swiped. A drag that starts mostly up-and-down is let

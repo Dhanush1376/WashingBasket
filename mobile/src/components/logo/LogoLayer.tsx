@@ -3,7 +3,7 @@ import { StyleProp, ViewStyle } from 'react-native';
 import Animated, { AnimatedStyle } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
-import { colors } from '../../theme';
+import { brand, colors } from '../../theme';
 import { Box, LOGO_PARTS, LOGO_VIEWBOX } from './logoGeometry';
 
 export type LayerName = 'basket' | 'towel' | 'clothOrange' | 'clothRed' | 'sparkleLarge' | 'sparkleSmall';
@@ -36,8 +36,8 @@ function LayerArt({ name, tint }: { name: LayerName; tint?: string }) {
     case 'basket':
       return (
         <>
-          <Path d={LOGO_PARTS.basket.d} fill={c(colors.orange)} fillRule="evenodd" />
-          <Path d={LOGO_PARTS.basketRim.d} fill={c(colors.orange)} />
+          <Path d={LOGO_PARTS.basket.d} fill={c(brand.logoOrange)} fillRule="evenodd" />
+          <Path d={LOGO_PARTS.basketRim.d} fill={c(brand.logoOrange)} />
         </>
       );
     case 'towel':
@@ -50,7 +50,7 @@ function LayerArt({ name, tint }: { name: LayerName; tint?: string }) {
         </>
       );
     case 'clothOrange':
-      return <Path d={LOGO_PARTS.clothOrange.d} fill={c(colors.orange)} />;
+      return <Path d={LOGO_PARTS.clothOrange.d} fill={c(brand.logoOrange)} />;
     case 'clothRed':
       return <Path d={LOGO_PARTS.clothRed.d} fill={c(colors.red)} />;
     case 'sparkleLarge':

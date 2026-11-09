@@ -35,7 +35,7 @@ const ROW: Record<NotificationType, { icon: IconName; bg: string; fg: string; un
   order: { icon: 'droplet', bg: '#FFF1E0', fg: colors.orange, unreadBg: colors.orange, unreadFg: '#FFFFFF' },
   delivery: { icon: 'check', bg: colors.successTint, fg: '#0F8A27', unreadBg: '#12AD2B', unreadFg: '#FFFFFF' },
   pickup: { icon: 'truck', bg: '#EEF3FB', fg: colors.navy, unreadBg: '#1A6EEB', unreadFg: '#FFFFFF' },
-  account: { icon: 'user', bg: '#FFF1E0', fg: '#E67A00', unreadBg: colors.orange, unreadFg: '#FFFFFF' },
+  account: { icon: 'user', bg: '#FFF1E0', fg: '#E58E2E', unreadBg: colors.orange, unreadFg: '#FFFFFF' },
 };
 
 function getLook(n: AppNotification): { icon: IconName; bg: string; fg: string; unreadBg: string; unreadFg: string } {

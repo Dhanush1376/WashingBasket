@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ctaTint,
     ...(Platform.OS === 'web'
       ? ({
-          boxShadow: '0 1px 4px rgba(254, 135, 1, 0.12)',
+          boxShadow: '0 1px 4px rgba(255, 167, 66, 0.12)',
         } as any)
       : {}),
   },
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     borderColor: colors.cta,
     ...(Platform.OS === 'web'
       ? ({
-          boxShadow: '0 0 0 1px ' + colors.cta + ', 0 2px 6px rgba(254, 135, 1, 0.18)',
+          boxShadow: '0 0 0 1px ' + colors.cta + ', 0 2px 6px rgba(255, 167, 66, 0.18)',
         } as any)
       : {}),
   },

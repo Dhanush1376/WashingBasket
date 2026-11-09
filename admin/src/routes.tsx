@@ -1,8 +1,9 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import { Navigate, createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter, useLocation } from 'react-router-dom';
 
 import { SkeletonRows } from '@/components/ui/States';
 import { AdminLayout } from '@/layouts/AdminLayout';
+import { isSignedIn } from '@/lib/demoAuth';
 import { RootErrorPage } from '@/pages/RootErrorPage';
 
 const OverviewPage = lazy(() => import('@/pages/overview/OverviewPage'));
@@ -18,6 +19,15 @@ const SchedulePage = lazy(() => import('@/pages/schedule/SchedulePage'));
 const LaundryLocationsPage = lazy(() => import('@/pages/laundry/LaundryLocationsPage'));
 const LaundryStaffPage = lazy(() => import('@/pages/laundry/LaundryStaffPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const LoginPage = lazy(() => import('@/pages/login/LoginPage'));
+
+/** The portal opens only after the demo sign-in; it returns to the page that was asked for. */
+function RequireSignIn({ children }: { children: ReactNode }) {
+  const { pathname, search } = useLocation();
+  if (isSignedIn()) return children;
+  const next = pathname === '/' && !search ? '' : `?next=${encodeURIComponent(pathname + search)}`;
+  return <Navigate to={`/login${next}`} replace />;
+}
 
 const page = (el: ReactNode) => (
   <Suspense
@@ -32,9 +42,14 @@ const page = (el: ReactNode) => (
 );
 
 export const router = createBrowserRouter([
+  { path: '/login', element: <Suspense fallback={null}><LoginPage /></Suspense>, errorElement: <RootErrorPage /> },
   {
     path: '/',
-    element: <AdminLayout />,
+    element: (
+      <RequireSignIn>
+        <AdminLayout />
+      </RequireSignIn>
+    ),
     errorElement: <RootErrorPage />,
     children: [
       { index: true, element: page(<OverviewPage />) },

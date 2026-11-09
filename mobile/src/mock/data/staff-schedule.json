@@ -1,0 +1,35 @@
+{
+  "_note": "DEMO DATA for the staff app's Schedule tab. Shift times, weekly offs and holidays are illustrative; a real HR system should supply them.",
+  "attendancePolicy": {
+    "lateAfterMinutes": 10,
+    "checkInOpensMinutesBefore": 60,
+    "source": "demo"
+  },
+  "shifts": [
+    { "id": "sh-early", "label": "Early shift", "start": "08:00", "end": "16:00", "breakMinutes": 30 },
+    { "id": "sh-day", "label": "Day shift", "start": "09:00", "end": "17:00", "breakMinutes": 30 },
+    { "id": "sh-late", "label": "Late shift", "start": "13:00", "end": "21:00", "breakMinutes": 30 }
+  ],
+  "rosters": [
+    { "staffId": "st-lpu-01", "shiftId": "sh-early", "weeklyOff": [2], "reportingPoint": "Counter · Shop 14, Uni Mall, Block 32", "responsibilities": ["Drop-off intake and QR checks", "Handing finished orders back"] },
+    { "staffId": "st-lpu-02", "shiftId": "sh-late", "weeklyOff": [4], "reportingPoint": "Counter · Shop 14, Uni Mall, Block 32", "responsibilities": ["Drop-off intake and QR checks", "Handing finished orders back"] },
+    { "staffId": "st-lpu-03", "shiftId": "sh-day", "weeklyOff": [1], "reportingPoint": "Branch office · Shop 14, Uni Mall", "responsibilities": ["Branch workload and assignments", "Leave approvals", "Escalations with the admin team"] },
+    { "staffId": "st-lpu-04", "shiftId": "sh-early", "weeklyOff": [3], "reportingPoint": "Wash floor · behind Shop 14", "responsibilities": ["Sorting, washing and drying", "Ironing and quality check"] },
+    { "staffId": "st-nit-01", "shiftId": "sh-early", "weeklyOff": [3], "reportingPoint": "Counter · Mega Boys Hostel complex", "responsibilities": ["Drop-off intake and QR checks", "Handing finished orders back"] },
+    { "staffId": "st-nit-02", "shiftId": "sh-late", "weeklyOff": [5], "reportingPoint": "Counter · Mega Boys Hostel complex", "responsibilities": ["Drop-off intake and QR checks", "Handing finished orders back"] },
+    { "staffId": "st-nit-03", "shiftId": "sh-day", "weeklyOff": [4], "reportingPoint": "Wash floor · Mega Boys Hostel complex", "responsibilities": ["Sorting, washing and drying", "Ironing and quality check"] },
+    { "staffId": "st-nit-04", "shiftId": "sh-day", "weeklyOff": [6], "reportingPoint": "Branch office · Mega Boys Hostel complex", "responsibilities": ["Branch workload and assignments", "Leave approvals", "Escalations with the admin team"] },
+    { "staffId": "st-out-01", "shiftId": "sh-day", "weeklyOff": [0], "reportingPoint": "Model Town store · SCO 21, Model Town Road", "responsibilities": ["Home pickups within 8 km", "Doorstep deliveries and QR handover"] },
+    { "staffId": "st-out-02", "shiftId": "sh-late", "weeklyOff": [0], "reportingPoint": "Model Town store · SCO 21, Model Town Road", "responsibilities": ["Store drop-off intake", "Handing finished orders back"] },
+    { "staffId": "st-out-03", "shiftId": "sh-day", "weeklyOff": [0], "reportingPoint": "Model Town store · SCO 21, Model Town Road", "responsibilities": ["Home pickups within 8 km", "Doorstep deliveries and QR handover"] },
+    { "staffId": "st-out-04", "shiftId": "sh-day", "weeklyOff": [0], "reportingPoint": "Wash floor · Model Town store", "responsibilities": ["Sorting, washing and drying", "Ironing and quality check"] },
+    { "staffId": "st-out-05", "shiftId": "sh-day", "weeklyOff": [0], "reportingPoint": "Model Town store · SCO 21, Model Town Road", "responsibilities": ["Branch workload and assignments", "Leave approvals", "Escalations with the admin team"] }
+  ],
+  "holidays": [
+    { "date": "2026-10-02", "name": "Gandhi Jayanti" },
+    { "date": "2026-10-20", "name": "Dussehra" },
+    { "date": "2026-11-24", "name": "Guru Nanak Jayanti" },
+    { "date": "2026-12-25", "name": "Christmas" },
+    { "date": "2027-01-26", "name": "Republic Day" }
+  ]
+}

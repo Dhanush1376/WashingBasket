@@ -43,6 +43,8 @@ hero-loop/backup/
 brand-film/work/
 brand-film/__pycache__/
 brand-film/dist/
+care-fabric/work/
+workshop-loop/work/
 
 # Development relays & mock caches
 .mock-relay/

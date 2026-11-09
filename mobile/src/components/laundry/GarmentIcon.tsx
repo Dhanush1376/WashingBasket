@@ -50,12 +50,20 @@ const TINT: Record<GarmentIconName, string> = {
   wash: '#EEF3FB',
 };
 
-export const GarmentIcon = memo(function GarmentIcon({ name, size = 44, color = colors.ink }: { name: GarmentIconName; size?: number; color?: string }) {
+const ALIASES: Record<string, GarmentIconName> = {
+  suit: 'jacket',
+  pants: 'trousers',
+};
+
+export const GarmentIcon = memo(function GarmentIcon({ name, size = 44, color = colors.ink }: { name: string; size?: number; color?: string }) {
+  const resolved = ALIASES[name] ?? (name in PATHS ? (name as GarmentIconName) : 'shirt');
   const icon = Math.round(size * 0.56);
+  const paths = PATHS[resolved] ?? PATHS.shirt;
+  const bg = TINT[resolved] ?? TINT.shirt;
   return (
-    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: TINT[name], alignItems: 'center', justifyContent: 'center' }} accessible={false}>
+    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }} accessible={false}>
       <Svg width={icon} height={icon} viewBox="0 0 24 24" fill="none">
-        {PATHS[name].map((d, i) => (
+        {paths.map((d, i) => (
           <Path key={i} d={d} stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" />
         ))}
       </Svg>

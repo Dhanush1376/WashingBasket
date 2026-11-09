@@ -42,6 +42,8 @@ type SessionContext = {
   completePincode(pincode: string): Promise<void>;
   /** Staff: the location PIN code picked their staff account; they skip the customer details step. */
   completeStaffSignIn(staffId: string, pincode: string): Promise<void>;
+  /** DEMO ONLY: work as another staff account at the same branch, to try each role. Not real security. */
+  switchStaff(staffId: string): Promise<void>;
   signOut(): Promise<void>;
 };
 
@@ -171,6 +173,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         const s = current.current;
         if (!s || s.role !== 'staff') throw new Error('Not signed in as staff');
         await commit({ ...s, staffId, pincode, stage: 'ONBOARDING_COMPLETED' });
+      },
+      async switchStaff(staffId) {
+        const s = current.current;
+        if (!s || s.role !== 'staff' || s.stage !== 'ONBOARDING_COMPLETED') throw new Error('Not signed in as staff');
+        await commit({ ...s, staffId });
       },
       async signOut() {
         setGuest(false);

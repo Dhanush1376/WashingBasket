@@ -68,10 +68,10 @@ const styles = StyleSheet.create({
     padding: space.lg,
     marginBottom: space.lg,
     ...(Platform.OS === 'web'
-      ? ({ boxShadow: '0 2px 12px rgba(254, 135, 1, 0.08), 0 1px 3px rgba(0,0,0,0.03)' } as object)
-      : { shadowColor: '#FE8701', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 2 }),
+      ? ({ boxShadow: '0 2px 12px rgba(255, 167, 66, 0.08), 0 1px 3px rgba(0,0,0,0.03)' } as object)
+      : { shadowColor: '#FFA742', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 2 }),
   },
-  deco: { position: 'absolute', right: -40, top: -50, width: 190, height: 190, borderRadius: 95, backgroundColor: 'rgba(254, 135, 1, 0.08)' },
+  deco: { position: 'absolute', right: -40, top: -50, width: 190, height: 190, borderRadius: 95, backgroundColor: 'rgba(255, 167, 66, 0.08)' },
 
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 },
   count: { fontFamily: fonts.semibold, fontSize: 12, color: colors.inkMuted },

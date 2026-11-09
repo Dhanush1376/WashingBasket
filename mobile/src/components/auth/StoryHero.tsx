@@ -5,7 +5,8 @@ import { Image, StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-const STORY = require('../../../assets/video/washing-basket-hero.mp4');
+import { useHeroVideoSource } from '../../services/preloadAssets';
+
 /** The film is 1200x1612: the artwork plus 300 px of each scene's flat background above it. */
 const FILM_ASPECT = 1612 / 1200;
 /** Share of the film's height above the artwork that is plain background in every scene. */
@@ -32,7 +33,9 @@ type Props = {
  * video is ready, if it fails to load, or when motion is reduced.
  */
 export const StoryHero = memo(function StoryHero({ width, height, playing, still, radius = 0, scrim = 0, shiftY = 48 }: Props) {
-  const player = useVideoPlayer(still ? null : STORY, (p) => {
+  // plays from a local copy fetched while the intro runs (see preloadAssets); null until then
+  const story = useHeroVideoSource();
+  const player = useVideoPlayer(still ? null : story, (p) => {
     p.loop = true;
     p.muted = true;
     p.audioMixingMode = 'mixWithOthers'; // never interrupt the user's music
@@ -41,7 +44,7 @@ export const StoryHero = memo(function StoryHero({ width, height, playing, still
   const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
 
   useEffect(() => {
-    if (still) return;
+    if (still || !story) return;
     try {
       if (playing) {
         const res = player.play() as any;
@@ -54,7 +57,7 @@ export const StoryHero = memo(function StoryHero({ width, height, playing, still
     } catch {
       // safe fallback if background media play is aborted by browser
     }
-  }, [playing, still, player]);
+  }, [playing, still, player, story]);
 
   // Cross-fade from the poster once frames are actually moving.
   const shown = useSharedValue(0);
@@ -81,7 +84,7 @@ export const StoryHero = memo(function StoryHero({ width, height, playing, still
       accessibilityLabel="Washing Basket collects, washes, dries, irons, folds and delivers your laundry to your door."
     >
       <Image source={POSTER} style={film} resizeMode="cover" />
-      {!still && status !== 'error' && (
+      {!still && story && status !== 'error' && (
         <Animated.View style={[film, videoStyle]} pointerEvents="none">
           <VideoView
             player={player}

@@ -28,10 +28,10 @@ export const ORDER_CARD_THEMES: OrderTheme[] = [
   {
     bg: '#FFA742',
     cardBg: '#FFFFFF',
-    border: 'rgba(254, 135, 1, 0.32)',
+    border: 'rgba(255, 167, 66, 0.32)',
     accent: '#FFA742',
     dot: '#FFA742',
-    pillBg: 'rgba(254, 135, 1, 0.12)',
+    pillBg: 'rgba(255, 167, 66, 0.12)',
     text: '#0A1C3E',
     sub: '#64748B',
     arrowBg: '#FFA742',
@@ -219,10 +219,10 @@ export function getOrderTheme(status: string = '', index: number = 0): OrderThem
     return {
       bg: '#FFA742',
       cardBg: '#FFFFFF',
-      border: 'rgba(254, 135, 1, 0.32)',
+      border: 'rgba(255, 167, 66, 0.32)',
       accent: '#FFA742',
       dot: '#FFA742',
-      pillBg: 'rgba(254, 135, 1, 0.12)',
+      pillBg: 'rgba(255, 167, 66, 0.12)',
       text: '#0A1C3E',
       sub: '#64748B',
       arrowBg: '#FFA742',
@@ -245,12 +245,12 @@ export function formatCardDate(iso?: string): string {
 export function getStatusDot(status: string): string {
   const norm = status.toUpperCase().replace(/\s+/g, '_');
   if (norm === 'DELIVERED' || norm === 'COMPLETED' || norm === 'PAYMENT_COMPLETED' || norm === 'PAID') return '#10B981'; // Green
-  if (norm === 'PAYMENT_PENDING' || norm === 'PENDING' || norm === 'REQUIRED') return '#FE8701'; // Orange
+  if (norm === 'PAYMENT_PENDING' || norm === 'PENDING' || norm === 'REQUIRED') return '#FFA742'; // Orange
   if (norm === 'CANCELLED' || norm === 'REJECTED' || norm === 'REFUNDED' || norm === 'REFUND_PENDING') return '#EF4444'; // Red
   if (norm === 'OUT_FOR_DELIVERY' || norm === 'READY_FOR_DELIVERY' || norm === 'AWAITING_CUSTOMER_VERIFICATION' || norm === 'READY' || norm === 'DISPATCHED') return '#E5A100'; // Yellow
   if (norm === 'IRONING_PACKING' || norm === 'PROCESSING' || norm === 'IRONING' || norm === 'PACKING') return '#8B5CF6'; // Purple
   if (norm === 'WASHING_DRYING' || norm === 'ACCEPTED' || norm === 'PICKUP_CONFIRMED' || norm === 'WASHING' || norm === 'DRYING') return '#0284C7'; // Blue
-  return '#F97316'; // Step 1 Orange
+  return '#FFA742'; // Step 1 Orange
 }
 
 /** A small round crop of the service's illustration. */
@@ -344,7 +344,7 @@ const STAGE_META: Record<
   OrderStage,
   {
     title: string;
-    icon: 'bag' | 'droplet' | 'shirt' | 'truck' | 'sparkle' | 'package';
+    icon: 'bag' | 'droplet' | 'shirt' | 'truck' | 'sun' | 'package';
     desc: (done: boolean, now: boolean, order: Order) => string;
   }
 > = {

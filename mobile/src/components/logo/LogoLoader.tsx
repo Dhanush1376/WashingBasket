@@ -11,7 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { colors } from '../../theme';
+import { brand, colors } from '../../theme';
 import { LogoLayer } from './LogoLayer';
 import { LOGO_ASPECT } from './WashingBasketLogo';
 
@@ -22,11 +22,11 @@ import { LOGO_ASPECT } from './WashingBasketLogo';
  * slides along underneath, so it always reads as "working".
  */
 
-const CYCLE_MS = 3000; // long enough for a clear pause between each cloth falling in
+const CYCLE_MS = 2100; // brisk, snappy loop with natural cloth drops
 const FALL = 0.12; // a fall takes this share of the cycle (360ms)
 const RED_AT = 0.16;
 const ORANGE_AT = 0.42; // a beat after the red one has settled
-const BAR_MS = 1100;
+const BAR_MS = 800;
 
 type Props = {
   /** Width of the logo in px. */
@@ -51,7 +51,7 @@ export const LogoLoader = memo(function LogoLoader({ size = 64 }: Props) {
   const bar = useSharedValue(0);
 
   useEffect(() => {
-    t.set(withRepeat(withTiming(1, { duration: reduceMotion ? 2400 : CYCLE_MS, easing: Easing.linear }), -1));
+    t.set(withRepeat(withTiming(1, { duration: reduceMotion ? 1800 : CYCLE_MS, easing: Easing.linear }), -1));
     bar.set(withRepeat(withTiming(1, { duration: BAR_MS, easing: Easing.bezier(0.45, 0, 0.55, 1) }), -1));
     return () => {
       cancelAnimation(t);
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
       ? ({ filter: 'drop-shadow(0 2px 2px rgba(25, 18, 8, 0.14)) drop-shadow(0 6px 10px rgba(25, 18, 8, 0.1))' } as object)
       : { shadowColor: '#19120A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 6 },
   track: { height: 3, borderRadius: 2, overflow: 'hidden', backgroundColor: 'rgba(10, 28, 62, 0.1)' },
-  fill: { height: 3, borderRadius: 2, backgroundColor: colors.orange },
+  fill: { height: 3, borderRadius: 2, backgroundColor: brand.logoOrange },
 });
 
 /** Compact inline loader: three brand-colour dots rising in a gentle wave. */
@@ -170,13 +170,13 @@ export const LoadingDots = memo(function LoadingDots({ size = 8 }: { size?: numb
   const t = useSharedValue(0);
 
   useEffect(() => {
-    t.value = withRepeat(withTiming(1, { duration: reduceMotion ? 1800 : 1200, easing: Easing.linear }), -1);
+    t.value = withRepeat(withTiming(1, { duration: reduceMotion ? 1400 : 900, easing: Easing.linear }), -1);
     return () => cancelAnimation(t);
   }, [reduceMotion, t]);
 
   return (
     <View style={[dotStyles.row, { gap: size * 0.75 }]} accessibilityRole="progressbar" accessibilityLabel="Loading">
-      {[colors.navy, colors.orange, colors.red].map((c, i) => (
+      {[colors.navy, brand.logoOrange, colors.red].map((c, i) => (
         <Dot key={c} color={c} index={i} t={t} size={size} still={reduceMotion} />
       ))}
     </View>

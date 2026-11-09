@@ -82,7 +82,7 @@ const TINTS: { value: PerkTint; label: string }[] = [
   { value: 'navy', label: 'Navy' },
   { value: 'green', label: 'Green' },
 ];
-export const TINT_COLOR: Record<PerkTint, string> = { orange: '#FE8701', navy: '#013E86', green: '#1F9D3A' };
+export const TINT_COLOR: Record<PerkTint, string> = { orange: '#FFA742', navy: '#013E86', green: '#1F9D3A' };
 
 /** The short promises under the summary ("Free pickup · 48h turnaround · Quality assured"). */
 export function PerksEditor({ home }: { home: HomepageContent }) {

@@ -36,6 +36,16 @@
       ],
       "cwd": "admin",
       "port": 5180
+    },
+    {
+      "name": "website",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "cwd": "website",
+      "port": 5190
     }
   ]
 }

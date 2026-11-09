@@ -7,343 +7,168 @@ import Animated, {
   useReducedMotion,
   useSharedValue,
   withDelay,
-  withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 import { haptic } from '../../lib/haptics';
-import { colors, fonts, space, text } from '../../theme';
+import { colors, fonts, space } from '../../theme';
 
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedPath = Animated.createAnimatedComponent(Path);
+const WebCircle = Circle as any;
 const WebPath = Path as any;
 
-/** Total path length of the checkmark path M5 12.5l4.5 4.5L19 7.5 is ~20 units. 34 ensures complete offset */
-const CHECK_PATH_LENGTH = 34;
+/** The tick, in a 24-unit box: two strokes, about 17.1 units long in all. */
+const CHECK = 'M6.5 12.5l3.8 3.8L17.8 8.6';
+const CHECK_LEN = 18;
+const STROKE = 3;
+/** A soft, confident ease-out: no overshoot, no bounce. */
+const EASE = Easing.bezier(0.33, 1, 0.68, 1);
+const EASE_CSS = 'cubic-bezier(0.33, 1, 0.68, 1)';
+
+// Timeline (ms): the ring draws, fills, then the tick draws; the title follows.
+const RING = { at: 0, ms: 420 };
+const FILL = { at: 300, ms: 260 };
+const TICK = { at: 470, ms: 260 };
+const TITLE = { at: 420, ms: 260 };
 
 export type SuccessTickBadgeProps = {
   title?: string;
+  /** Optional second line; kept short (the sign-in flow uses none). */
   message?: string;
-  size?: number; // diameter of the solid green badge (default: 64)
+  /** Diameter of the badge (default 88). */
+  size?: number;
   onComplete?: () => void;
 };
 
 /**
- * PhonePe / Google Pay-grade fintech animated success tick:
- * 1. Halo & solid emerald disc enter with a smooth, authoritative ease (no cartoon wobble).
- * 2. White checkmark sweeps dynamically across the path with stroke-dashoffset animation.
- * 3. Subtle micro-settle recoil & expanding ripple pulse at the exact moment the stroke finishes.
- * 4. Crisp tactile haptic feedback on completion.
- * 5. Coordinated typography entrance.
+ * The "done" moment: a thin green ring draws itself round, fills, and a white tick draws
+ * across it. One even motion with no halo, ripple or bounce, then a short title.
  */
-export function SuccessTickBadge({
-  title,
-  message,
-  size = 64,
-  onComplete,
-}: SuccessTickBadgeProps) {
+export function SuccessTickBadge({ title, message, size = 88, onComplete }: SuccessTickBadgeProps) {
   const reduced = useReducedMotion();
-  const [webDrawn, setWebDrawn] = useState(reduced);
+  const web = Platform.OS === 'web';
+  const r = (size - STROKE) / 2;
+  const circ = 2 * Math.PI * r;
 
-  const haloSize = Math.round(size * 1.44); // 92px for size 64
-  const iconSize = Math.round(size * 0.52); // ~33px for size 64
-
-  // Animation values
-  const badgeScale = useSharedValue(reduced ? 1 : 0.25);
-  const badgeOpacity = useSharedValue(reduced ? 1 : 0);
-  const haloScale = useSharedValue(reduced ? 1 : 0.6);
-  const haloOpacity = useSharedValue(reduced ? 1 : 0);
-  const rippleScale = useSharedValue(reduced ? 1 : 0.85);
-  const rippleOpacity = useSharedValue(0);
-  const tickDraw = useSharedValue(reduced ? 1 : 0);
-  const titleOpacity = useSharedValue(reduced ? 1 : 0);
-  const titleY = useSharedValue(reduced ? 0 : 8);
-  const subOpacity = useSharedValue(reduced ? 1 : 0);
-  const subY = useSharedValue(reduced ? 0 : 6);
+  const ring = useSharedValue(reduced ? 1 : 0);
+  const fill = useSharedValue(reduced ? 1 : 0);
+  const tick = useSharedValue(reduced ? 1 : 0);
+  const words = useSharedValue(reduced ? 1 : 0);
+  // web draws the strokes with CSS transitions instead of animated SVG props
+  const [webStage, setWebStage] = useState(reduced ? 2 : 0);
 
   useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
     if (reduced) {
-      onComplete?.();
-      return;
+      if (onComplete) timers.push(setTimeout(onComplete, 0));
+      return () => timers.forEach(clearTimeout);
     }
-
-    // 1. Snappy circle entrance: smooth deceleration, no cartoon wobble (0 - 280ms)
-    badgeOpacity.value = withTiming(1, { duration: 180 });
-    badgeScale.value = withTiming(1, {
-      duration: 280,
-      easing: Easing.bezier(0.16, 1, 0.3, 1),
-    });
-
-    haloOpacity.value = withTiming(1, { duration: 220 });
-    haloScale.value = withTiming(1, {
-      duration: 320,
-      easing: Easing.bezier(0.16, 1, 0.3, 1),
-    });
-
-    // 2. Stroke-draw checkmark starts at 140ms and finishes at 410ms (duration 270ms)
-    tickDraw.value = withDelay(
-      140,
-      withTiming(1, {
-        duration: 270,
-        easing: Easing.bezier(0.2, 0.9, 0.3, 1),
-      })
-    );
-
-    // 3. Impact micro-recoil & ripple pulse right when tick draw finishes (at 410ms)
-    badgeScale.value = withDelay(
-      410,
-      withSequence(
-        withTiming(1.05, { duration: 75, easing: Easing.out(Easing.quad) }),
-        withTiming(1, { duration: 120, easing: Easing.out(Easing.quad) })
-      )
-    );
-
-    rippleScale.value = withDelay(
-      410,
-      withTiming(1.36, {
-        duration: 440,
-        easing: Easing.bezier(0.2, 0.8, 0.2, 1),
-      })
-    );
-    rippleOpacity.value = withDelay(
-      410,
-      withSequence(
-        withTiming(0.65, { duration: 60 }),
-        withTiming(0, { duration: 380, easing: Easing.out(Easing.quad) })
-      )
-    );
-
-    // 4. Smooth typography glide
-    titleOpacity.value = withDelay(200, withTiming(1, { duration: 280 }));
-    titleY.value = withDelay(
-      200,
-      withTiming(0, { duration: 280, easing: Easing.bezier(0.22, 1, 0.36, 1) })
-    );
-
-    subOpacity.value = withDelay(270, withTiming(1, { duration: 280 }));
-    subY.value = withDelay(
-      270,
-      withTiming(0, { duration: 280, easing: Easing.bezier(0.22, 1, 0.36, 1) })
-    );
-
-    // Trigger haptic precisely when the tick lands
-    const hapticTimer = setTimeout(() => {
-      haptic.success();
-    }, 410);
-
-    // Trigger onComplete callback if provided
-    let completeTimer: NodeJS.Timeout | null = null;
-    if (onComplete) {
-      completeTimer = setTimeout(() => {
-        onComplete();
-      }, 550);
+    ring.value = withDelay(RING.at, withTiming(1, { duration: RING.ms, easing: EASE }));
+    fill.value = withDelay(FILL.at, withTiming(1, { duration: FILL.ms, easing: EASE }));
+    tick.value = withDelay(TICK.at, withTiming(1, { duration: TICK.ms, easing: EASE }));
+    words.value = withDelay(TITLE.at, withTiming(1, { duration: TITLE.ms, easing: EASE }));
+    if (web) {
+      timers.push(setTimeout(() => setWebStage(1), 16));
+      timers.push(setTimeout(() => setWebStage(2), TICK.at));
     }
+    // the tap lands as the tick finishes
+    timers.push(setTimeout(() => haptic.success(), TICK.at + TICK.ms - 60));
+    if (onComplete) timers.push(setTimeout(onComplete, TICK.at + TICK.ms));
+    return () => timers.forEach(clearTimeout);
+  }, [reduced, web, ring, fill, tick, words, onComplete]);
 
-    if (Platform.OS === 'web') {
-      const webTimer = setTimeout(() => {
-        setWebDrawn(true);
-      }, 140);
-      return () => {
-        clearTimeout(webTimer);
-        clearTimeout(hapticTimer);
-        if (completeTimer) clearTimeout(completeTimer);
-      };
-    }
+  const ringProps = useAnimatedProps(() => ({ strokeDashoffset: circ * (1 - ring.value) }));
+  const tickProps = useAnimatedProps(() => ({ strokeDashoffset: CHECK_LEN * (1 - tick.value) }));
+  const discStyle = useAnimatedStyle(() => ({ opacity: fill.value, transform: [{ scale: 0.86 + 0.14 * fill.value }] }));
+  const wordsStyle = useAnimatedStyle(() => ({ opacity: words.value, transform: [{ translateY: (1 - words.value) * 6 }] }));
 
-    return () => {
-      clearTimeout(hapticTimer);
-      if (completeTimer) clearTimeout(completeTimer);
-    };
-  }, [
-    reduced,
-    badgeOpacity,
-    badgeScale,
-    haloOpacity,
-    haloScale,
-    rippleOpacity,
-    rippleScale,
-    tickDraw,
-    titleOpacity,
-    titleY,
-    subOpacity,
-    subY,
-    onComplete,
-  ]);
-
-  const badgeStyle = useAnimatedStyle(() => ({
-    opacity: badgeOpacity.value,
-    transform: [{ scale: badgeScale.value }],
-  }));
-
-  const haloStyle = useAnimatedStyle(() => ({
-    opacity: haloOpacity.value,
-    transform: [{ scale: haloScale.value }],
-  }));
-
-  const rippleStyle = useAnimatedStyle(() => ({
-    opacity: rippleOpacity.value,
-    transform: [{ scale: rippleScale.value }],
-  }));
-
-  const titleAnimStyle = useAnimatedStyle(() => ({
-    opacity: titleOpacity.value,
-    transform: [{ translateY: titleY.value }],
-  }));
-
-  const subAnimStyle = useAnimatedStyle(() => ({
-    opacity: subOpacity.value,
-    transform: [{ translateY: subY.value }],
-  }));
-
-  const checkProps = useAnimatedProps(() => ({
-    strokeDashoffset: CHECK_PATH_LENGTH * (1 - tickDraw.value),
-  }));
+  const tickSize = Math.round(size * 0.62);
 
   return (
-    <View style={styles.container} accessibilityLiveRegion="polite">
-      {/* Icon cluster */}
-      <View style={{ width: haloSize, height: haloSize, alignItems: 'center', justifyContent: 'center' }}>
-        {/* Soft mint ambient halo */}
-        <Animated.View
-          style={[
-            styles.halo,
-            {
-              width: haloSize,
-              height: haloSize,
-              borderRadius: haloSize / 2,
-            },
-            haloStyle,
-          ]}
-        />
-
-        {/* Dynamic expanding ripple wave */}
-        <Animated.View
-          style={[
-            styles.ripple,
-            {
-              width: size + 8,
-              height: size + 8,
-              borderRadius: (size + 8) / 2,
-            },
-            rippleStyle,
-          ]}
-        />
-
-        {/* Solid emerald badge */}
-        <Animated.View
-          style={[
-            styles.badge,
-            {
-              width: size,
-              height: size,
-              borderRadius: size / 2,
-            },
-            badgeStyle,
-          ]}
-        >
-          <Svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none">
-            {Platform.OS === 'web' ? (
+    <View style={styles.container} accessibilityLiveRegion="polite" accessibilityLabel={title}>
+      <View style={{ width: size, height: size }}>
+        <Animated.View style={[StyleSheet.absoluteFill, styles.disc, { borderRadius: size / 2 }, discStyle]} />
+        <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={StyleSheet.absoluteFill}>
+          {web ? (
+            <WebCircle
+              cx={size / 2}
+              cy={size / 2}
+              r={r}
+              fill="none"
+              stroke={colors.success}
+              strokeWidth={STROKE}
+              strokeLinecap="round"
+              strokeDasharray={circ}
+              strokeDashoffset={webStage >= 1 ? 0 : circ}
+              transform={`rotate(-90 ${size / 2} ${size / 2})`}
+              style={{ transition: `stroke-dashoffset ${RING.ms}ms ${EASE_CSS}` }}
+            />
+          ) : (
+            <AnimatedCircle
+              cx={size / 2}
+              cy={size / 2}
+              r={r}
+              fill="none"
+              stroke={colors.success}
+              strokeWidth={STROKE}
+              strokeLinecap="round"
+              strokeDasharray={circ}
+              animatedProps={ringProps}
+              transform={`rotate(-90 ${size / 2} ${size / 2})`}
+            />
+          )}
+        </Svg>
+        <View style={[StyleSheet.absoluteFill, styles.center]}>
+          <Svg width={tickSize} height={tickSize} viewBox="0 0 24 24" fill="none">
+            {web ? (
               <WebPath
-                d="M5 12.5l4.5 4.5L19 7.5"
+                d={CHECK}
                 stroke="#FFFFFF"
-                strokeWidth={3.5}
+                strokeWidth={3}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeDasharray={CHECK_PATH_LENGTH}
-                strokeDashoffset={webDrawn ? 0 : CHECK_PATH_LENGTH}
-                style={{
-                  transition: 'stroke-dashoffset 270ms cubic-bezier(0.2, 0.9, 0.3, 1)',
-                }}
+                strokeDasharray={CHECK_LEN}
+                strokeDashoffset={webStage >= 2 ? 0 : CHECK_LEN}
+                style={{ transition: `stroke-dashoffset ${TICK.ms}ms ${EASE_CSS}` }}
               />
             ) : (
               <AnimatedPath
-                d="M5 12.5l4.5 4.5L19 7.5"
+                d={CHECK}
                 stroke="#FFFFFF"
-                strokeWidth={3.5}
+                strokeWidth={3}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeDasharray={CHECK_PATH_LENGTH}
-                animatedProps={checkProps}
+                strokeDasharray={CHECK_LEN}
+                animatedProps={tickProps}
               />
             )}
           </Svg>
-        </Animated.View>
+        </View>
       </View>
 
-      {/* Typography */}
       {title ? (
-        <View style={styles.textContainer}>
-          <Animated.Text
-            style={[text.h1, styles.title, titleAnimStyle]}
-            accessibilityRole="header"
-          >
+        <Animated.View style={[styles.words, wordsStyle]}>
+          <Text style={styles.title} accessibilityRole="header" numberOfLines={1}>
             {title}
-          </Animated.Text>
+          </Text>
           {message ? (
-            <Animated.Text style={[text.body, styles.message, subAnimStyle]}>
+            <Text style={styles.message} numberOfLines={1}>
               {message}
-            </Animated.Text>
+            </Text>
           ) : null}
-        </View>
+        </Animated.View>
       ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    paddingVertical: space.xl,
-  },
-  halo: {
-    position: 'absolute',
-    backgroundColor: colors.successTint,
-  },
-  ripple: {
-    position: 'absolute',
-    borderWidth: 2,
-    borderColor: 'rgba(18, 173, 43, 0.35)',
-  },
-  badge: {
-    position: 'absolute',
-    backgroundColor: colors.success,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.success,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.28,
-        shadowRadius: 10,
-      },
-      android: {
-        elevation: 4,
-      },
-      web: {
-        boxShadow: '0 4px 14px rgba(18, 173, 43, 0.28)',
-      } as any,
-    }),
-  },
-  textContainer: {
-    alignItems: 'center',
-    marginTop: space.lg,
-    paddingHorizontal: space.md,
-  },
-  title: {
-    fontFamily: fonts.bold,
-    fontSize: 22,
-    lineHeight: 28,
-    letterSpacing: -0.4,
-    color: colors.ink,
-    textAlign: 'center',
-  },
-  message: {
-    fontFamily: fonts.regular,
-    fontSize: 14.5,
-    lineHeight: 20,
-    color: colors.inkSoft,
-    textAlign: 'center',
-    marginTop: 4,
-  },
+  container: { alignItems: 'center', paddingVertical: space.lg },
+  disc: { backgroundColor: colors.success },
+  center: { alignItems: 'center', justifyContent: 'center' },
+  words: { alignItems: 'center', marginTop: space.lg, paddingHorizontal: space.md },
+  title: { fontFamily: fonts.bold, fontSize: 20, lineHeight: 26, letterSpacing: -0.3, color: colors.ink, textAlign: 'center' },
+  message: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 20, color: colors.inkSoft, textAlign: 'center', marginTop: 3 },
 });
-

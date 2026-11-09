@@ -6,8 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CollapsingBar, useCollapsingBar } from '../../components/app/CollapsingBar';
 import { TopBar } from '../../components/app/TopBar';
 import { Icon, type IconName } from '../../components/app/Icon';
+import { LogoutConfirm } from '../../components/app/LogoutConfirm';
 import { Rise, RollingNumber, useFocusReplay } from '../../components/app/motion';
-import { Avatar, Button, MenuRow } from '../../components/app/primitives';
+import { Avatar, MenuRow } from '../../components/app/primitives';
 import { ORDER_STATUS } from '../../components/app/status';
 import { ErrorState, Skeleton } from '../../components/app/states';
 import { EVENT_LOOK, LaundryCalendar } from '../../components/profile/LaundryCalendar';
@@ -31,7 +32,7 @@ import {
   updateCustomerProfile,
 } from '../../services/mock/profile.service';
 import { useSession } from '../../session/session';
-import { app, brand, brandShades, colors, fonts, space, text } from '../../theme';
+import { app, brand, brandShades, colors, fonts, space } from '../../theme';
 import type { LaundryEventDetail } from '../../types/profile';
 
 const webCursor = Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null;
@@ -260,28 +261,31 @@ export function ProfileScreen({ navigation }: TabProps<'Profile'>) {
           <Tile onPress={() => navigation.navigate('Refer')} flex={1} style={styles.memberCard} label="Open refer and earn">
             <View style={styles.walletHead}>
               <View style={styles.tileIcon}>
-                <Icon name="gift" size={18} color="#FFA742" />
+                <Icon name="gift" size={18} color="#FFFFFF" strokeWidth={2} />
               </View>
-              <View style={styles.arrowOrange}>
-                <Icon name="arrowUpRight" size={15} color="#FFFFFF" strokeWidth={2.4} />
+              <View style={styles.arrowGlass}>
+                <Icon name="arrowUpRight" size={16} color="#FFFFFF" strokeWidth={2.2} />
               </View>
             </View>
-            {membership.data ? (
-              <View style={{ gap: 2 }}>
-                <Text style={styles.memberKicker}>REFER & EARN</Text>
-                <Text style={styles.memberHeadline}>
-                  Give ₹100, get <Text style={{ color: '#FFA742' }}>₹200</Text>
-                </Text>
-                <View style={styles.memberRule} />
-                <Text style={styles.memberStat}>
-                  {membership.data.friendsJoined} <Text style={styles.memberStatLabel}>joined</Text>
-                  {'  •  '}
-                  {money(membership.data.rewardsEarned)} <Text style={styles.memberStatLabel}>earned</Text>
-                </Text>
-              </View>
-            ) : (
-              <Skeleton height={70} radius={10} />
-            )}
+            <View>
+              <Text style={styles.memberLabelDark}>Refer & earn</Text>
+              {membership.loading || !membership.data ? (
+                <Skeleton height={32} width={100} radius={8} style={{ marginTop: 4 }} />
+              ) : (
+                <>
+                  <Text style={styles.memberHeroDark} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
+                    Get ₹200
+                  </Text>
+                  <View style={styles.memberPillDark}>
+                    <Text style={styles.memberPillTextDark} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
+                      {membership.data.friendsJoined > 0
+                        ? `${membership.data.friendsJoined} joined • ${money(membership.data.rewardsEarned)} earned`
+                        : 'Give ₹100, get ₹200'}
+                    </Text>
+                  </View>
+                </>
+              )}
+            </View>
           </Tile>
         </Rise>
 
@@ -320,12 +324,13 @@ export function ProfileScreen({ navigation }: TabProps<'Profile'>) {
       </BottomSheet>
 
       <BottomSheet visible={confirmLogout} onClose={() => setConfirmLogout(false)}>
-        <Text style={text.h1}>Log out of Washing Basket?</Text>
-        <Text style={[text.body, { marginTop: 4 }]} numberOfLines={1}>You&apos;ll need your phone to sign back in.</Text>
-        <View style={styles.sheetButtons}>
-          <Button label="Cancel" variant="outline" onPress={() => setConfirmLogout(false)} style={{ flex: 1 }} />
-          <Button label="Log out" variant="dark" onPress={() => (setConfirmLogout(false), signOut())} style={{ flex: 1 }} />
-        </View>
+        <LogoutConfirm
+          onCancel={() => setConfirmLogout(false)}
+          onConfirm={() => {
+            setConfirmLogout(false);
+            signOut();
+          }}
+        />
       </BottomSheet>
     </View>
   );
@@ -552,34 +557,57 @@ const styles = StyleSheet.create({
   offerPill: { alignSelf: 'flex-start', marginTop: 6, height: 24, paddingHorizontal: 9, borderRadius: 12, backgroundColor: '#F4F2EE', justifyContent: 'center' },
   offerPillText: { fontFamily: fonts.semibold, fontSize: 11.5, color: colors.ink },
 
-  memberCard: { minHeight: 168, borderRadius: RADIUS, backgroundColor: brand.navy, padding: space.lg, justifyContent: 'space-between' },
-  arrowOrange: {
+  memberCard: {
+    minHeight: 168,
+    borderRadius: RADIUS,
+    backgroundColor: brand.navy,
+    padding: space.lg,
+    justifyContent: 'space-between',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 4px 16px rgba(1, 62, 134, 0.22)' } as any)
+      : {
+          shadowColor: brand.navy,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 10,
+          elevation: 3,
+        }),
+  },
+  arrowGlass: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.orange,
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
     alignItems: 'center',
     justifyContent: 'center',
-    ...(Platform.OS === 'web'
-      ? ({ boxShadow: '0 2px 6px rgba(254, 135, 1, 0.35)' } as object)
-      : { shadowColor: colors.orange, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.35, shadowRadius: 4, elevation: 2 }),
   },
-  memberKicker: {
-    fontFamily: fonts.bold,
-    fontSize: 10.5,
-    letterSpacing: 0.8,
-    color: '#FFA742',
+  memberLabelDark: {
+    fontFamily: fonts.medium,
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.72)',
   },
-  memberHeadline: {
-    fontFamily: fonts.bold,
-    fontSize: 14.5,
-    lineHeight: 18,
+  memberHeroDark: {
+    fontFamily: fonts.extrabold,
+    fontSize: 28,
+    lineHeight: 34,
+    letterSpacing: -1,
     color: '#FFFFFF',
-    letterSpacing: -0.3,
+    marginTop: 2,
   },
-  memberRule: { height: 1, backgroundColor: 'rgba(255,255,255,0.16)', marginVertical: space.sm },
-  memberStat: { fontFamily: fonts.bold, fontSize: 13.5, color: '#FFFFFF' },
-  memberStatLabel: { fontFamily: fonts.regular, fontSize: 11.5, color: 'rgba(255,255,255,0.7)' },
+  memberPillDark: {
+    alignSelf: 'flex-start',
+    marginTop: 6,
+    height: 24,
+    paddingHorizontal: 9,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    justifyContent: 'center',
+  },
+  memberPillTextDark: {
+    fontFamily: fonts.semibold,
+    fontSize: 11.5,
+    color: '#FFFFFF',
+  },
 
   menuCard: { borderRadius: RADIUS, backgroundColor: '#FFFFFF', paddingVertical: space.xs, paddingHorizontal: space.sm, ...soft, ...hairline },
 

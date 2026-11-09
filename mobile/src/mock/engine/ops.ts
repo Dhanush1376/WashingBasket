@@ -8,6 +8,7 @@
 import type {
   Actor,
   IssueKind,
+  ProcessingStage,
   LaundryOrder,
   MockState,
   OpContext,
@@ -18,7 +19,7 @@ import type {
   StaffPermission,
   WalletTransaction,
 } from '../types.ts';
-import { intakePurpose, MODE_COPY } from './lifecycle.ts';
+import { intakePurpose, isTerminal, MODE_COPY, nextStage, STAGE_COPY } from './lifecycle.ts';
 import { activateQr, consumeQr, issueQr, revokeQr } from './qr.ts';
 import { actorForCustomer, actorForStaff, logActivity, notify, transition } from './records.ts';
 import { findCustomer, findLocation, findOrder, findQr, findStaff, openIssueFor, priceBasket, walletBalance } from './selectors.ts';
@@ -290,7 +291,8 @@ export function startCheck(s: MockState, ctx: OpContext, order: LaundryOrder, ac
 export function confirmClothes(s: MockState, ctx: OpContext, input: { orderId: string; customerId: string; received: Record<string, number> }) {
   const order = findOrder(s, input.orderId);
   if (!order || order.customerId !== input.customerId) return fail('NO_ORDER', 'Order not found.');
-  if (openIssueFor(s, order.id)) fail('ISSUE_OPEN', 'You reported a problem with this order. We’ll be in touch before delivery can be completed.');
+  const open = openIssueFor(s, order.id);
+  if (open) fail('ISSUE_OPEN', open.source === 'staff' ? 'Our team flagged a problem with this order. We’ll be in touch before it can be handed over.' : 'You reported a problem with this order. We’ll be in touch before delivery can be completed.');
   if (order.status !== 'READY_FOR_DELIVERY' && order.status !== 'AWAITING_CUSTOMER_VERIFICATION') fail('BAD_STATE', 'This order isn’t ready to be checked.');
   const mismatch = order.lines.find((l) => (input.received[l.itemId] ?? -1) !== l.qty);
   if (mismatch) fail('COUNT_MISMATCH', `${mismatch.name}: the count doesn’t match. Report an issue instead.`);
@@ -349,6 +351,10 @@ function assertStaff(s: MockState, staffId: string, order: LaundryOrder, permiss
   if (staff.status !== 'ACTIVE') fail('SUSPENDED', 'This staff account is paused.');
   if (staff.locationId !== order.locationId) fail('WRONG_LOCATION', 'You can only process orders for your own location.');
   if (!staff.permissions.includes(permission)) fail('NO_PERMISSION', 'Your role can’t do this.');
+  // an order a supervisor gave to someone is theirs: colleagues can't act on it (supervisors still can)
+  if (order.assignedTo && order.assignedTo !== staff.id && !staff.permissions.includes('ORDER_ASSIGN')) {
+    fail('NOT_ASSIGNED', `This order is assigned to ${findStaff(s, order.assignedTo)?.name ?? 'someone else'}.`);
+  }
   return staff;
 }
 
@@ -403,13 +409,38 @@ export function startProcessing(s: MockState, ctx: OpContext, input: { orderId: 
   const actor = actorForStaff(s, input.staffId);
   order.processingBy = input.staffId;
   transition(s, ctx, order, 'PROCESSING', actor, `Processing started by ${actor.name}`);
+  order.processingStage = 'SORTING';
+  logActivity(s, ctx, order, 'STAGE_CHANGED', actor, `${STAGE_COPY.SORTING.label} started by ${actor.name}`);
   notify(s, ctx, 'customer', order.customerId, 'PROCESSING', `${order.id} is being washed`, 'We’ll tell you the moment it’s ready.', order.id);
+  return order;
+}
+
+/**
+ * Moves a processing order to its next wash-floor step. `to` is the step the staff member saw on screen: if someone
+ * else moved the order meanwhile, it no longer matches and nothing changes, so a step is never skipped or repeated.
+ */
+export function advanceStage(s: MockState, ctx: OpContext, input: { orderId: string; staffId: string; to: ProcessingStage }) {
+  const order = staffOrder(s, input.orderId);
+  assertStaff(s, input.staffId, order, 'ORDER_PROCESS');
+  if (order.status !== 'PROCESSING') fail('BAD_STATE', `Order ${order.id} isn’t being processed.`);
+  const next = nextStage(order.processingStage);
+  if (!next) return fail('STAGE_DONE', 'Quality check is the last step. Mark the order ready.');
+  if (next !== input.to) fail('STALE_STAGE', `${order.id} is already at ${STAGE_COPY[order.processingStage ?? 'SORTING'].label.toLowerCase()}. Refresh and try again.`);
+  const actor = actorForStaff(s, input.staffId);
+  order.processingStage = next;
+  order.processingBy = input.staffId;
+  order.updatedAt = ctx.now;
+  logActivity(s, ctx, order, 'STAGE_CHANGED', actor, `${STAGE_COPY[next].label} started by ${actor.name}`);
   return order;
 }
 
 export function markReady(s: MockState, ctx: OpContext, input: { orderId: string; staffId: string }) {
   const order = staffOrder(s, input.orderId);
   assertStaff(s, input.staffId, order, 'ORDER_PROCESS');
+  // orders processed in stages must pass quality check first (older orders without stages go straight through)
+  if (order.status === 'PROCESSING' && order.processingStage && order.processingStage !== 'QUALITY_CHECK') {
+    fail('STAGE_INCOMPLETE', `${order.id} is still at ${STAGE_COPY[order.processingStage].label.toLowerCase()}. Finish quality check first.`);
+  }
   const actor = actorForStaff(s, input.staffId);
   order.readyBy = input.staffId;
   transition(s, ctx, order, 'READY_FOR_DELIVERY', actor, `Marked ready by ${actor.name}`);
@@ -433,7 +464,10 @@ export function markReady(s: MockState, ctx: OpContext, input: { orderId: string
 export function handOver(s: MockState, ctx: OpContext, input: { orderId: string; staffId: string }) {
   const order = staffOrder(s, input.orderId);
   assertStaff(s, input.staffId, order, 'DELIVERY_CONFIRM');
+  // a home order is handed over at the customer's door, by the pickup & delivery partner
+  if (order.serviceMode === 'HOME_PICKUP') assertStaff(s, input.staffId, order, 'PICKUP_COLLECT');
   if (order.status !== 'READY_FOR_DELIVERY') fail('BAD_STATE', `Order ${order.id} isn’t ready.`);
+  if (openIssueFor(s, order.id)) fail('ISSUE_OPEN', 'There’s an open issue on this order. An admin has to resolve it first.');
   order.handoverBy = input.staffId;
   startCheck(s, ctx, order, actorForStaff(s, input.staffId));
   notify(s, ctx, 'customer', order.customerId, 'VERIFY_CLOTHES', 'Please check your clothes', `Count the pieces for ${order.id}, then show your delivery QR.`, order.id);
@@ -443,6 +477,7 @@ export function handOver(s: MockState, ctx: OpContext, input: { orderId: string;
 export function confirmDelivery(s: MockState, ctx: OpContext, input: { orderId: string; staffId: string; qrId: string }) {
   const order = staffOrder(s, input.orderId);
   assertStaff(s, input.staffId, order, 'DELIVERY_CONFIRM');
+  if (order.serviceMode === 'HOME_PICKUP') assertStaff(s, input.staffId, order, 'PICKUP_COLLECT');
   if (order.status === 'DELIVERED') fail('ALREADY_DELIVERED', `Order ${order.id} is already delivered.`);
   if (order.status !== 'AWAITING_CUSTOMER_VERIFICATION' || !order.verification) fail('NOT_VERIFIED', 'The customer hasn’t confirmed their clothes yet.');
   if (openIssueFor(s, order.id)) fail('ISSUE_OPEN', 'There’s an open issue on this order.');
@@ -453,6 +488,63 @@ export function confirmDelivery(s: MockState, ctx: OpContext, input: { orderId: 
   transition(s, ctx, order, 'DELIVERED', actor, order.serviceMode === 'HOME_PICKUP' ? `Delivered by ${actor.name}` : `Collected; confirmed by ${actor.name}`);
   notify(s, ctx, 'customer', order.customerId, 'DELIVERED', `${order.id} delivered`, `All ${order.pieces} pieces handed over. Thank you for choosing Washing Basket!`, order.id);
   return order;
+}
+
+/** A supervisor gives an open order to one staff member at the branch, or (staffId null) back to everyone. */
+export function assignOrder(s: MockState, ctx: OpContext, input: { orderId: string; supervisorId: string; staffId: string | null }) {
+  const order = staffOrder(s, input.orderId);
+  const boss = assertStaff(s, input.supervisorId, order, 'ORDER_ASSIGN');
+  if (isTerminal(order.status)) fail('BAD_STATE', `Order ${order.id} is closed.`);
+  const actor = actorForStaff(s, boss.id);
+  if (input.staffId === null) {
+    if (!order.assignedTo) return order;
+    order.assignedTo = undefined;
+    order.assignedBy = undefined;
+    order.assignedAt = undefined;
+    order.updatedAt = ctx.now;
+    logActivity(s, ctx, order, 'ASSIGNED', actor, `Assignment cleared by ${actor.name}`);
+    return order;
+  }
+  const to = findStaff(s, input.staffId);
+  if (!to || to.locationId !== order.locationId) return fail('NO_STAFF', 'Choose someone at this branch.');
+  if (to.status !== 'ACTIVE') fail('SUSPENDED', `${to.name}’s account is paused.`);
+  if (order.assignedTo === to.id) fail('ALREADY_ASSIGNED', `${order.id} is already assigned to ${to.name}.`);
+  order.assignedTo = to.id;
+  order.assignedBy = boss.id;
+  order.assignedAt = ctx.now;
+  order.updatedAt = ctx.now;
+  logActivity(s, ctx, order, 'ASSIGNED', actor, `Assigned to ${to.name} by ${actor.name}`);
+  return order;
+}
+
+/**
+ * Staff flag damaged or missing items while the order is with them. The order can carry on through processing, but
+ * it can't be handed over until an admin resolves the issue in the portal.
+ */
+export function reportStaffIssue(
+  s: MockState,
+  ctx: OpContext,
+  input: { orderId: string; staffId: string; kind: IssueKind; note: string; counts?: Record<string, number> },
+) {
+  const order = staffOrder(s, input.orderId);
+  assertStaff(s, input.staffId, order, 'ISSUE_REPORT');
+  if (!['ACCEPTED', 'PICKUP_CONFIRMED', 'PROCESSING', 'READY_FOR_DELIVERY'].includes(order.status)) fail('BAD_STATE', 'Issues can be flagged while the order is with the branch.');
+  if (openIssueFor(s, order.id)) fail('ISSUE_OPEN', 'This order already has an open issue.');
+  const counts = input.counts ?? {};
+  const mismatches = order.lines
+    .filter((l) => counts[l.itemId] !== undefined && counts[l.itemId] !== l.qty)
+    .map((l) => ({ itemId: l.itemId, name: l.name, expected: l.qty, received: counts[l.itemId] }));
+  const note = input.note.trim();
+  if (note.length < 5) fail('NO_DETAIL', 'Describe the problem in a few words.');
+  const actor = actorForStaff(s, input.staffId);
+  order.updatedAt = ctx.now;
+  const issue = { id: `iss-${nextNumber(s, 'issue')}`, orderId: order.id, customerId: order.customerId, kind: input.kind, mismatches, note, status: 'OPEN' as const, source: 'staff' as const, reportedBy: input.staffId, reportedAt: ctx.now };
+  s.issues.unshift(issue);
+  const summary = mismatches.length ? `${mismatches.map((m) => `${m.name} ${m.received}/${m.expected}`).join(', ')} · ${note}` : note;
+  logActivity(s, ctx, order, 'ISSUE_REPORTED', actor, `Issue flagged by ${actor.name}: ${summary}`);
+  notify(s, ctx, 'admin', 'admin', 'ISSUE_REPORTED', `Staff flagged ${order.id}`, summary, order.id);
+  notify(s, ctx, 'staff', order.locationId, 'ISSUE_REPORTED', `Issue on ${order.id}`, summary, order.id);
+  return issue;
 }
 
 /* ───────────── Admin ───────────── */

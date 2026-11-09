@@ -3,8 +3,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors, fonts } from '../../theme';
 import { Icon } from '../app/Icon';
 
+const SOFT_YELLOW = '#FFD873'; // the brand yellow, softened
+export const BASKET_PEEK = 42; // how much of the card shows above the sheet
+
 /**
- * Live basket card header styled in brand orange to match the notifications peek card.
+ * The live basket, peeking out above the order sheet as a soft yellow tab: what's in it on the left, where it's
+ * going on the right, centred in the strip that shows.
  */
 export function BasketCard({
   total,
@@ -22,14 +26,14 @@ export function BasketCard({
   return (
     <View style={styles.card}>
       <View style={styles.left}>
-        <Icon name="bag" size={13} color="#FFFFFF" strokeWidth={2.4} />
+        <Icon name="bag" size={13} color={colors.ink} strokeWidth={2.4} />
         <Text style={styles.label}>
           {pieces > 0 ? `Your basket · ₹${total}` : 'Your basket'}
         </Text>
       </View>
       {place ? (
         <View style={styles.right}>
-          <Icon name="mapPin" size={11} color="rgba(255, 255, 255, 0.92)" strokeWidth={2.4} />
+          <Icon name="mapPin" size={11} color="rgba(10, 28, 62, 0.85)" strokeWidth={2.4} />
           <Text style={styles.place} numberOfLines={1}>
             {place}
           </Text>
@@ -43,14 +47,15 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 532,
-    height: 60,
+    height: BASKET_PEEK + 28,
     borderRadius: 22,
-    backgroundColor: colors.orange,
+    backgroundColor: SOFT_YELLOW,
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
+    gap: 12,
     paddingHorizontal: 18,
-    paddingTop: 8,
+    paddingTop: (BASKET_PEEK - 18) / 2,
   },
   left: {
     flexDirection: 'row',
@@ -65,14 +70,14 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: fonts.bold,
-    fontSize: 12,
-    letterSpacing: 0.2,
-    color: '#FFFFFF',
+    fontSize: 13,
+    letterSpacing: -0.1,
+    color: colors.ink,
   },
   place: {
     fontFamily: fonts.semibold,
     fontSize: 11.5,
-    color: 'rgba(255, 255, 255, 0.95)',
+    color: 'rgba(10, 28, 62, 0.85)',
     flexShrink: 1,
   },
 });

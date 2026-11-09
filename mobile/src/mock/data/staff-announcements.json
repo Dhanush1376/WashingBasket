@@ -1,0 +1,22 @@
+{
+  "_note": "DEMO DATA: announcements, workplace policies and contacts shown in the staff app. Illustrative only.",
+  "announcements": [
+    { "id": "an-1007", "kind": "branch", "locationIds": ["loc-lpu"], "title": "Extra counter hours this week", "body": "Mid-term exams end on Friday. Expect a rush of drop-offs on Friday evening and Saturday morning; the late shift stays until 9:30 PM both days.", "publishedAt": "2026-11-06T09:00:00+05:30", "pinned": true, "author": "Manpreet Gill" },
+    { "id": "an-1006", "kind": "branch", "locationIds": ["loc-nit"], "title": "New dryer on the wash floor", "body": "Dryer 3 is installed and tested. Use it for heavy loads such as blankets and bedsheets first.", "publishedAt": "2026-11-05T11:30:00+05:30", "pinned": false, "author": "Vikram Sethi" },
+    { "id": "an-1005", "kind": "branch", "locationIds": ["loc-outside"], "title": "Pickup route change near City Park", "body": "Model Town Road is closed near City Park until Thursday. Take the Green Avenue lane for pickups in that block and allow 10 extra minutes.", "publishedAt": "2026-11-05T08:15:00+05:30", "pinned": true, "author": "Anjali Bedi" },
+    { "id": "an-1004", "kind": "company", "title": "Guru Nanak Jayanti holiday", "body": "All branches are closed on Tuesday, 24 November. Orders due that day will be ready on the 25th; customers have been told in the app.", "publishedAt": "2026-11-03T10:00:00+05:30", "pinned": false, "author": "Washing Basket HR" },
+    { "id": "an-1003", "kind": "company", "title": "Always scan before you hand over", "body": "A delivery is complete only after the customer’s delivery QR is scanned. Never hand clothes over on a screenshot or a spoken code.", "publishedAt": "2026-10-28T09:00:00+05:30", "pinned": false, "author": "Operations team", "roles": ["COUNTER_STAFF", "PICKUP_AGENT", "LOCATION_MANAGER"] },
+    { "id": "an-1002", "kind": "company", "title": "Flag damage before washing", "body": "If a garment arrives torn, stained beyond normal or missing a button, flag it on the order before it goes into the machine. It protects you and the customer.", "publishedAt": "2026-10-20T09:00:00+05:30", "pinned": false, "author": "Operations team", "roles": ["PROCESSING_STAFF", "COUNTER_STAFF", "LOCATION_MANAGER"] }
+  ],
+  "policies": [
+    { "id": "pol-attendance", "title": "Attendance", "summary": "Check in when your shift starts, check out when it ends.", "body": "Check in from the Schedule tab when you arrive and check out before you leave. Arriving more than 10 minutes after your shift starts is marked late. If you can’t make a shift, tell your supervisor and request leave in the app." },
+    { "id": "pol-leave", "title": "Leave", "summary": "Request leave in the app; your supervisor approves it.", "body": "Request leave from the Schedule tab with the dates and a reason. Your branch supervisor approves or declines it, and you’ll see the decision in the app. Approved leave doesn’t count as a missed day." },
+    { "id": "pol-handover", "title": "Handover & QR codes", "summary": "Every intake and handover goes through a QR scan.", "body": "Accept an order only after scanning the customer’s QR and counting the clothes. Complete a delivery only after the customer has checked their clothes and you have scanned their delivery QR. Codes work once." },
+    { "id": "pol-garment-care", "title": "Garment care", "summary": "Follow the care label; flag anything unusual before washing.", "body": "Sort by colour and fabric, follow the care label, and keep delicate items separate. Flag damaged or missing items on the order before processing." }
+  ],
+  "contacts": [
+    { "id": "ct-support", "kind": "support", "label": "Operations helpline", "detail": "Order or app problems during your shift", "phone": "+91 98140 11000", "hours": "8:00 AM – 10:00 PM, every day" },
+    { "id": "ct-hr", "kind": "hr", "label": "HR & payroll", "detail": "Salary, leave balance and documents", "phone": "+91 98140 11010", "email": "hr@washingbasket.in", "hours": "10:00 AM – 6:00 PM, Monday to Saturday" },
+    { "id": "ct-emergency", "kind": "emergency", "label": "Emergency", "detail": "Injury, fire or safety at work", "phone": "112", "hours": "24 hours" }
+  ]
+}

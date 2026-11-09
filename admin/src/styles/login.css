@@ -1,0 +1,396 @@
+/* Demo sign-in: the sign-in film on the left, the form on the right; stacked on narrow screens. */
+
+.login {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #FFFFFF;
+}
+
+/* ── film ── */
+.login__film {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+  overflow: hidden;
+  background: #FFA742;
+  isolation: isolate;
+}
+
+.login__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  /* the artwork sits in the lower part of each scene; keep it in view */
+  object-position: 50% 72%;
+}
+
+.login__video {
+  opacity: 0;
+  transition: opacity 700ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.login__video--on {
+  opacity: 1;
+}
+
+.login__film-shade {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 42%;
+  background: linear-gradient(to top, rgba(6, 16, 36, 0.62), rgba(6, 16, 36, 0.18) 60%, transparent);
+  pointer-events: none;
+}
+
+.login__film-copy {
+  position: absolute;
+  left: 36px;
+  right: 36px;
+  bottom: 36px;
+  color: #FFFFFF;
+}
+
+.login__film-line {
+  margin: 0;
+  max-width: 440px;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 26px;
+  line-height: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  text-wrap: balance;
+}
+
+/* ── form: the customer app's sign-in style (pill fields, dark pill button) ── */
+.login__panel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  height: 100dvh;
+  padding: 28px 40px 22px;
+  overflow-y: auto; /* only on very short windows; normally everything fits */
+}
+
+.login__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.login__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login__wordmark {
+  font-size: 18px;
+}
+
+.login__demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 16px;
+  border: 1.25px solid #C4BEAD;
+  background: #F4F2EB;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  transition: background 160ms ease, border-color 160ms ease, transform 120ms ease;
+}
+
+.login__demo:hover:not(:disabled) {
+  background: #FFFFFF;
+  border-color: var(--ink);
+}
+
+.login__demo:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.login__demo:disabled {
+  opacity: 0.6;
+}
+
+.login__demo > svg {
+  color: #FE8701;
+}
+
+.login__center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.login__card {
+  width: 100%;
+  max-width: 392px;
+  animation: login-rise 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.login__eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #E07A00;
+}
+
+.login__title {
+  margin-top: 8px;
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 600;
+  letter-spacing: -0.7px;
+  color: var(--ink);
+}
+
+.login__lead {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 22px;
+  color: #5B6475;
+}
+
+.login__form {
+  display: grid;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+/* pill field: cream fill, soft edge, ink edge when focused, a hairline then a round ink badge at the end */
+.pill {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 14px 0 24px;
+  border-radius: 28px;
+  border: 1.25px solid #C4BEAD;
+  background: #F4F2EB;
+  overflow: hidden;
+  cursor: text;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.pill:hover {
+  border-color: #A9A291;
+}
+
+.pill:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(10, 28, 62, 0.06);
+}
+
+.pill--error,
+.pill--error:hover {
+  border-color: #C8102E;
+}
+
+.pill__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.pill__input::placeholder {
+  color: #667085;
+  font-weight: 400;
+}
+
+.pill__input:-webkit-autofill,
+.pill__input:-webkit-autofill:hover,
+.pill__input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #F4F2EB inset;
+  -webkit-text-fill-color: #0A1C3E;
+  transition: background-color 99999s ease-out 0s;
+}
+
+.pill__divider {
+  flex: none;
+  width: 1px;
+  height: 26px;
+  margin: 0 12px;
+  background: #CBD5E1;
+}
+
+.pill__badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  background: var(--ink);
+}
+
+.pill__badge--button {
+  transition: transform 120ms ease, background 160ms ease;
+}
+
+.pill__badge--button:hover {
+  background: #1D3461;
+}
+
+.pill__badge--button:active {
+  transform: scale(0.92);
+}
+
+.login__helper {
+  margin-top: -4px;
+  padding: 0 12px;
+  font-size: 12.5px;
+  line-height: 17px;
+  color: #5B6475;
+}
+
+.login__helper--error {
+  color: #C8102E;
+}
+
+.login__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.login__row .checkbox__label {
+  font-size: 13.5px;
+}
+
+.login__link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.login__link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.login__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  margin-top: 6px;
+  border-radius: 26px;
+  background: #0A1C3E;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  transition: background 160ms ease, transform 120ms ease;
+}
+
+.login__submit:hover:not(:disabled) {
+  background: #16294F;
+}
+
+.login__submit:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.login__submit:disabled {
+  cursor: progress;
+  opacity: 0.92;
+}
+
+.login__foot {
+  font-size: 12px;
+  color: #667085;
+  text-align: center;
+}
+
+@keyframes login-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* a desktop window that fits everything never scrolls the page */
+@media (min-width: 961px) {
+  .login {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+}
+
+/* tablets and phones: the film becomes a banner above the form, and the page scrolls normally */
+@media (max-width: 960px) {
+  .login {
+    grid-template-columns: 1fr;
+  }
+
+  .login__film {
+    position: relative;
+    height: 34vh;
+    min-height: 220px;
+  }
+
+  .login__film-copy {
+    left: 20px;
+    right: 20px;
+    bottom: 18px;
+  }
+
+  .login__film-line {
+    font-size: 20px;
+    line-height: 26px;
+  }
+
+  .login__panel {
+    height: auto;
+    padding: 20px 16px 24px;
+    overflow: visible;
+  }
+
+  .login__center {
+    padding: 28px 0 32px;
+  }
+}
+
+@media (max-width: 520px) {
+  .login__film {
+    height: 28vh;
+    min-height: 190px;
+  }
+
+  .login__film-line {
+    display: none;
+  }
+
+  .login__title {
+    font-size: 24px;
+    line-height: 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login__card {
+    animation: none;
+  }
+}

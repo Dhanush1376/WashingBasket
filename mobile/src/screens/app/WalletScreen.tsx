@@ -787,7 +787,7 @@ const LOOK: Record<
 > = {
   topup: { icon: "wallet", bg: colors.successTint, fg: "#0D7A21" },
   referral: { icon: "gift", bg: colors.successTint, fg: "#0D7A21" },
-  bonus: { icon: "sparkle", bg: app.warningTint, fg: app.warning },
+  bonus: { icon: "gift", bg: app.warningTint, fg: app.warning },
   order: { icon: "bag", bg: "#EEF0F3", fg: colors.inkSoft },
   refund: { icon: "refresh", bg: app.navySoft, fg: colors.navy },
 };
@@ -1121,7 +1121,10 @@ const styles = StyleSheet.create({
   cardsWrap: { marginTop: space.md, marginBottom: 0 },
   backCard: {
     height: 68,
-    borderRadius: 24,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     backgroundColor: BRAND_RED,
     flexDirection: "row",
     alignItems: "flex-start",
@@ -1131,7 +1134,7 @@ const styles = StyleSheet.create({
     ...(Platform.OS === "web"
       ? ({ boxShadow: "0 4px 12px rgba(1, 42, 92, 0.08)" } as object)
       : {
-          shadowColor: "#780A14",
+          shadowColor: colors.navy,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.08,
           shadowRadius: 8,

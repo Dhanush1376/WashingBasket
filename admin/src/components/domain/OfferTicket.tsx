@@ -9,7 +9,7 @@ import type { Offer } from '@/types';
 type TicketTheme = { paper: string; stub: string; ink: string };
 const THEMES: TicketTheme[] = [
   { paper: '#013E86', stub: '#002A5C', ink: '#FFFFFF' },
-  { paper: '#FE8701', stub: '#E07405', ink: '#FFFFFF' },
+  { paper: '#FFA742', stub: '#E8912D', ink: '#FFFFFF' },
   { paper: '#D30D24', stub: '#A80A1C', ink: '#FFFFFF' },
   { paper: '#FEDB7D', stub: '#F7C35D', ink: '#012A5C' },
   { paper: '#0A4E9E', stub: '#063773', ink: '#FFFFFF' },

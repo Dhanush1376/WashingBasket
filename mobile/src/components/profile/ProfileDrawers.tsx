@@ -19,17 +19,17 @@ export const HANDSOME_AVATAR_OPTIONS = [
   {
     id: 'male-modern',
     label: 'Modern',
-    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Alexander&skinColor=ffdbb4&hairColor=2c1b18&top=shortFlat&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=collarAndSweater&clothingColor=262e33&backgroundColor=fe8701',
+    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Alexander&skinColor=ffdbb4&hairColor=2c1b18&top=shortFlat&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=collarAndSweater&clothingColor=262e33&backgroundColor=ffa742',
   },
   {
     id: 'male-wavy',
     label: 'Wavy',
-    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Oliver&skinColor=ffdbb4&hairColor=2c1b18&top=shortCurly&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=graphicShirt&clothingColor=013e86&backgroundColor=fe8701',
+    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Oliver&skinColor=ffdbb4&hairColor=2c1b18&top=shortCurly&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=graphicShirt&clothingColor=013e86&backgroundColor=ffa742',
   },
   {
     id: 'male-sharp',
     label: 'Sharp',
-    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Julian&skinColor=ffdbb4&hairColor=2c1b18&top=shortRound&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=hoodie&clothingColor=fe8701&backgroundColor=013e86',
+    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Julian&skinColor=ffdbb4&hairColor=2c1b18&top=shortRound&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=hoodie&clothingColor=ffa742&backgroundColor=013e86',
   },
   {
     id: 'male-classic',
@@ -39,17 +39,17 @@ export const HANDSOME_AVATAR_OPTIONS = [
   {
     id: 'female-emma',
     label: 'Emma',
-    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Emma&skinColor=ffdbb4&hairColor=2c1b18&top=straight01&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=shirtScoopNeck&clothingColor=013e86&backgroundColor=fe8701',
+    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Emma&skinColor=ffdbb4&hairColor=2c1b18&top=straight01&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=shirtScoopNeck&clothingColor=013e86&backgroundColor=ffa742',
   },
   {
     id: 'female-sophia',
     label: 'Sophia',
-    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Sophia&skinColor=ffdbb4&hairColor=4a312c&top=bob&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=collarAndSweater&clothingColor=013e86&backgroundColor=fe8701',
+    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Sophia&skinColor=ffdbb4&hairColor=4a312c&top=bob&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=collarAndSweater&clothingColor=013e86&backgroundColor=ffa742',
   },
   {
     id: 'female-chloe',
     label: 'Chloe',
-    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Chloe&skinColor=ffdbb4&hairColor=2c1b18&top=curvy&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=shirtCrewNeck&clothingColor=fe8701&backgroundColor=013e86',
+    url: 'https://api.dicebear.com/9.x/avataaars/png?seed=Chloe&skinColor=ffdbb4&hairColor=2c1b18&top=curvy&eyes=default&eyebrows=default&mouth=smile&facialHairProbability=0&clothing=shirtCrewNeck&clothingColor=ffa742&backgroundColor=013e86',
   },
   {
     id: 'female-maya',

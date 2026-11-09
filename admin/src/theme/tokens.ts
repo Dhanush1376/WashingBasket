@@ -8,7 +8,7 @@ import { app, brand, colors, space } from '@customer/theme';
 /**
  * Admin system — derived from the customer product palette, but tuned for dense work.
  * HEX reference: canvas #F8FAFC, surface #FFFFFF, ink #0A1C3E, muted #8C93A1,
- * brand navy #013E86, action orange #FE8701, success #12AD2B, warning #B97800,
+ * brand navy #013E86, action orange #FFA742, success #12AD2B, warning #B97800,
  * danger #C8102E. Keeping these here makes the operational UI auditable and consistent.
  */
 export const CANVAS = '#F8F9FA';

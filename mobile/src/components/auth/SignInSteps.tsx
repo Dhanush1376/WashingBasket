@@ -63,8 +63,8 @@ function TextLink({ label, icon, onPress }: { label: string; icon?: 'chevronLeft
 }
 
 /** The "done" moment, inside the sheet: a green tick pops in with the title and a line under it. */
-export function SheetSuccess({ title, message }: { title: string; message: string }) {
-  return <SuccessTickBadge title={title} message={message} />;
+export function SheetSuccess({ title, message, size = 88 }: { title: string; message?: string; size?: number }) {
+  return <SuccessTickBadge title={title} message={message || undefined} size={size} />;
 }
 
 
@@ -142,7 +142,7 @@ export function PhoneStep({ onCode, onSocial }: { onCode: (c: Challenge) => void
             keyboardType="phone-pad"
             textContentType="telephoneNumber"
             autoComplete="tel"
-            editable={!loading}
+            busy={loading}
             invalid={!!shownError}
             inputStyle={styles.phoneInput}
             leading={
@@ -244,7 +244,8 @@ export function OtpStep({ challenge, onChangeNumber, onVerified }: { challenge: 
   }, [resendIn]);
 
   useEffect(() => {
-    const t = setTimeout(() => inputRef.current?.focus(), 450);
+    // straight away: the keyboard is usually still up from the number step, so it never drops
+    const t = setTimeout(() => inputRef.current?.focus(), 30);
     return () => clearTimeout(t);
   }, []);
 
@@ -257,8 +258,8 @@ export function OtpStep({ challenge, onChangeNumber, onVerified }: { challenge: 
     try {
       const session = await authService.verifyOtp(requestId, value);
       setVerified(true);
-      inputRef.current?.blur();
       haptic.success();
+      // no blur: the sign-in screen keeps the keyboard up through the tick and the next step
       onVerified(session);
     } catch (e) {
       setError(e instanceof AuthError ? e.message : 'Something went wrong. Please try again.');
@@ -358,9 +359,12 @@ export function DetailsStep({
   initial,
   onSaved,
   onNotYou,
+  autoFocus,
 }: {
   token: string;
   initial?: Profile;
+  /** Focus the name field straight away (the keyboard is already up from the previous step). */
+  autoFocus?: boolean;
   onSaved: (p: Profile) => Promise<void>;
   onNotYou: () => void;
 }) {
@@ -400,6 +404,7 @@ export function DetailsStep({
           value={fullName}
           onChangeText={setFullName}
           placeholder="Full name"
+          autoFocus={autoFocus}
           invalid={touched && !!nErr}
           autoCapitalize="words"
           autoComplete="name"
@@ -407,7 +412,7 @@ export function DetailsStep({
           returnKeyType="next"
           onSubmitEditing={() => emailRef.current?.focus()}
           maxLength={60}
-          editable={!saving}
+          busy={saving}
         />
       </Rise>
       <Rise delay={130} style={{ marginTop: space.md }}>
@@ -426,7 +431,7 @@ export function DetailsStep({
           returnKeyType="done"
           onSubmitEditing={submit}
           maxLength={120}
-          editable={!saving}
+          busy={saving}
         />
         <Text style={[formStyles.helper, shown && { color: colors.danger }]}>{shown ?? 'Receipts and order updates are sent here.'}</Text>
       </Rise>
@@ -546,7 +551,7 @@ export function PincodeStep({
             maxLength={6}
             returnKeyType="done"
             onSubmitEditing={() => check()}
-            editable={status !== 'checking' && status !== 'available'}
+            busy={status === 'checking' || status === 'available'}
             invalid={!!message}
             inputStyle={pin ? styles.pinInput : null}
             trailing={
@@ -559,7 +564,7 @@ export function PincodeStep({
                 <>
                   <View style={formStyles.divider} />
                   <View style={styles.okBadge}>
-                    <Icon name="check" size={13} color="#FFFFFF" strokeWidth={2.8} />
+                    <Icon name="check" size={18} color="#FFFFFF" strokeWidth={3} />
                   </View>
                 </>
               ) : undefined
@@ -595,7 +600,7 @@ const styles = StyleSheet.create({
 
   phoneWrap: { marginTop: space.lg, position: 'relative', zIndex: 1 },
   phoneWrapOpen: { zIndex: 9999, elevation: 9999 },
-  phoneInput: { letterSpacing: 0.4, fontVariant: ['tabular-nums'] },
+  phoneInput: { letterSpacing: 0.4, fontVariant: ['tabular-nums'], backgroundColor: 'transparent' },
   country: { flexDirection: 'row', alignItems: 'center', gap: 4, height: '100%' },
   countryText: { fontFamily: fonts.semibold, fontSize: 16, color: colors.ink },
 
@@ -616,5 +621,5 @@ const styles = StyleSheet.create({
   linkText: { fontFamily: fonts.semibold, fontSize: 14, color: brand.navy },
 
   pinInput: { fontFamily: fonts.semibold, fontSize: 18, letterSpacing: 4, fontVariant: ['tabular-nums'] },
-  okBadge: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' },
+  okBadge: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' },
 });

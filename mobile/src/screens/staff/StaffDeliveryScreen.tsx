@@ -1,64 +1,60 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Icon } from '../../components/app/Icon';
-import { Pop, Rise } from '../../components/app/motion';
-import { Button, Card } from '../../components/app/primitives';
+import { Rise } from '../../components/app/motion';
 import { EmptyState } from '../../components/app/states';
 import { GarmentIcon } from '../../components/laundry/GarmentIcon';
-import { useCurrentStaff, useLaundryState } from '../../laundry/hooks';
 import { haptic } from '../../lib/haptics';
 import { plural, when } from '../../lib/format';
-import { findCustomer, findOrder } from '../../mock/engine/selectors';
+import { MODE_COPY } from '../../mock/engine/lifecycle';
+import { findCustomer, findOrder, openIssueFor } from '../../mock/engine/selectors';
 import { confirmDelivery } from '../../mock/services/staffService';
 import type { ScreenProps } from '../../navigation/types';
-import { app, colors, shape, space, text } from '../../theme';
-import { StaffFrame } from './StaffFrame';
+import { canSeeContact, displayName } from '../../staff/work';
+import { colors, fonts, space } from '../../theme';
+import { BEIGE, Button, Notice, Outcome, Panel, shared, StaffPage, useStaff } from './kit';
 
-/** After a valid delivery QR: the customer's own confirmation, then the staff member completes the delivery. */
+/**
+ * After a valid delivery QR: the customer has checked their clothes on their own phone, and the staff member
+ * completes the handover. The QR is used up on confirm, so it can't close the order twice.
+ */
 export function StaffDeliveryScreen({ navigation, route }: ScreenProps<'StaffDelivery'>) {
   const { orderId, qrId } = route.params;
-  const state = useLaundryState();
-  const me = useCurrentStaff();
+  const { state, me } = useStaff();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
+  const scanNext = () => navigation.navigate('StaffTabs', { screen: 'StaffScan', params: { intent: 'ANY', orderId: undefined, nonce: Date.now() } });
+  const toOrders = () => navigation.navigate('StaffTabs', { screen: 'StaffOrders' });
+
   const order = state ? findOrder(state, orderId) : undefined;
-  if (!state || !me) return <StaffFrame title="Complete delivery">{null}</StaffFrame>;
+  if (!state || !me) return <StaffPage title="Complete delivery" tab={false} bell={false}>{null}</StaffPage>;
   if (!order || order.locationId !== me.location.id) {
     return (
-      <StaffFrame title="Complete delivery">
-        <EmptyState icon="alert" title="Not your location’s order" message="You can only process orders for your own location." action={{ label: 'Back to orders', onPress: () => navigation.popTo('StaffHome') }} />
-      </StaffFrame>
+      <StaffPage title="Complete delivery" tab={false} bell={false}>
+        <EmptyState icon="alert" title="Not your branch’s order" message="You can only hand over orders for your own branch." action={{ label: 'Back to orders', onPress: toOrders }} />
+      </StaffPage>
     );
   }
   const customer = findCustomer(state, order.customerId);
   const isHome = order.serviceMode === 'HOME_PICKUP';
+  const name = displayName(customer?.name ?? 'the customer', canSeeContact(me.staff, order));
+  const issue = openIssueFor(state, order.id);
 
   if (done || order.status === 'DELIVERED') {
     return (
-      <StaffFrame title="Delivered" back={false}>
-        <View style={styles.done}>
-          <Pop from={0.5}>
-            <View style={styles.doneIcon}>
-              <Icon name="check" size={38} color="#FFFFFF" strokeWidth={2.6} />
-            </View>
-          </Pop>
-          <Rise delay={120}>
-            <Text style={styles.doneTitle}>{order.id} {isHome ? 'delivered' : 'collected'}</Text>
-            <Text style={[text.body, styles.center]}>All {plural(order.pieces, 'piece')} handed to {customer?.name ?? 'the customer'}. The order is complete.</Text>
-          </Rise>
-          <View style={styles.buttons}>
-            <Button label="Scan next" icon="grid" onPress={() => navigation.replace('StaffScan', { intent: 'ANY' })} />
-            <Button label="Back to orders" variant="outline" onPress={() => navigation.popTo('StaffHome')} />
-          </View>
-        </View>
-      </StaffFrame>
+      <StaffPage title={isHome ? 'Delivered' : 'Collected'} tab={false} bell={false}>
+        <Outcome ok title={`${order.id} ${isHome ? 'delivered' : 'collected'}`} message={`All ${plural(order.pieces, 'piece')} handed to ${name}. The order is complete.`}>
+          <Button label="Scan next" icon="scan" onPress={scanNext} />
+          <Button label="Back to orders" variant="outline" onPress={toOrders} />
+        </Outcome>
+      </StaffPage>
     );
   }
 
   const confirm = async () => {
+    if (busy) return;
     setBusy(true);
     setError(null);
     try {
@@ -67,66 +63,85 @@ export function StaffDeliveryScreen({ navigation, route }: ScreenProps<'StaffDel
       setDone(true);
     } catch (e) {
       haptic.error();
-      setError(e instanceof Error ? e.message : 'Couldn’t complete the delivery.');
+      setError(e instanceof Error ? e.message : 'Couldn’t complete the delivery. Try again.');
     } finally {
       setBusy(false);
     }
   };
 
+  const verified = !!order.verification;
+
   return (
-    <StaffFrame
+    <StaffPage
       title="Complete delivery"
-      subtitle={`${order.id} · ${customer?.name ?? ''}`}
+      subtitle={`${order.id} · ${MODE_COPY[order.serviceMode].label}`}
+      tab={false}
+      bell={false}
       footer={
-        <View>
+        <>
           {error ? (
-            <Text style={styles.error} accessibilityRole="alert">
+            <Text style={shared.error} accessibilityRole="alert">
               {error}
             </Text>
           ) : null}
-          <Button label={isHome ? 'Confirm delivered' : 'Confirm collected'} icon="check" onPress={confirm} loading={busy} />
-        </View>
+          <Button
+            label={isHome ? 'Confirm delivered' : 'Confirm collected'}
+            icon="check"
+            variant="dark"
+            style={{ height: 46, borderRadius: 23 }}
+            onPress={confirm}
+            loading={busy}
+            disabled={!verified || !!issue || busy}
+          />
+        </>
       }
     >
       <Rise>
-        <Card style={styles.verified}>
-          <View style={styles.vIcon}>
-            <Icon name="shield" size={22} color="#FFFFFF" />
-          </View>
-          <View style={styles.flex}>
-            <Text style={text.h2}>Customer verified their clothes</Text>
-            <Text style={text.body}>
-              {order.verification ? `${customer?.name ?? 'The customer'} confirmed all ${order.verification.piecesConfirmed} pieces · ${when(order.verification.confirmedAt)}` : 'Waiting for the customer’s confirmation.'}
-            </Text>
-          </View>
-        </Card>
+        {verified ? (
+          <Notice tone="ok" icon="shield" title="Customer checked their clothes">
+            {name} confirmed all {order.verification!.piecesConfirmed} pieces · {when(order.verification!.confirmedAt)}
+          </Notice>
+        ) : (
+          <Notice tone="warn" icon="clock" title="Waiting for the customer">
+            Ask {name} to check the clothes and tap “All here” in their app. Then confirm.
+          </Notice>
+        )}
       </Rise>
-      <Card style={styles.card}>
-        <Text style={[text.h2, { marginBottom: space.sm }]}>Handing over · {plural(order.pieces, 'piece')}</Text>
-        {order.lines.map((l) => (
-          <View key={l.itemId} style={styles.line}>
-            <GarmentIcon name={l.icon} size={34} />
-            <Text style={[text.bodyStrong, styles.flex]}>{l.name}</Text>
-            <Text style={styles.qty}>× {l.qty}</Text>
+      {issue ? (
+        <Rise delay={40}>
+          <Notice tone="danger" icon="alert" title="An issue is open on this order">
+            {issue.note || 'Resolve it from the order before handing over.'}
+          </Notice>
+        </Rise>
+      ) : null}
+
+      <Rise delay={80}>
+        <Panel>
+          <View style={styles.headRow}>
+            <Text style={shared.h2}>Handing over</Text>
+            <Text style={styles.pieces}>{plural(order.pieces, 'piece')}</Text>
           </View>
-        ))}
-      </Card>
-      <Text style={[text.caption, { marginTop: space.md }]}>Confirming uses the customer’s delivery QR. It can’t be used again.</Text>
-    </StaffFrame>
+          {order.lines.map((l) => (
+            <View key={l.itemId} style={styles.line}>
+              <View style={styles.art}>
+                <GarmentIcon name={l.icon} size={28} />
+              </View>
+              <Text style={[shared.strong, styles.flex]}>{l.name}</Text>
+              <Text style={styles.qty}>× {l.qty}</Text>
+            </View>
+          ))}
+        </Panel>
+      </Rise>
+      <Text style={shared.caption}>Confirming uses up the customer’s delivery QR. It can’t be used again.</Text>
+    </StaffPage>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  center: { textAlign: 'center' },
-  verified: { flexDirection: 'row', gap: space.md, padding: space.lg, marginTop: space.sm, backgroundColor: colors.successTint },
-  vIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#0D7A21', alignItems: 'center', justifyContent: 'center' },
-  card: { padding: space.lg, marginTop: space.md, borderWidth: 1, borderColor: app.hairline, borderRadius: shape.card },
+  flex: { flex: 1, minWidth: 0 },
+  headRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: space.sm },
+  pieces: { fontFamily: fonts.bold, fontSize: 15, color: colors.orange },
   line: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.xs },
-  qty: { ...text.amount, fontSize: 16 },
-  error: { ...text.caption, color: colors.danger, marginBottom: space.sm },
-  done: { alignItems: 'center', paddingTop: space.xxxl, gap: space.md, maxWidth: 520, alignSelf: 'center', width: '100%' },
-  doneIcon: { width: 88, height: 88, borderRadius: 44, backgroundColor: '#12AD2B', alignItems: 'center', justifyContent: 'center' },
-  doneTitle: { ...text.display, textAlign: 'center', marginBottom: space.xs },
-  buttons: { width: '100%', gap: space.sm, marginTop: space.xl },
+  art: { width: 40, height: 40, borderRadius: 13, backgroundColor: BEIGE, alignItems: 'center', justifyContent: 'center' },
+  qty: { fontFamily: fonts.bold, fontSize: 16, color: colors.ink, fontVariant: ['tabular-nums'] },
 });

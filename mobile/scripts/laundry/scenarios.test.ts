@@ -37,6 +37,10 @@ function rejects(fn: () => unknown, code: string) {
 }
 
 const payload = (qrId: string | undefined) => qrPayload(findQr(s, qrId)!);
+/** Sorting → washing → drying → ironing → quality check, as the wash floor does it. */
+function washThrough(orderId: string, staffId: string) {
+  for (const to of ['WASHING', 'DRYING', 'IRONING', 'QUALITY_CHECK'] as const) ops.advanceStage(s, ctx(), { orderId, staffId, to });
+}
 const all = (orderId: string) => Object.fromEntries(findOrder(s, orderId)!.lines.map((l) => [l.itemId, l.qty]));
 
 beforeEach(() => {
@@ -54,9 +58,9 @@ describe('seed data', () => {
       if (o.payment.status === 'COMPLETED' || o.payment.status === 'REVERSED') assert.equal(paid.length, 1);
       if (o.receiptId) assert.ok(['ACCEPTED', 'PICKUP_CONFIRMED', 'PROCESSING', 'READY_FOR_DELIVERY', 'AWAITING_CUSTOMER_VERIFICATION', 'DELIVERED'].includes(o.status));
     }
-    assert.equal(s.locations.find((l) => l.id === 'loc-lpu')!.pincode, '654321');
-    assert.equal(s.locations.find((l) => l.id === 'loc-nit')!.pincode, '123456');
-    assert.equal(s.locations.find((l) => l.id === 'loc-outside')!.pincode, '000000');
+    assert.equal(s.locations.find((l) => l.id === 'loc-lpu')!.pincode, '144411');
+    assert.equal(s.locations.find((l) => l.id === 'loc-nit')!.pincode, '144011');
+    assert.equal(s.locations.find((l) => l.id === 'loc-outside')!.pincode, '144003');
   });
 
   it('takes printed-list prices from price-menu.json', () => {
@@ -98,6 +102,7 @@ describe('Scenario 1 — LPU office order, end to end', () => {
     assert.equal(walletBalance(s, cust), start - o.total, 'acceptance never debits again');
 
     ops.startProcessing(s, ctx(), { orderId: o.id, staffId: LPU });
+    washThrough(o.id, LPU);
     ops.markReady(s, ctx(), { orderId: o.id, staffId: LPU });
     assert.equal(findOrder(s, o.id)!.status, 'READY_FOR_DELIVERY');
 
@@ -142,6 +147,7 @@ describe('Scenario 2 — NIT office order and location isolation', () => {
     ops.acceptOrder(s, ctx(), { orderId: o.id, staffId: NIT, qrId: o.intakeQrId });
     ops.startProcessing(s, ctx(), { orderId: o.id, staffId: NIT });
     rejects(() => ops.markReady(s, ctx(), { orderId: o.id, staffId: LPU }), 'WRONG_LOCATION');
+    washThrough(o.id, NIT);
     ops.markReady(s, ctx(), { orderId: o.id, staffId: NIT });
     ops.handOver(s, ctx(), { orderId: o.id, staffId: NIT });
     ops.confirmClothes(s, ctx(), { orderId: o.id, customerId: cust, received: all(o.id) });
@@ -170,6 +176,7 @@ describe('Scenario 3 — Outside Campus home pickup', () => {
     ops.acceptOrder(s, ctx(), { orderId: o.id, staffId: OUT, qrId: o.intakeQrId });
     assert.equal(findOrder(s, o.id)!.status, 'PICKUP_CONFIRMED');
     ops.startProcessing(s, ctx(), { orderId: o.id, staffId: OUT });
+    washThrough(o.id, OUT);
     ops.markReady(s, ctx(), { orderId: o.id, staffId: OUT });
     ops.confirmClothes(s, ctx(), { orderId: o.id, customerId: cust, received: all(o.id) });
     ops.confirmDelivery(s, ctx(), { orderId: o.id, staffId: OUT, qrId: findOrder(s, o.id)!.deliveryQrId! });
@@ -236,6 +243,7 @@ describe('Scenario 6 — delivery discrepancy', () => {
     ops.payOrder(s, ctx(), { orderId: o.id, customerId: cust });
     ops.acceptOrder(s, ctx(), { orderId: o.id, staffId: LPU, qrId: o.intakeQrId });
     ops.startProcessing(s, ctx(), { orderId: o.id, staffId: LPU });
+    washThrough(o.id, LPU);
     ops.markReady(s, ctx(), { orderId: o.id, staffId: LPU });
 
     const short = { ...all(o.id), 'ow-normal': 2 };
@@ -275,6 +283,7 @@ describe('Scenario 7 — QR reuse and purpose mix-ups', () => {
     assert.equal(JSON.stringify(findOrder(s, o.id)), before);
 
     ops.startProcessing(s, ctx(), { orderId: o.id, staffId: LPU });
+    washThrough(o.id, LPU);
     ops.markReady(s, ctx(), { orderId: o.id, staffId: LPU });
     // a submission QR can't complete a delivery
     const asDelivery = verifyScan(s, ctx(), { raw: sub, staffId: LPU, intent: 'DELIVERY' });
@@ -311,17 +320,17 @@ describe('Scenario 7 — QR reuse and purpose mix-ups', () => {
 describe('Other rules', () => {
   it('a suspended staff member can’t sign in or act', () => {
     ops.setStaffStatus(s, { staffId: LPU, status: 'SUSPENDED' });
-    rejects(() => ops.staffSignIn(s, { phone: '9876543210', pincode: '654321' }), 'SUSPENDED');
+    rejects(() => ops.staffSignIn(s, { phone: '9876543210', pincode: '144411' }), 'SUSPENDED');
     const o = findOrder(s, 'WB-1010')!;
     rejects(() => ops.acceptOrder(s, ctx(), { orderId: o.id, staffId: LPU, qrId: o.intakeQrId }), 'SUSPENDED');
   });
 
   it('staff sign-in maps the PIN code to the right location', () => {
-    assert.equal(ops.staffSignIn(s, { phone: '+91 98765 43210', pincode: '654321' }).locationId, 'loc-lpu');
-    assert.equal(ops.staffSignIn(s, { phone: '9876543210', pincode: '123456' }).locationId, 'loc-nit');
-    assert.equal(ops.staffSignIn(s, { phone: '9876543210', pincode: '000000' }).locationId, 'loc-outside');
+    assert.equal(ops.staffSignIn(s, { phone: '+91 98765 43210', pincode: '144411' }).locationId, 'loc-lpu');
+    assert.equal(ops.staffSignIn(s, { phone: '9876543210', pincode: '144011' }).locationId, 'loc-nit');
+    assert.equal(ops.staffSignIn(s, { phone: '9876543210', pincode: '144003' }).locationId, 'loc-outside');
     rejects(() => ops.staffSignIn(s, { phone: '9876543210', pincode: '111111' }), 'NO_LOCATION');
-    rejects(() => ops.staffSignIn(s, { phone: '9000012345', pincode: '654321' }), 'NO_STAFF');
+    rejects(() => ops.staffSignIn(s, { phone: '9000012345', pincode: '144411' }), 'NO_STAFF');
   });
 
   it('an order can’t skip stages', () => {
@@ -344,5 +353,69 @@ describe('Other rules', () => {
     assert.equal(a, b);
     assert.equal(s.walletAccounts.filter((w) => w.customerId === a).length, 1);
     assert.equal(walletBalance(s, a), ops.WELCOME_CREDIT);
+  });
+});
+
+describe('Staff roles and the wash floor', () => {
+  const PROC = 'st-lpu-04';
+  const BOSS = 'st-lpu-03';
+
+  function acceptedLpuOrder() {
+    const cust = newCustomer('Stage Tester', '9000000777');
+    const o = ops.submitOrder(s, ctx(), { customerId: cust, locationId: 'loc-lpu', serviceMode: 'OFFICE_DROP_OFF', basket: [{ itemId: 'ow-normal', qty: 2 }] });
+    ops.payOrder(s, ctx(), { orderId: o.id, customerId: cust });
+    ops.acceptOrder(s, ctx(), { orderId: o.id, staffId: LPU, qrId: o.intakeQrId });
+    return { o: findOrder(s, o.id)!, cust };
+  }
+
+  it('processing goes through every stage in order, once', () => {
+    const { o } = acceptedLpuOrder();
+    ops.startProcessing(s, ctx(), { orderId: o.id, staffId: PROC });
+    assert.equal(findOrder(s, o.id)!.processingStage, 'SORTING');
+    rejects(() => ops.markReady(s, ctx(), { orderId: o.id, staffId: PROC }), 'STAGE_INCOMPLETE');
+    rejects(() => ops.advanceStage(s, ctx(), { orderId: o.id, staffId: PROC, to: 'DRYING' }), 'STALE_STAGE');
+    ops.advanceStage(s, ctx(), { orderId: o.id, staffId: PROC, to: 'WASHING' });
+    // a second tap on the same step (or a colleague doing it at the same time) is refused
+    rejects(() => ops.advanceStage(s, ctx(), { orderId: o.id, staffId: PROC, to: 'WASHING' }), 'STALE_STAGE');
+    for (const to of ['DRYING', 'IRONING', 'QUALITY_CHECK'] as const) ops.advanceStage(s, ctx(), { orderId: o.id, staffId: PROC, to });
+    rejects(() => ops.advanceStage(s, ctx(), { orderId: o.id, staffId: PROC, to: 'QUALITY_CHECK' }), 'STAGE_DONE');
+    ops.markReady(s, ctx(), { orderId: o.id, staffId: PROC });
+    assert.equal(findOrder(s, o.id)!.status, 'READY_FOR_DELIVERY');
+    assert.equal(s.activities.filter((a) => a.orderId === o.id && a.type === 'STAGE_CHANGED').length, 5);
+  });
+
+  it('processing staff can’t accept orders or hand them over', () => {
+    const o = findOrder(s, 'WB-1010')!;
+    rejects(() => ops.acceptOrder(s, ctx(), { orderId: o.id, staffId: PROC, qrId: o.intakeQrId }), 'NO_PERMISSION');
+  });
+
+  it('only a supervisor assigns, and an assigned order belongs to that person', () => {
+    const { o } = acceptedLpuOrder();
+    rejects(() => ops.assignOrder(s, ctx(), { orderId: o.id, supervisorId: LPU, staffId: PROC }), 'NO_PERMISSION');
+    rejects(() => ops.assignOrder(s, ctx(), { orderId: o.id, supervisorId: BOSS, staffId: NIT }), 'NO_STAFF');
+    ops.assignOrder(s, ctx(), { orderId: o.id, supervisorId: BOSS, staffId: PROC });
+    assert.equal(findOrder(s, o.id)!.assignedTo, PROC);
+    rejects(() => ops.assignOrder(s, ctx(), { orderId: o.id, supervisorId: BOSS, staffId: PROC }), 'ALREADY_ASSIGNED');
+    rejects(() => ops.startProcessing(s, ctx(), { orderId: o.id, staffId: LPU }), 'NOT_ASSIGNED');
+    ops.startProcessing(s, ctx(), { orderId: o.id, staffId: PROC });
+    ops.assignOrder(s, ctx(), { orderId: o.id, supervisorId: BOSS, staffId: null });
+    assert.equal(findOrder(s, o.id)!.assignedTo, undefined);
+    assert.ok(s.activities.some((a) => a.orderId === o.id && a.type === 'ASSIGNED'));
+  });
+
+  it('a staff-flagged issue blocks handover until an admin resolves it', () => {
+    const { o, cust } = acceptedLpuOrder();
+    ops.startProcessing(s, ctx(), { orderId: o.id, staffId: PROC });
+    rejects(() => ops.reportStaffIssue(s, ctx(), { orderId: o.id, staffId: PROC, kind: 'DAMAGED', note: '' }), 'NO_DETAIL');
+    const issue = ops.reportStaffIssue(s, ctx(), { orderId: o.id, staffId: PROC, kind: 'DAMAGED', note: 'Shirt collar torn on arrival' });
+    assert.equal(issue.source, 'staff');
+    rejects(() => ops.reportStaffIssue(s, ctx(), { orderId: o.id, staffId: PROC, kind: 'OTHER', note: 'Second report' }), 'ISSUE_OPEN');
+    washThrough(o.id, PROC);
+    ops.markReady(s, ctx(), { orderId: o.id, staffId: PROC });
+    rejects(() => ops.handOver(s, ctx(), { orderId: o.id, staffId: LPU }), 'ISSUE_OPEN');
+    rejects(() => ops.confirmClothes(s, ctx(), { orderId: o.id, customerId: cust, received: all(o.id) }), 'ISSUE_OPEN');
+    ops.resolveIssue(s, ctx(), { issueId: issue.id, resolution: 'Customer agreed, discount given', adminName: 'Admin' });
+    ops.handOver(s, ctx(), { orderId: o.id, staffId: LPU });
+    assert.equal(findOrder(s, o.id)!.status, 'AWAITING_CUSTOMER_VERIFICATION');
   });
 });

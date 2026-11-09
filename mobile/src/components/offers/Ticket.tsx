@@ -186,8 +186,8 @@ function Stamp({ size, color, top, word, date, style }: { size: number; color: s
 /** The printed-card drop shadow the Offers page gives its coupons. */
 export const ticketShadow =
   Platform.OS === 'web'
-    ? ({ filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.12)) drop-shadow(0 12px 16px rgba(0, 0, 0, 0.12))' } as object)
-    : { shadowColor: '#000000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 14, elevation: 10 };
+    ? ({ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08)) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.12)) drop-shadow(0 16px 24px rgba(0, 0, 0, 0.10))' } as object)
+    : { shadowColor: '#000000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 16, elevation: 8 };
 
 const styles = StyleSheet.create({
   stub: { position: 'absolute', left: 0, top: 0, bottom: 0 },

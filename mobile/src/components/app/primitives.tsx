@@ -233,7 +233,7 @@ export function Button({ label, onPress, variant = 'primary', icon, loading, dis
 
 const AVATAR_BG_COLORS = ['#FFF1E0', '#E0F2FE', '#E8F5E9', '#FEF3C7', '#F3E8FF', '#FCE7F3'];
 const AVATAR_TEXT_COLORS = ['#C2410C', '#0369A1', '#15803D', '#B45309', '#6D28D9', '#BE185D'];
-const DICEBEAR_BGS = ['fe8701', '0284c7', '10b981', '8b5cf6', 'f59e0b', 'ec4899'];
+const DICEBEAR_BGS = ['ffa742', '0284c7', '10b981', '8b5cf6', 'f59e0b', 'ec4899'];
 
 export function Avatar({
   name,
@@ -307,6 +307,7 @@ export function MenuRow({
   icon,
   label,
   detail,
+  badge,
   onPress,
   danger,
   divider,
@@ -314,6 +315,7 @@ export function MenuRow({
   icon: IconName;
   label: string;
   detail?: string;
+  badge?: number | string;
   onPress: () => void;
   danger?: boolean;
   divider?: boolean;
@@ -329,6 +331,11 @@ export function MenuRow({
           <Text style={[text.bodyStrong, danger && { color: colors.danger }]}>{label}</Text>
           {detail ? <Text style={text.caption}>{detail}</Text> : null}
         </View>
+        {badge !== undefined && badge !== null && badge !== 0 ? (
+          <View style={styles.menuBadge}>
+            <Text style={styles.menuBadgeText}>{badge}</Text>
+          </View>
+        ) : null}
         {!danger ? (
           <Icon name="chevronRight" size={18} color={colors.inkMuted} strokeWidth={2.2} />
         ) : null}
@@ -395,5 +402,22 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: app.hairline, marginVertical: space.md },
   menuDivider: { height: 1, backgroundColor: '#EFECE6' },
   menuRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md },
-  menuIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: app.cream, alignItems: 'center', justifyContent: 'center' },
+  menuIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: app.cream, borderWidth: 1, borderColor: '#E8E4DA', alignItems: 'center', justifyContent: 'center' },
+  menuBadge: {
+    minWidth: 22,
+    height: 22,
+    paddingHorizontal: 6,
+    borderRadius: 11,
+    backgroundColor: colors.cta,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 4,
+  },
+  menuBadgeText: {
+    fontFamily: fonts.bold,
+    fontSize: 12,
+    color: '#FFFFFF',
+    includeFontPadding: false,
+    textAlign: 'center',
+  },
 });

@@ -9,7 +9,7 @@
  * kept in the model for future partial refunds; today a rejection or cancellation reverses the payment at once and
  * the payment itself carries status REVERSED.
  */
-import type { LaundryOrder, OrderStatus, PaymentStatus, QrPurpose, ServiceMode } from '../types.ts';
+import type { LaundryOrder, OrderStatus, PaymentStatus, ProcessingStage, QrPurpose, ServiceMode } from '../types.ts';
 
 const ALLOWED: Partial<Record<OrderStatus, OrderStatus[]>> = {
   REQUEST_SUBMITTED: ['PAYMENT_PENDING', 'CANCELLED'],
@@ -156,4 +156,57 @@ export const GROUP_COPY: Record<StatusGroup, string> = {
   delivered: 'Delivered',
   rejected: 'Rejected',
   cancelled: 'Cancelled',
+};
+
+/* ───────────── Wash-floor stages (inside PROCESSING) ───────────── */
+
+/** The order the wash floor works in. Each step can only follow the one before it. */
+export const PROCESSING_STAGES: ProcessingStage[] = ['SORTING', 'WASHING', 'DRYING', 'IRONING', 'QUALITY_CHECK'];
+
+export const STAGE_COPY: Record<ProcessingStage, { label: string; action: string }> = {
+  SORTING: { label: 'Sorting', action: 'Start sorting' },
+  WASHING: { label: 'Washing', action: 'Start washing' },
+  DRYING: { label: 'Drying', action: 'Start drying' },
+  IRONING: { label: 'Ironing', action: 'Start ironing' },
+  QUALITY_CHECK: { label: 'Quality check', action: 'Start quality check' },
+};
+
+/** The stage after this one, or null when quality check is done and the order can be marked ready. */
+export function nextStage(stage: ProcessingStage | undefined): ProcessingStage | null {
+  if (!stage) return PROCESSING_STAGES[0];
+  const i = PROCESSING_STAGES.indexOf(stage);
+  return i >= 0 && i < PROCESSING_STAGES.length - 1 ? PROCESSING_STAGES[i + 1] : null;
+}
+
+/** Staff-side operational step for any order: the customer status plus, while processing, the wash-floor stage. */
+export type OperationalStep = 'RECEIVED' | ProcessingStage | 'READY_FOR_DISPATCH' | 'DISPATCHED' | 'DELIVERED';
+
+export function operationalStep(order: Pick<LaundryOrder, 'status' | 'processingStage' | 'serviceMode'>): OperationalStep | null {
+  switch (order.status) {
+    case 'ACCEPTED':
+    case 'PICKUP_CONFIRMED':
+      return 'RECEIVED';
+    case 'PROCESSING':
+      return order.processingStage ?? 'WASHING';
+    case 'READY_FOR_DELIVERY':
+      return order.serviceMode === 'HOME_PICKUP' ? 'DISPATCHED' : 'READY_FOR_DISPATCH';
+    case 'AWAITING_CUSTOMER_VERIFICATION':
+      return order.serviceMode === 'HOME_PICKUP' ? 'DISPATCHED' : 'READY_FOR_DISPATCH';
+    case 'DELIVERED':
+      return 'DELIVERED';
+    default:
+      return null;
+  }
+}
+
+export const OPERATIONAL_COPY: Record<OperationalStep, string> = {
+  RECEIVED: 'Received',
+  SORTING: 'Sorting',
+  WASHING: 'Washing',
+  DRYING: 'Drying',
+  IRONING: 'Ironing',
+  QUALITY_CHECK: 'Quality check',
+  READY_FOR_DISPATCH: 'Ready for dispatch',
+  DISPATCHED: 'Dispatched',
+  DELIVERED: 'Delivered',
 };

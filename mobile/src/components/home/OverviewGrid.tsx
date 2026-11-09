@@ -361,7 +361,7 @@ const STAGES = ['collecting', 'washing', 'drying', 'ironing', 'packing', 'delive
 const STAGE_ICON: Record<string, IconName> = {
   collecting: 'truck',
   washing: 'droplet',
-  drying: 'sparkle',
+  drying: 'sun',
   ironing: 'shirt',
   packing: 'package',
   delivery: 'truck',

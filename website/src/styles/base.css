@@ -1,0 +1,451 @@
+/*
+ * Tokens and shared pieces. The palette is the mobile app's own (src/theme/index.ts in the app): a warm
+ * ivory and stone environment (the app's canvas under its white sheets), navy ink, and the app's soft
+ * brand shades (blue, orange, green, red, gold) with their tints for surfaces and objects.
+ */
+:root {
+  --ivory: #fbf9f4;
+  --paper: #f5f1e8;
+  --stone: #eae6db;
+  --white: #ffffff;
+  --subtle: #f4f5f7;
+  --ink: #0a1c3e;
+  --ink-soft: #5b6475;
+  --mute: #667085;
+  --line: rgba(10, 28, 62, 0.1);
+  --navy: #013e86;
+  --navy-deep: #012a5c;
+
+  --blue: #54b6f8;
+  --blue-tint: #ebf6fe;
+  --orange: #ffa742;
+  --orange-tint: #fff4e8;
+  --green: #62d487;
+  --green-tint: #ebf9f0;
+  --red: #f87c87;
+  --red-tint: #fef0f2;
+  --gold: #fed843;
+  --gold-tint: #fffbea;
+  --success: #12ad2b;
+
+  --display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --text: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --gutter: clamp(20px, 4vw, 64px);
+  --max: 1360px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --r-card: 26px;
+  --r-tile: 20px;
+  --shadow: 0 30px 60px -30px rgba(10, 28, 62, 0.35), 0 12px 24px -16px rgba(10, 28, 62, 0.18);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  background: var(--ivory);
+  -webkit-text-size-adjust: 100%;
+  overflow-x: clip; /* clip, not hidden: hidden on both would make body a scroll box and break every sticky stage */
+  width: 100%;
+}
+html.is-locked,
+html.is-locked body {
+  overflow: hidden;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+body {
+  margin: 0;
+  background: var(--ivory);
+  color: var(--ink);
+  font-family: var(--text);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip; /* clip, not hidden: hidden on both would make body a scroll box and break every sticky stage */
+  width: 100%;
+  max-width: 100%;
+}
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+ol,
+ul {
+  margin: 0;
+  padding: 0;
+}
+ol,
+ul {
+  list-style: none;
+}
+img,
+video,
+svg {
+  display: block;
+  max-width: 100%;
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+a {
+  color: inherit;
+}
+:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+main:focus {
+  outline: none;
+}
+::selection {
+  background: var(--orange);
+  color: var(--white);
+}
+
+.sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip {
+  position: fixed;
+  z-index: 200;
+  top: 12px;
+  left: 12px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--white);
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform 0.3s var(--ease);
+}
+.skip:focus {
+  transform: none;
+}
+
+/* ───────────── type ───────────── */
+
+.line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.line__in {
+  display: block;
+  will-change: transform;
+}
+.icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+/* ───────────── store badges ───────────── */
+
+.store {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 22px 0 16px;
+  border-radius: 16px;
+  text-decoration: none;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+.store:hover {
+  transform: translateY(-2px);
+}
+.store--ink {
+  background: var(--ink);
+  color: var(--white);
+  box-shadow: 0 16px 30px -18px rgba(10, 28, 62, 0.7);
+}
+.store--light {
+  background: var(--white);
+  color: var(--ink);
+}
+.store__glyph {
+  width: 24px;
+  height: 24px;
+}
+.store__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.store__kicker {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.store__name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+
+/* ───────────── phone ───────────── */
+
+.phone {
+  --pw: 280px;
+  position: relative;
+  width: var(--pw);
+  /* a little taller than the screenshots so the status bar and the home bar each get their own room */
+  aspect-ratio: 390 / 886;
+  padding: calc(var(--pw) * 0.032);
+  border-radius: calc(var(--pw) * 0.15);
+  background: #0b1220;
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.12), var(--shadow);
+  flex: none;
+}
+.phone__screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: calc(var(--pw) * 0.118);
+  background: #fbf9f5;
+  isolation: isolate;
+  transform: translateZ(0);
+}
+.phone {
+  /* status bar height: reaches down to the bottom of the island */
+  --sb: calc(var(--pw) * 0.137);
+}
+.phone__screen img {
+  position: absolute;
+  left: 0;
+  /* the app sits between the status bar and the home bar, whole and unstretched */
+  top: calc(var(--sb) * 0.9);
+  width: 100%;
+  height: auto;
+}
+.phone__home {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: calc(var(--pw) * 0.02);
+  width: 34%;
+  height: max(3px, calc(var(--pw) * 0.013));
+  border-radius: 999px;
+  background: #0a1c3e;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.phone__status {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--sb);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 calc(var(--pw) * 0.085) 0 calc(var(--pw) * 0.1);
+  color: #0a1c3e;
+  background: #fbf9f5;
+  border-radius: calc(var(--pw) * 0.118) calc(var(--pw) * 0.118) 0 0;
+  pointer-events: none;
+}
+.phone__time {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--pw) * 0.047);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.phone__icons {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pw) * 0.014);
+}
+.phone__icons svg {
+  height: calc(var(--pw) * 0.034);
+  width: auto;
+  fill: currentColor;
+}
+.phone__island {
+  position: absolute;
+  top: calc(var(--pw) * 0.058);
+  left: 50%;
+  width: 30%;
+  height: calc(var(--pw) * 0.085);
+  border-radius: 999px;
+  background: #0b1220;
+  transform: translateX(-50%);
+  z-index: 7;
+}
+.phone--mini {
+  --pw: 150px;
+}
+
+/* ───────────── ticket (the app's coupon) ───────────── */
+
+.ticket {
+  --paper: #ffa742;
+  --stub: #f5962a;
+  position: relative;
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  width: 400px;
+  height: 224px;
+  flex: none;
+  color: var(--white);
+  filter: drop-shadow(0 18px 24px rgba(10, 28, 62, 0.16));
+  -webkit-mask: radial-gradient(circle 13px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 13px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 13px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 13px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+}
+.ticket__stub {
+  display: grid;
+  place-items: center;
+  border-radius: 20px 0 0 20px;
+  background: var(--stub);
+  border-right: 2px dashed color-mix(in srgb, currentColor 55%, transparent);
+}
+.ticket__stub span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.4em;
+}
+.ticket__body {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr auto;
+  gap: 8px 14px;
+  padding: 20px 22px 18px 20px;
+  border-radius: 0 20px 20px 0;
+  background: var(--paper);
+  overflow: hidden;
+}
+.ticket__value {
+  display: flex;
+  flex-direction: column;
+}
+.ticket__big {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 66px;
+  line-height: 0.92;
+  letter-spacing: -0.06em;
+}
+.ticket__small {
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+}
+.ticket__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 116px;
+  max-width: 130px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+}
+.ticket__no {
+  font-weight: 700;
+}
+.ticket__title {
+  font-weight: 700;
+}
+.ticket__rule {
+  height: 1px;
+  margin: 4px 0;
+  background: currentColor;
+  opacity: 0.5;
+}
+.ticket__foot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.ticket__bars {
+  display: flex;
+  gap: 2px;
+  height: 26px;
+}
+.ticket__bars i {
+  display: block;
+  background: currentColor;
+}
+.ticket__code {
+  letter-spacing: 0.24em;
+  margin-right: auto;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+.ticket__cta {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ticket__desc {
+  position: absolute;
+  inset: auto 22px 54px auto;
+  display: none;
+}
+.ticket--expired .ticket__body,
+.ticket--expired .ticket__stub {
+  filter: saturate(0.55);
+}
+.ticket__stamp {
+  position: absolute;
+  top: 44px;
+  right: 54px;
+  display: grid;
+  place-items: center;
+  width: 98px;
+  height: 98px;
+  border: 2px solid #b3261e;
+  border-radius: 50%;
+  color: #b3261e;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-align: center;
+  line-height: 1.6;
+  transform: rotate(-14deg);
+  opacity: 0.85;
+}
+.ticket__stamp b {
+  font-size: 15px;
+  letter-spacing: 0.1em;
+}

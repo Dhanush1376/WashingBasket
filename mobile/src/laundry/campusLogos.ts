@@ -14,7 +14,7 @@ export function getCampusLogo(loc?: { id?: string; code?: string; name?: string 
   if (id === 'loc-lpu' || code === 'lpu' || name.includes('lovely') || name.includes('lpu')) {
     return CAMPUS_LOGOS.lpu;
   }
-  if (id === 'loc-nit' || code === 'nitj' || code === 'nit' || name.includes('nit') || name.includes('jalandhar')) {
+  if (id === 'loc-nit' || code === 'nitj' || code === 'nit' || name.includes('nit')) {
     return CAMPUS_LOGOS.nitj;
   }
   return null;

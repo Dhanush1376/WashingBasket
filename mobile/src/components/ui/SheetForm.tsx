@@ -5,6 +5,7 @@ import Animated, { interpolateColor, useAnimatedStyle, useSharedValue, withTimin
 import { Icon, type IconName } from '../app/Icon';
 import { Rise } from '../app/motion';
 import { colors, fonts, space, text } from '../../theme';
+import './SheetForm.css'; // keeps autofilled fields in our own colours on the web
 
 /**
  * The parts every drawer form is built from (the wallet's Top Up, the profile drawers, sign-in):
@@ -12,7 +13,7 @@ import { colors, fonts, space, text } from '../../theme';
  */
 export const FORM = { field: '#F4F2EB', edge: '#C4BEAD', chip: '#EFECE6' } as const;
 const webCursor = Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null;
-const noOutline = Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null;
+const noOutline = Platform.OS === 'web' ? ({ outlineStyle: 'none', outline: 'none', backgroundColor: 'transparent' } as object) : null;
 
 type PillFieldProps = Omit<TextInputProps, 'style'> & {
   /** Sits at the end, after a hairline, saying what the field is for. */
@@ -22,13 +23,18 @@ type PillFieldProps = Omit<TextInputProps, 'style'> & {
   /** Sits at the start, before a hairline, e.g. a country code. */
   leading?: React.ReactNode;
   invalid?: boolean;
+  /** Working on it: the field keeps focus and the keyboard but ignores typing. */
+  busy?: boolean;
   /** Shown but fixed: muted and not editable, e.g. the sign-in number. */
   locked?: boolean;
   inputStyle?: TextInputProps['style'];
 };
 
+/** Controlled fields snap back to their value, so ignoring a change discards the keystroke. */
+const ignoreTyping = () => {};
+
 export const PillField = forwardRef<TextInputInstance, PillFieldProps>(function PillField(
-  { icon, trailing, leading, invalid, locked, inputStyle, onFocus, onBlur, placeholder, ...input },
+  { icon, trailing, leading, invalid, locked, busy, inputStyle, onFocus, onBlur, placeholder, ...input },
   ref,
 ) {
   const [focused, setFocused] = useState(false);
@@ -44,7 +50,13 @@ export const PillField = forwardRef<TextInputInstance, PillFieldProps>(function 
         ref={ref}
         {...input}
         placeholder={placeholder}
+        // Next / Done never blur the field: blurring puts the keyboard away just before the
+        // next field or step would take it
+        submitBehavior={input.submitBehavior ?? 'submit'}
         editable={locked ? false : input.editable}
+        // busy: keep focus (and the keyboard) but ignore typing until the request finishes;
+        // editable={false} would make iOS put the keyboard away
+        onChangeText={busy ? ignoreTyping : input.onChangeText}
         onFocus={(e) => {
           setFocused(true);
           onFocus?.(e);
@@ -173,14 +185,17 @@ export const OtpCells = forwardRef<
       <TextInput
         ref={ref}
         value={value}
-        onChangeText={(t) => onChange(t.replace(/\D/g, '').slice(0, length))}
+        // while disabled (checking the code) typing is ignored but the field keeps focus, so the
+        // keyboard stays up instead of dropping and coming back
+        onChangeText={(t) => {
+          if (!disabled) onChange(t.replace(/\D/g, '').slice(0, length));
+        }}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         keyboardType="number-pad"
         textContentType="oneTimeCode"
         autoComplete="sms-otp"
         maxLength={length}
-        editable={!disabled}
         caretHidden
         accessibilityLabel={`${length}-digit code`}
         style={[StyleSheet.absoluteFill, formStyles.otpHidden, noOutline]}
@@ -200,12 +215,14 @@ export const formStyles = StyleSheet.create({
     paddingRight: space.lg,
     borderWidth: 1.25,
     borderColor: FORM.edge,
+    // keeps whatever is inside (e.g. a browser's autofill fill) within the rounded ends
+    overflow: 'hidden',
   },
-  fieldFocus: { backgroundColor: '#FFFFFF', borderColor: colors.ink },
+  fieldFocus: { backgroundColor: FORM.field, borderColor: colors.ink },
   fieldError: { borderColor: colors.danger },
   fieldLocked: { backgroundColor: '#EFEDE8', borderColor: '#E6E4DE' },
   inputLocked: { color: colors.inkSoft },
-  input: { flex: 1, minWidth: 0, height: '100%', fontFamily: fonts.medium, fontSize: 16, color: colors.ink },
+  input: { flex: 1, minWidth: 0, height: '100%', fontFamily: fonts.medium, fontSize: 16, color: colors.ink, backgroundColor: 'transparent' },
   divider: { width: 1, height: 26, backgroundColor: colors.lineStrong, marginHorizontal: space.md },
   iconBadge: {
     width: 26,
@@ -249,6 +266,7 @@ export const formStyles = StyleSheet.create({
     fontSize: 15,
     color: colors.ink,
     textAlignVertical: 'top',
+    backgroundColor: 'transparent',
   },
 
   chips: { flexDirection: 'row', gap: 6, marginTop: space.lg },

@@ -12,6 +12,9 @@ import { mockRelay } from './mock-relay.ts';
  */
 export default defineConfig({
   plugins: [react(), mockRelay()],
+  // Compile everything, including the shared files under ../mobile, with the portal's own tsconfig. Otherwise
+  // Vite picks up mobile/tsconfig.json for those files, whose `extends: "expo/tsconfig.base"` it can't resolve.
+  tsconfig: './tsconfig.json',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

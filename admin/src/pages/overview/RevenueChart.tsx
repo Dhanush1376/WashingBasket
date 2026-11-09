@@ -72,8 +72,8 @@ export function RevenueChart({ days }: { days: Day[] }) {
                   cx={p.x}
                   cy={p.y}
                   r={isActive ? 6 : isToday ? 5 : 3.5}
-                  fill={isToday ? '#FE8701' : isActive ? '#0A1C3E' : '#FFFFFF'}
-                  stroke={isToday ? '#FE8701' : '#0A1C3E'}
+                  fill={isToday ? '#FFA742' : isActive ? '#0A1C3E' : '#FFFFFF'}
+                  stroke={isToday ? '#FFA742' : '#0A1C3E'}
                   strokeWidth={isActive || isToday ? 2.5 : 1.8}
                 />
               );

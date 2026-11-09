@@ -57,7 +57,7 @@ export function RootErrorPage() {
           <img src="/logo.png" alt="WashingBasket" width={40} height={40} className="root-error-logo" />
           <div className="root-error-brand-text">
             <span className="root-error-wordmark">
-              <span style={{ color: '#FE8701' }}>W</span>ashing<span style={{ color: '#FE8701' }}>B</span>asket
+              <span style={{ color: '#FFA742' }}>W</span>ashing<span style={{ color: '#FFA742' }}>B</span>asket
             </span>
             <span className="root-error-portal-badge">Admin Portal</span>
           </div>

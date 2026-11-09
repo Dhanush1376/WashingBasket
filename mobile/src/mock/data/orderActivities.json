@@ -1,6 +1,6 @@
 [
   {
-    "id": "act-107",
+    "id": "act-130",
     "orderId": "WB-1010",
     "at": "2026-11-05T03:41:00.000Z",
     "type": "STATUS_CHANGED",
@@ -15,7 +15,7 @@
     "to": "AWAITING_STAFF_ACCEPTANCE"
   },
   {
-    "id": "act-106",
+    "id": "act-129",
     "orderId": "WB-1010",
     "at": "2026-11-05T03:41:00.000Z",
     "type": "STATUS_CHANGED",
@@ -30,7 +30,7 @@
     "to": "PAYMENT_COMPLETED"
   },
   {
-    "id": "act-105",
+    "id": "act-128",
     "orderId": "WB-1010",
     "at": "2026-11-05T03:41:00.000Z",
     "type": "QR_UNLOCKED",
@@ -43,7 +43,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-104",
+    "id": "act-127",
     "orderId": "WB-1010",
     "at": "2026-11-05T03:41:00.000Z",
     "type": "PAYMENT_COMPLETED",
@@ -56,7 +56,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-103",
+    "id": "act-126",
     "orderId": "WB-1010",
     "at": "2026-11-05T03:40:00.000Z",
     "type": "STATUS_CHANGED",
@@ -71,7 +71,7 @@
     "to": "PAYMENT_PENDING"
   },
   {
-    "id": "act-102",
+    "id": "act-125",
     "orderId": "WB-1010",
     "at": "2026-11-05T03:40:00.000Z",
     "type": "QR_ISSUED",
@@ -84,7 +84,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-101",
+    "id": "act-124",
     "orderId": "WB-1010",
     "at": "2026-11-05T03:40:00.000Z",
     "type": "STATUS_CHANGED",
@@ -98,7 +98,7 @@
     "to": "REQUEST_SUBMITTED"
   },
   {
-    "id": "act-100",
+    "id": "act-123",
     "orderId": "WB-1009",
     "at": "2026-11-05T03:26:00.000Z",
     "type": "STATUS_CHANGED",
@@ -113,7 +113,7 @@
     "to": "AWAITING_STAFF_ACCEPTANCE"
   },
   {
-    "id": "act-99",
+    "id": "act-122",
     "orderId": "WB-1009",
     "at": "2026-11-05T03:26:00.000Z",
     "type": "STATUS_CHANGED",
@@ -128,7 +128,7 @@
     "to": "PAYMENT_COMPLETED"
   },
   {
-    "id": "act-98",
+    "id": "act-121",
     "orderId": "WB-1009",
     "at": "2026-11-05T03:26:00.000Z",
     "type": "QR_UNLOCKED",
@@ -141,7 +141,7 @@
     "locationId": "loc-nit"
   },
   {
-    "id": "act-97",
+    "id": "act-120",
     "orderId": "WB-1009",
     "at": "2026-11-05T03:26:00.000Z",
     "type": "PAYMENT_COMPLETED",
@@ -154,7 +154,7 @@
     "locationId": "loc-nit"
   },
   {
-    "id": "act-96",
+    "id": "act-119",
     "orderId": "WB-1009",
     "at": "2026-11-05T03:25:00.000Z",
     "type": "STATUS_CHANGED",
@@ -169,7 +169,7 @@
     "to": "PAYMENT_PENDING"
   },
   {
-    "id": "act-95",
+    "id": "act-118",
     "orderId": "WB-1009",
     "at": "2026-11-05T03:25:00.000Z",
     "type": "QR_ISSUED",
@@ -182,7 +182,7 @@
     "locationId": "loc-nit"
   },
   {
-    "id": "act-94",
+    "id": "act-117",
     "orderId": "WB-1009",
     "at": "2026-11-05T03:25:00.000Z",
     "type": "STATUS_CHANGED",
@@ -196,7 +196,7 @@
     "to": "REQUEST_SUBMITTED"
   },
   {
-    "id": "act-93",
+    "id": "act-116",
     "orderId": "WB-1008",
     "at": "2026-11-05T03:01:00.000Z",
     "type": "PAYMENT_FAILED",
@@ -209,7 +209,7 @@
     "locationId": "loc-outside"
   },
   {
-    "id": "act-92",
+    "id": "act-115",
     "orderId": "WB-1008",
     "at": "2026-11-05T03:00:00.000Z",
     "type": "STATUS_CHANGED",
@@ -224,7 +224,7 @@
     "to": "PAYMENT_PENDING"
   },
   {
-    "id": "act-91",
+    "id": "act-114",
     "orderId": "WB-1008",
     "at": "2026-11-05T03:00:00.000Z",
     "type": "QR_ISSUED",
@@ -237,7 +237,7 @@
     "locationId": "loc-outside"
   },
   {
-    "id": "act-90",
+    "id": "act-113",
     "orderId": "WB-1008",
     "at": "2026-11-05T03:00:00.000Z",
     "type": "STATUS_CHANGED",
@@ -251,7 +251,7 @@
     "to": "REQUEST_SUBMITTED"
   },
   {
-    "id": "act-89",
+    "id": "act-112",
     "orderId": "WB-1007",
     "at": "2026-11-04T15:31:00.000Z",
     "type": "STATUS_CHANGED",
@@ -266,7 +266,7 @@
     "to": "AWAITING_STAFF_ACCEPTANCE"
   },
   {
-    "id": "act-88",
+    "id": "act-111",
     "orderId": "WB-1007",
     "at": "2026-11-04T15:31:00.000Z",
     "type": "STATUS_CHANGED",
@@ -281,7 +281,7 @@
     "to": "PAYMENT_COMPLETED"
   },
   {
-    "id": "act-87",
+    "id": "act-110",
     "orderId": "WB-1007",
     "at": "2026-11-04T15:31:00.000Z",
     "type": "QR_UNLOCKED",
@@ -294,7 +294,7 @@
     "locationId": "loc-outside"
   },
   {
-    "id": "act-86",
+    "id": "act-109",
     "orderId": "WB-1007",
     "at": "2026-11-04T15:31:00.000Z",
     "type": "PAYMENT_COMPLETED",
@@ -307,7 +307,7 @@
     "locationId": "loc-outside"
   },
   {
-    "id": "act-85",
+    "id": "act-108",
     "orderId": "WB-1007",
     "at": "2026-11-04T15:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -322,7 +322,7 @@
     "to": "PAYMENT_PENDING"
   },
   {
-    "id": "act-84",
+    "id": "act-107",
     "orderId": "WB-1007",
     "at": "2026-11-04T15:30:00.000Z",
     "type": "QR_ISSUED",
@@ -335,7 +335,7 @@
     "locationId": "loc-outside"
   },
   {
-    "id": "act-83",
+    "id": "act-106",
     "orderId": "WB-1007",
     "at": "2026-11-04T15:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -349,7 +349,7 @@
     "to": "REQUEST_SUBMITTED"
   },
   {
-    "id": "act-82",
+    "id": "act-105",
     "orderId": "WB-1006",
     "at": "2026-11-04T10:38:00.000Z",
     "type": "STATUS_CHANGED",
@@ -364,7 +364,7 @@
     "to": "REJECTED"
   },
   {
-    "id": "act-81",
+    "id": "act-104",
     "orderId": "WB-1006",
     "at": "2026-11-04T10:38:00.000Z",
     "type": "PAYMENT_REVERSED",
@@ -377,7 +377,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-80",
+    "id": "act-103",
     "orderId": "WB-1006",
     "at": "2026-11-04T10:38:00.000Z",
     "type": "QR_CONSUMED",
@@ -390,7 +390,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-79",
+    "id": "act-102",
     "orderId": "WB-1006",
     "at": "2026-11-04T10:31:00.000Z",
     "type": "STATUS_CHANGED",
@@ -405,7 +405,7 @@
     "to": "AWAITING_STAFF_ACCEPTANCE"
   },
   {
-    "id": "act-78",
+    "id": "act-101",
     "orderId": "WB-1006",
     "at": "2026-11-04T10:31:00.000Z",
     "type": "STATUS_CHANGED",
@@ -420,7 +420,7 @@
     "to": "PAYMENT_COMPLETED"
   },
   {
-    "id": "act-77",
+    "id": "act-100",
     "orderId": "WB-1006",
     "at": "2026-11-04T10:31:00.000Z",
     "type": "QR_UNLOCKED",
@@ -433,7 +433,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-76",
+    "id": "act-99",
     "orderId": "WB-1006",
     "at": "2026-11-04T10:31:00.000Z",
     "type": "PAYMENT_COMPLETED",
@@ -446,7 +446,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-75",
+    "id": "act-98",
     "orderId": "WB-1006",
     "at": "2026-11-04T10:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -461,7 +461,7 @@
     "to": "PAYMENT_PENDING"
   },
   {
-    "id": "act-74",
+    "id": "act-97",
     "orderId": "WB-1006",
     "at": "2026-11-04T10:30:00.000Z",
     "type": "QR_ISSUED",
@@ -474,7 +474,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-73",
+    "id": "act-96",
     "orderId": "WB-1006",
     "at": "2026-11-04T10:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -488,7 +488,46 @@
     "to": "REQUEST_SUBMITTED"
   },
   {
-    "id": "act-72",
+    "id": "act-95",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T22:30:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-03",
+      "name": "Pooja Verma"
+    },
+    "message": "Drying started by Pooja Verma",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-94",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T14:30:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-03",
+      "name": "Pooja Verma"
+    },
+    "message": "Washing started by Pooja Verma",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-93",
+    "orderId": "WB-1005",
+    "at": "2026-11-03T06:30:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Sorting started by Simran Kaur",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-92",
     "orderId": "WB-1005",
     "at": "2026-11-03T06:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -503,7 +542,7 @@
     "to": "PROCESSING"
   },
   {
-    "id": "act-71",
+    "id": "act-91",
     "orderId": "WB-1005",
     "at": "2026-11-03T04:20:00.000Z",
     "type": "RECEIPT_ISSUED",
@@ -516,7 +555,7 @@
     "locationId": "loc-nit"
   },
   {
-    "id": "act-70",
+    "id": "act-90",
     "orderId": "WB-1005",
     "at": "2026-11-03T04:20:00.000Z",
     "type": "STATUS_CHANGED",
@@ -531,7 +570,7 @@
     "to": "ACCEPTED"
   },
   {
-    "id": "act-69",
+    "id": "act-89",
     "orderId": "WB-1005",
     "at": "2026-11-03T04:20:00.000Z",
     "type": "QR_CONSUMED",
@@ -544,7 +583,7 @@
     "locationId": "loc-nit"
   },
   {
-    "id": "act-68",
+    "id": "act-88",
     "orderId": "WB-1005",
     "at": "2026-11-03T04:11:00.000Z",
     "type": "STATUS_CHANGED",
@@ -559,7 +598,7 @@
     "to": "AWAITING_STAFF_ACCEPTANCE"
   },
   {
-    "id": "act-67",
+    "id": "act-87",
     "orderId": "WB-1005",
     "at": "2026-11-03T04:11:00.000Z",
     "type": "STATUS_CHANGED",
@@ -574,7 +613,7 @@
     "to": "PAYMENT_COMPLETED"
   },
   {
-    "id": "act-66",
+    "id": "act-86",
     "orderId": "WB-1005",
     "at": "2026-11-03T04:11:00.000Z",
     "type": "QR_UNLOCKED",
@@ -587,7 +626,7 @@
     "locationId": "loc-nit"
   },
   {
-    "id": "act-65",
+    "id": "act-85",
     "orderId": "WB-1005",
     "at": "2026-11-03T04:11:00.000Z",
     "type": "PAYMENT_COMPLETED",
@@ -600,7 +639,7 @@
     "locationId": "loc-nit"
   },
   {
-    "id": "act-64",
+    "id": "act-84",
     "orderId": "WB-1005",
     "at": "2026-11-03T04:10:00.000Z",
     "type": "STATUS_CHANGED",
@@ -615,7 +654,7 @@
     "to": "PAYMENT_PENDING"
   },
   {
-    "id": "act-63",
+    "id": "act-83",
     "orderId": "WB-1005",
     "at": "2026-11-03T04:10:00.000Z",
     "type": "QR_ISSUED",
@@ -628,7 +667,7 @@
     "locationId": "loc-nit"
   },
   {
-    "id": "act-62",
+    "id": "act-82",
     "orderId": "WB-1005",
     "at": "2026-11-03T04:10:00.000Z",
     "type": "STATUS_CHANGED",
@@ -642,7 +681,7 @@
     "to": "REQUEST_SUBMITTED"
   },
   {
-    "id": "act-61",
+    "id": "act-81",
     "orderId": "WB-1004",
     "at": "2026-11-04T12:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -657,7 +696,72 @@
     "to": "READY_FOR_DELIVERY"
   },
   {
-    "id": "act-60",
+    "id": "act-80",
+    "orderId": "WB-1004",
+    "at": "2026-11-04T06:42:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-out-01",
+      "name": "Gurdeep Sandhu"
+    },
+    "message": "Quality check started by Gurdeep Sandhu",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-79",
+    "orderId": "WB-1004",
+    "at": "2026-11-04T00:54:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-out-01",
+      "name": "Gurdeep Sandhu"
+    },
+    "message": "Ironing started by Gurdeep Sandhu",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-78",
+    "orderId": "WB-1004",
+    "at": "2026-11-03T19:06:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-out-01",
+      "name": "Gurdeep Sandhu"
+    },
+    "message": "Drying started by Gurdeep Sandhu",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-77",
+    "orderId": "WB-1004",
+    "at": "2026-11-03T13:18:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-out-01",
+      "name": "Gurdeep Sandhu"
+    },
+    "message": "Washing started by Gurdeep Sandhu",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-76",
+    "orderId": "WB-1004",
+    "at": "2026-11-03T07:30:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-out-01",
+      "name": "Gurdeep Sandhu"
+    },
+    "message": "Sorting started by Gurdeep Sandhu",
+    "locationId": "loc-outside"
+  },
+  {
+    "id": "act-75",
     "orderId": "WB-1004",
     "at": "2026-11-03T07:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -672,7 +776,7 @@
     "to": "PROCESSING"
   },
   {
-    "id": "act-59",
+    "id": "act-74",
     "orderId": "WB-1004",
     "at": "2026-11-03T03:10:00.000Z",
     "type": "RECEIPT_ISSUED",
@@ -685,7 +789,7 @@
     "locationId": "loc-outside"
   },
   {
-    "id": "act-58",
+    "id": "act-73",
     "orderId": "WB-1004",
     "at": "2026-11-03T03:10:00.000Z",
     "type": "STATUS_CHANGED",
@@ -700,7 +804,7 @@
     "to": "PICKUP_CONFIRMED"
   },
   {
-    "id": "act-57",
+    "id": "act-72",
     "orderId": "WB-1004",
     "at": "2026-11-03T03:10:00.000Z",
     "type": "STATUS_CHANGED",
@@ -715,7 +819,7 @@
     "to": "ACCEPTED"
   },
   {
-    "id": "act-56",
+    "id": "act-71",
     "orderId": "WB-1004",
     "at": "2026-11-03T03:10:00.000Z",
     "type": "QR_CONSUMED",
@@ -728,7 +832,7 @@
     "locationId": "loc-outside"
   },
   {
-    "id": "act-55",
+    "id": "act-70",
     "orderId": "WB-1004",
     "at": "2026-11-02T13:31:00.000Z",
     "type": "STATUS_CHANGED",
@@ -743,7 +847,7 @@
     "to": "AWAITING_STAFF_ACCEPTANCE"
   },
   {
-    "id": "act-54",
+    "id": "act-69",
     "orderId": "WB-1004",
     "at": "2026-11-02T13:31:00.000Z",
     "type": "STATUS_CHANGED",
@@ -758,7 +862,7 @@
     "to": "PAYMENT_COMPLETED"
   },
   {
-    "id": "act-53",
+    "id": "act-68",
     "orderId": "WB-1004",
     "at": "2026-11-02T13:31:00.000Z",
     "type": "QR_UNLOCKED",
@@ -771,7 +875,7 @@
     "locationId": "loc-outside"
   },
   {
-    "id": "act-52",
+    "id": "act-67",
     "orderId": "WB-1004",
     "at": "2026-11-02T13:31:00.000Z",
     "type": "PAYMENT_COMPLETED",
@@ -784,7 +888,7 @@
     "locationId": "loc-outside"
   },
   {
-    "id": "act-51",
+    "id": "act-66",
     "orderId": "WB-1004",
     "at": "2026-11-02T13:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -799,7 +903,7 @@
     "to": "PAYMENT_PENDING"
   },
   {
-    "id": "act-50",
+    "id": "act-65",
     "orderId": "WB-1004",
     "at": "2026-11-02T13:30:00.000Z",
     "type": "QR_ISSUED",
@@ -812,7 +916,7 @@
     "locationId": "loc-outside"
   },
   {
-    "id": "act-49",
+    "id": "act-64",
     "orderId": "WB-1004",
     "at": "2026-11-02T13:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -826,7 +930,7 @@
     "to": "REQUEST_SUBMITTED"
   },
   {
-    "id": "act-48",
+    "id": "act-63",
     "orderId": "WB-1003",
     "at": "2026-11-04T13:00:00.000Z",
     "type": "ISSUE_REPORTED",
@@ -839,7 +943,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-47",
+    "id": "act-62",
     "orderId": "WB-1003",
     "at": "2026-11-04T13:00:00.000Z",
     "type": "STATUS_CHANGED",
@@ -854,7 +958,7 @@
     "to": "AWAITING_CUSTOMER_VERIFICATION"
   },
   {
-    "id": "act-46",
+    "id": "act-61",
     "orderId": "WB-1003",
     "at": "2026-11-04T10:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -869,7 +973,72 @@
     "to": "READY_FOR_DELIVERY"
   },
   {
-    "id": "act-45",
+    "id": "act-60",
+    "orderId": "WB-1003",
+    "at": "2026-11-04T00:42:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Quality check started by Harpreet Singh",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-59",
+    "orderId": "WB-1003",
+    "at": "2026-11-03T14:54:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Ironing started by Harpreet Singh",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-58",
+    "orderId": "WB-1003",
+    "at": "2026-11-03T05:06:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Drying started by Harpreet Singh",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-57",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T19:18:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Washing started by Harpreet Singh",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-56",
+    "orderId": "WB-1003",
+    "at": "2026-11-02T09:30:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Sorting started by Harpreet Singh",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-55",
     "orderId": "WB-1003",
     "at": "2026-11-02T09:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -884,7 +1053,7 @@
     "to": "PROCESSING"
   },
   {
-    "id": "act-44",
+    "id": "act-54",
     "orderId": "WB-1003",
     "at": "2026-11-02T06:39:00.000Z",
     "type": "RECEIPT_ISSUED",
@@ -897,7 +1066,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-43",
+    "id": "act-53",
     "orderId": "WB-1003",
     "at": "2026-11-02T06:39:00.000Z",
     "type": "STATUS_CHANGED",
@@ -912,7 +1081,7 @@
     "to": "ACCEPTED"
   },
   {
-    "id": "act-42",
+    "id": "act-52",
     "orderId": "WB-1003",
     "at": "2026-11-02T06:39:00.000Z",
     "type": "QR_CONSUMED",
@@ -925,7 +1094,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-41",
+    "id": "act-51",
     "orderId": "WB-1003",
     "at": "2026-11-02T06:31:00.000Z",
     "type": "STATUS_CHANGED",
@@ -940,7 +1109,7 @@
     "to": "AWAITING_STAFF_ACCEPTANCE"
   },
   {
-    "id": "act-40",
+    "id": "act-50",
     "orderId": "WB-1003",
     "at": "2026-11-02T06:31:00.000Z",
     "type": "STATUS_CHANGED",
@@ -955,7 +1124,7 @@
     "to": "PAYMENT_COMPLETED"
   },
   {
-    "id": "act-39",
+    "id": "act-49",
     "orderId": "WB-1003",
     "at": "2026-11-02T06:31:00.000Z",
     "type": "QR_UNLOCKED",
@@ -968,7 +1137,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-38",
+    "id": "act-48",
     "orderId": "WB-1003",
     "at": "2026-11-02T06:31:00.000Z",
     "type": "PAYMENT_COMPLETED",
@@ -981,7 +1150,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-37",
+    "id": "act-47",
     "orderId": "WB-1003",
     "at": "2026-11-02T06:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -996,7 +1165,7 @@
     "to": "PAYMENT_PENDING"
   },
   {
-    "id": "act-36",
+    "id": "act-46",
     "orderId": "WB-1003",
     "at": "2026-11-02T06:30:00.000Z",
     "type": "QR_ISSUED",
@@ -1009,7 +1178,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-35",
+    "id": "act-45",
     "orderId": "WB-1003",
     "at": "2026-11-02T06:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1023,7 +1192,7 @@
     "to": "REQUEST_SUBMITTED"
   },
   {
-    "id": "act-34",
+    "id": "act-44",
     "orderId": "WB-1002",
     "at": "2026-11-03T05:32:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1038,7 +1207,7 @@
     "to": "DELIVERED"
   },
   {
-    "id": "act-33",
+    "id": "act-43",
     "orderId": "WB-1002",
     "at": "2026-11-03T05:32:00.000Z",
     "type": "QR_CONSUMED",
@@ -1051,7 +1220,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-32",
+    "id": "act-42",
     "orderId": "WB-1002",
     "at": "2026-11-03T05:30:00.000Z",
     "type": "QR_ISSUED",
@@ -1064,7 +1233,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-31",
+    "id": "act-41",
     "orderId": "WB-1002",
     "at": "2026-11-03T05:30:00.000Z",
     "type": "VERIFICATION_CONFIRMED",
@@ -1077,7 +1246,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-30",
+    "id": "act-40",
     "orderId": "WB-1002",
     "at": "2026-11-03T05:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1092,7 +1261,7 @@
     "to": "AWAITING_CUSTOMER_VERIFICATION"
   },
   {
-    "id": "act-29",
+    "id": "act-39",
     "orderId": "WB-1002",
     "at": "2026-11-02T12:00:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1107,7 +1276,72 @@
     "to": "READY_FOR_DELIVERY"
   },
   {
-    "id": "act-28",
+    "id": "act-38",
+    "orderId": "WB-1002",
+    "at": "2026-11-02T06:30:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Quality check started by Harpreet Singh",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-37",
+    "orderId": "WB-1002",
+    "at": "2026-11-02T01:00:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Ironing started by Harpreet Singh",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-36",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T19:30:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Drying started by Harpreet Singh",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-35",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T14:00:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Washing started by Harpreet Singh",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-34",
+    "orderId": "WB-1002",
+    "at": "2026-11-01T08:30:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-lpu-01",
+      "name": "Harpreet Singh"
+    },
+    "message": "Sorting started by Harpreet Singh",
+    "locationId": "loc-lpu"
+  },
+  {
+    "id": "act-33",
     "orderId": "WB-1002",
     "at": "2026-11-01T08:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1122,7 +1356,7 @@
     "to": "PROCESSING"
   },
   {
-    "id": "act-27",
+    "id": "act-32",
     "orderId": "WB-1002",
     "at": "2026-11-01T04:42:00.000Z",
     "type": "RECEIPT_ISSUED",
@@ -1135,7 +1369,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-26",
+    "id": "act-31",
     "orderId": "WB-1002",
     "at": "2026-11-01T04:42:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1150,7 +1384,7 @@
     "to": "ACCEPTED"
   },
   {
-    "id": "act-25",
+    "id": "act-30",
     "orderId": "WB-1002",
     "at": "2026-11-01T04:42:00.000Z",
     "type": "QR_CONSUMED",
@@ -1163,7 +1397,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-24",
+    "id": "act-29",
     "orderId": "WB-1002",
     "at": "2026-11-01T04:36:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1178,7 +1412,7 @@
     "to": "AWAITING_STAFF_ACCEPTANCE"
   },
   {
-    "id": "act-23",
+    "id": "act-28",
     "orderId": "WB-1002",
     "at": "2026-11-01T04:36:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1193,7 +1427,7 @@
     "to": "PAYMENT_COMPLETED"
   },
   {
-    "id": "act-22",
+    "id": "act-27",
     "orderId": "WB-1002",
     "at": "2026-11-01T04:36:00.000Z",
     "type": "QR_UNLOCKED",
@@ -1206,7 +1440,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-21",
+    "id": "act-26",
     "orderId": "WB-1002",
     "at": "2026-11-01T04:36:00.000Z",
     "type": "PAYMENT_COMPLETED",
@@ -1219,7 +1453,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-20",
+    "id": "act-25",
     "orderId": "WB-1002",
     "at": "2026-11-01T04:35:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1234,7 +1468,7 @@
     "to": "PAYMENT_PENDING"
   },
   {
-    "id": "act-19",
+    "id": "act-24",
     "orderId": "WB-1002",
     "at": "2026-11-01T04:35:00.000Z",
     "type": "QR_ISSUED",
@@ -1247,7 +1481,7 @@
     "locationId": "loc-lpu"
   },
   {
-    "id": "act-18",
+    "id": "act-23",
     "orderId": "WB-1002",
     "at": "2026-11-01T04:35:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1261,7 +1495,7 @@
     "to": "REQUEST_SUBMITTED"
   },
   {
-    "id": "act-17",
+    "id": "act-22",
     "orderId": "WB-1001",
     "at": "2026-11-02T05:32:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1276,7 +1510,7 @@
     "to": "DELIVERED"
   },
   {
-    "id": "act-16",
+    "id": "act-21",
     "orderId": "WB-1001",
     "at": "2026-11-02T05:32:00.000Z",
     "type": "QR_CONSUMED",
@@ -1289,7 +1523,7 @@
     "locationId": "loc-nit"
   },
   {
-    "id": "act-15",
+    "id": "act-20",
     "orderId": "WB-1001",
     "at": "2026-11-02T05:30:00.000Z",
     "type": "QR_ISSUED",
@@ -1302,7 +1536,7 @@
     "locationId": "loc-nit"
   },
   {
-    "id": "act-14",
+    "id": "act-19",
     "orderId": "WB-1001",
     "at": "2026-11-02T05:30:00.000Z",
     "type": "VERIFICATION_CONFIRMED",
@@ -1315,7 +1549,7 @@
     "locationId": "loc-nit"
   },
   {
-    "id": "act-13",
+    "id": "act-18",
     "orderId": "WB-1001",
     "at": "2026-11-02T05:30:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1330,7 +1564,7 @@
     "to": "AWAITING_CUSTOMER_VERIFICATION"
   },
   {
-    "id": "act-12",
+    "id": "act-17",
     "orderId": "WB-1001",
     "at": "2026-11-01T11:50:00.000Z",
     "type": "STATUS_CHANGED",
@@ -1343,6 +1577,71 @@
     "locationId": "loc-nit",
     "from": "PROCESSING",
     "to": "READY_FOR_DELIVERY"
+  },
+  {
+    "id": "act-16",
+    "orderId": "WB-1001",
+    "at": "2026-11-01T06:10:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Quality check started by Simran Kaur",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-15",
+    "orderId": "WB-1001",
+    "at": "2026-11-01T00:30:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Ironing started by Simran Kaur",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-14",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T18:50:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Drying started by Simran Kaur",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-13",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T13:10:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Washing started by Simran Kaur",
+    "locationId": "loc-nit"
+  },
+  {
+    "id": "act-12",
+    "orderId": "WB-1001",
+    "at": "2026-10-31T07:30:00.000Z",
+    "type": "STAGE_CHANGED",
+    "actor": {
+      "kind": "staff",
+      "id": "st-nit-01",
+      "name": "Simran Kaur"
+    },
+    "message": "Sorting started by Simran Kaur",
+    "locationId": "loc-nit"
   },
   {
     "id": "act-11",

@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Image, Keyboard, KeyboardEvent, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Dimensions, Image, Keyboard, KeyboardEvent, Platform, Pressable, StyleSheet, Text, TextInput, TextInputInstance, useWindowDimensions, View } from 'react-native';
+import { useAnimatedKeyboardSafe } from '../hooks/useAnimatedKeyboardSafe';
 import Animated, {
   Easing,
   interpolate,
+  useAnimatedReaction,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useDerivedValue,
@@ -22,7 +24,6 @@ import { StoryHero } from '../components/auth/StoryHero';
 import { BottomSheet } from '../components/ui/BottomSheet';
 import { Icon } from '../components/app/Icon';
 import { haptic } from '../lib/haptics';
-import { STAFF_ROLE_LABEL } from '../laundry/labels';
 import { getCampusLogo } from '../laundry/campusLogos';
 import { signIn as staffSignIn } from '../mock/services/staffService';
 import type { Location } from '../mock/types';
@@ -32,7 +33,7 @@ import { app, colors, fonts, radius, space, text } from '../theme';
 const UNAVAILABLE_ART = require('../../assets/illustrations/unavailable-map-pin.png');
 const UNAVAILABLE_ASPECT = 839 / 641;
 /** How long the green "done" moment holds before the next step takes over. */
-const SUCCESS_HOLD_MS = 1600;
+const SUCCESS_HOLD_MS = 1300;
 
 /** How far the sign-in sheet rises over the bottom of the film. */
 const SHEET_OVERLAP = 28;
@@ -63,14 +64,16 @@ export function LoginScreen() {
   const colLeft = (winW - colW) / 2;
   const heroTop = wide ? insets.top + 24 : 0;
 
-  // The sheet takes the height its content needs at the bottom and the film fills the space
-  // above it (the film's own shape at most). On short screens the film gives way, never the form.
+  // The sheet takes the height its content needs and always sits on the bottom edge; the film
+  // fills the space above it. On phones the film may grow past its own shape (StoryHero trims
+  // its sides) so a short step never leaves an empty strip under the sheet, which showed up as
+  // a gap between the form and the keyboard. On wide screens the film keeps its shape.
+  // On short screens the film gives way, never the form.
   const filmH = Math.round((colW * 1612) / 1200);
   const [contentH, setContentH] = useState(0);
   const sheetH = (contentH || 400) + SHEET_PAD_TOP + HANDLE_BLOCK + insets.bottom + 14;
-  const spaceH = Math.round(
-    Math.max(MIN_HERO - SHEET_OVERLAP, Math.min(filmH - SHEET_OVERLAP, winH - heroTop - sheetH + SHEET_OVERLAP)),
-  );
+  const roomAbove = winH - heroTop - sheetH + SHEET_OVERLAP;
+  const spaceH = Math.round(Math.max(MIN_HERO - SHEET_OVERLAP, wide ? Math.min(filmH - SHEET_OVERLAP, roomAbove) : roomAbove));
 
   // ---- Step: worked out from the session, so a refresh resumes exactly where the customer was ----
   const [challenge, setChallenge] = useState<Challenge | null>(null);
@@ -90,22 +93,54 @@ export function LoginScreen() {
         ? 'details'
         : 'pincode';
 
+  // The "not here yet" drawer and the keyboard never move at the same time: the drawer opens once the keyboard
+  // has gone down, and the fresh PIN field (which brings the keyboard back) only appears once the drawer is gone.
+  const DRAWER_OUT_MS = 320;
+  const showUnavailable = (pin: string, active: Location[]) => {
+    if (Platform.OS === 'web' || !keyboardUp.current) {
+      setUnavailable({ pin, active });
+      return;
+    }
+    let done = false;
+    const open = () => {
+      if (done) return;
+      done = true;
+      sub.remove();
+      clearTimeout(fallback);
+      setUnavailable({ pin, active });
+    };
+    const sub = Keyboard.addListener('keyboardDidHide', open);
+    const fallback = setTimeout(open, 450);
+    Keyboard.dismiss();
+  };
   const tryAnotherPin = () => {
     setUnavailable(null);
     setPickedPin(null);
-    setPinReset((n) => n + 1);
+    setTimeout(() => setPinReset((n) => n + 1), DRAWER_OUT_MS);
   };
   const chooseLocation = (loc: Location) => {
     haptic.tap();
     setUnavailable(null);
     setPickedPin(loc.pincode);
-    setPinReset((n) => n + 1);
+    setTimeout(() => setPinReset((n) => n + 1), DRAWER_OUT_MS);
   };
 
-  // the green moment holds, then the next step (or the app) takes over
-  const celebrate = (title: string, message: string, then: () => Promise<void> | void) => {
+  // ---- Keyboard: stays up from the first digit to the last step ----
+  // Each step has its own field, and when a focused field leaves the screen iOS and Android put
+  // the keyboard away, only for the next step to bring it back. Just before a step changes, focus
+  // moves to this invisible field, which holds the keyboard until the next step's field takes it.
+  const keeper = useRef<TextInputInstance>(null);
+  const holdKeyboard = () => {
+    if (Platform.OS === 'web' || !keyboardUp.current) return;
+    keeper.current?.focus();
+  };
+
+  // the green moment holds (keyboard still up), then the next step (or the app) takes over
+  const celebrate = (title: string, message: string, then: () => Promise<void> | void, last = false) => {
+    holdKeyboard();
     setSuccess({ title, message, height: contentH });
     setTimeout(async () => {
+      if (last) Keyboard.dismiss(); // nothing left to type: the app opens without a keyboard
       await then();
       setSuccess(null);
     }, SUCCESS_HOLD_MS);
@@ -119,9 +154,23 @@ export function LoginScreen() {
   const progress = useDerivedValue(() =>
     Math.min(1, Math.max(lift.value / Math.max(maxLift, 1), scrollY.value / Math.max(spaceH * 0.7, 1))),
   );
+  // Phones: follow the keyboard's real height frame by frame, so the form always sits right on top of it,
+  // including when the keyboard changes size between steps (the details keyboard with its suggestion bar is
+  // taller than the PIN number pad). The keyboard's height includes the home-indicator area, which the sheet's
+  // bottom padding already covers, so lift by the rest.
+  const kb = useAnimatedKeyboardSafe();
+  const bottomInset = insets.bottom;
+  useAnimatedReaction(
+    () => kb.height.value,
+    (h) => {
+      if (Platform.OS === 'web') return;
+      lift.value = Math.min(Math.max(0, h - bottomInset), maxLift);
+    },
+    [bottomInset, maxLift],
+  );
   const raise = useCallback(
     (to: number, duration = LIFT_MS) => {
-      if (Platform.OS === 'web') return;
+      if (Platform.OS !== 'web') return; // phones follow the keyboard directly (above)
       const target = Math.min(to, maxLift);
       lift.set(reducedMotion ? target : withTiming(target, { duration, easing: EASE }));
     },
@@ -130,21 +179,38 @@ export function LoginScreen() {
 
   // On phones the real keyboard drives the lift, in step with its own animation.
   const keyboardUp = useRef(false);
+  // a step that opens while the keyboard is up takes it over straight away
+  const [keyboardShown, setKeyboardShown] = useState(false);
   useEffect(() => {
     const ios = Platform.OS === 'ios';
     const show = Keyboard.addListener(ios ? 'keyboardWillShow' : 'keyboardDidShow', (e: KeyboardEvent) => {
       keyboardUp.current = true;
-      raise(e.endCoordinates.height, Math.max(e.duration || 0, LIFT_MS));
+      setKeyboardShown(true);
+      // the sheet's bottom padding already includes the home-indicator area, which the keyboard
+      // covers, so lift by the rest: the form then sits just above the keys with no gap
+      raise(Math.max(0, e.endCoordinates.height - insets.bottom), Math.max(e.duration || 0, LIFT_MS));
     });
     const hide = Keyboard.addListener(ios ? 'keyboardWillHide' : 'keyboardDidHide', (e: KeyboardEvent) => {
       keyboardUp.current = false;
+      setKeyboardShown(false);
       raise(0, Math.max(e.duration || 0, LIFT_MS - 80));
     });
+    // iOS: switching fields can swap keyboards of different heights (the details keyboard with
+    // its suggestion bar is taller than the PIN number pad) without a hide, so follow every
+    // frame change; otherwise the form would stay lifted for the taller one and leave a gap
+    const frame = ios
+      ? Keyboard.addListener('keyboardWillChangeFrame', (e: KeyboardEvent) => {
+          if (!keyboardUp.current) return;
+          const covered = Math.max(0, Dimensions.get('window').height - e.endCoordinates.screenY);
+          if (covered > 0) raise(Math.max(0, covered - insets.bottom), Math.max(e.duration || 0, 250));
+        })
+      : null;
     return () => {
       show.remove();
       hide.remove();
+      frame?.remove();
     };
-  }, [raise]);
+  }, [raise, insets.bottom]);
 
   const dismiss = () => {
     Keyboard.dismiss();
@@ -207,18 +273,26 @@ export function LoginScreen() {
                   <SheetSuccess title={success.title} message={success.message} />
                 </View>
               ) : step === 'phone' ? (
-                <PhoneStep onCode={setChallenge} onSocial={(s, label) => signIn(s, label)} />
+                <PhoneStep
+                  onCode={(c) => {
+                    holdKeyboard();
+                    setChallenge(c);
+                  }}
+                  onSocial={(s, label) => signIn(s, label)}
+                />
               ) : step === 'otp' && challenge ? (
                 <OtpStep
                   challenge={challenge}
                   onChangeNumber={() => setChallenge(null)}
-                  onVerified={(s) => celebrate('Number verified', "Let's finish setting up your account.", () => signIn(s, challenge.displayPhone))}
+                  onVerified={(s) => celebrate('Verified', '', () => signIn(s, challenge.displayPhone))}
                 />
               ) : step === 'details' && session ? (
                 <DetailsStep
                   token={session.token}
                   initial={session.profile}
+                  autoFocus={keyboardShown}
                   onSaved={async (profile) => {
+                    holdKeyboard();
                     await completeProfile(profile);
                     setEditingDetails(false);
                   }}
@@ -230,19 +304,19 @@ export function LoginScreen() {
               ) : step === 'staff' && session ? (
                 <PincodeStep
                   key={`staff-${pinReset}`}
-                  autoFocus={pinReset > 0 && !pickedPin}
+                  autoFocus={(keyboardShown || pinReset > 0) && !pickedPin}
                   autoCheck={!!pickedPin}
                   token={session.token}
                   initial={pickedPin ?? undefined}
                   title="Your work location"
                   subtitle="Enter your location’s PIN code to start."
-                  helper="Demo staff · LPU 654321 · NIT Jalandhar 123456 · Outside 000000"
+                  helper="Demo staff · LPU 144411 · NIT Jalandhar 144011 · Model Town 144003"
                   backLabel="Not staff? Use another number"
                   onServed={async (pin, loc) => {
                     const staff = await staffSignIn(session.phone, pin);
-                    celebrate(`Welcome, ${staff.name.split(' ')[0]}`, `${loc.shortName} · ${STAFF_ROLE_LABEL[staff.role]}`, () => completeStaffSignIn(staff.id, pin));
+                    celebrate(`Welcome, ${staff.name.split(' ')[0]}`, '', () => completeStaffSignIn(staff.id, pin), true);
                   }}
-                  onUnavailable={(pin, active) => setUnavailable({ pin, active })}
+                  onUnavailable={showUnavailable}
                   onEditDetails={() => {
                     setChallenge(null);
                     signOut();
@@ -252,13 +326,16 @@ export function LoginScreen() {
                 // a fresh step (empty field, focused) each time "Try another PIN code" is chosen
                 <PincodeStep
                   key={pinReset}
-                  autoFocus={pinReset > 0 && !pickedPin}
+                  autoFocus={(keyboardShown || pinReset > 0) && !pickedPin}
                   autoCheck={!!pickedPin}
                   token={session.token}
                   initial={pickedPin ?? (pinReset > 0 ? undefined : session.pincode)}
-                  onServed={(pin, loc) => celebrate('We serve your area', `Your Washing Basket location is ${loc.shortName}.`, () => completePincode(pin))}
-                  onUnavailable={(pin, active) => setUnavailable({ pin, active })}
-                  onEditDetails={() => setEditingDetails(true)}
+                  onServed={(pin, loc) => celebrate("You're all set", '', () => completePincode(pin), true)}
+                  onUnavailable={showUnavailable}
+                  onEditDetails={() => {
+                    holdKeyboard();
+                    setEditingDetails(true);
+                  }}
                 />
               ) : null}
             </Rise>
@@ -266,45 +343,102 @@ export function LoginScreen() {
         </View>
       </Animated.ScrollView>
 
+      {Platform.OS !== 'web' ? (
+        <TextInput
+          ref={keeper}
+          keyboardType="number-pad"
+          caretHidden
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
+          style={styles.keeper}
+        />
+      ) : null}
       {step === 'phone' ? <SkipButton style={{ top: heroTop + insets.top + 12, right: colLeft + 16 }} onPress={continueAsGuest} /> : null}
       <BottomSheet visible={!!unavailable} onClose={tryAnotherPin}>
         <Image source={UNAVAILABLE_ART} style={styles.sheetArt} resizeMode="contain" accessible={false} />
-        <Text style={[text.h1, { textAlign: 'center' }]} accessibilityRole="header">
+        <Text style={styles.sheetTitle} accessibilityRole="header">
           We’re not at {unavailable?.pin} yet
         </Text>
-        <Text style={[text.body, styles.sheetText]}>Washing Basket is open at these locations. Choose one to continue with its PIN code.</Text>
-        <View style={styles.locList}>
-          {unavailable?.active.map((loc) => {
-            const logo = getCampusLogo(loc);
+        <Text style={[text.body, styles.sheetText]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
+          Choose an open location to continue with its PIN code.
+        </Text>
+        <View style={styles.locLayout}>
+          {/* Left: Colleges up and down */}
+          <View style={styles.collegeCol}>
+            {(unavailable?.active ?? [])
+              .filter((l) => l.type === 'CAMPUS_OFFICE' || l.id === 'loc-lpu' || l.id === 'loc-nit')
+              .map((loc) => {
+                const logo = getCampusLogo(loc);
+                const displayName = loc.shortName === 'LPU' ? 'LPU Phagwara' : loc.name;
+                return (
+                  <Pressable
+                    key={loc.id}
+                    onPress={() => chooseLocation(loc)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${loc.name}, PIN code ${loc.pincode}. Use this location`}
+                    style={({ pressed }) => [
+                      styles.collegeBtn,
+                      Platform.OS === 'web' && ({ cursor: 'pointer' } as object),
+                      pressed && styles.locBtnPressed,
+                    ]}
+                  >
+                    <View style={styles.collegeLogoWrap}>
+                      {logo ? (
+                        <Image source={logo} style={styles.collegeLogo} resizeMode="contain" />
+                      ) : (
+                        <Icon name="mapPin" size={24} color={colors.navy} />
+                      )}
+                    </View>
+                    <View style={styles.collegeTextWrap}>
+                      <Text style={styles.collegeName} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.88}>
+                        {displayName}
+                      </Text>
+                      <View style={styles.collegePin}>
+                        <Text style={styles.collegePinText}>{loc.pincode}</Text>
+                      </View>
+                    </View>
+                  </Pressable>
+                );
+              })}
+          </View>
+
+          {/* Right: Model Town */}
+          {(() => {
+            const modelTown = (unavailable?.active ?? []).find(
+              (l) => l.type === 'INDEPENDENT' || l.id === 'loc-outside' || l.name.toLowerCase().includes('model town')
+            );
+            if (!modelTown) return null;
             return (
               <Pressable
-                key={loc.id}
-                onPress={() => chooseLocation(loc)}
+                key={modelTown.id}
+                onPress={() => chooseLocation(modelTown)}
                 accessibilityRole="button"
-                accessibilityLabel={`${loc.name}, PIN code ${loc.pincode}. Use this location`}
-                style={({ pressed }) => [styles.locRow, Platform.OS === 'web' && ({ cursor: 'pointer' } as object), pressed && { opacity: 0.8 }]}
+                accessibilityLabel={`${modelTown.name}, PIN code ${modelTown.pincode}. Use this location`}
+                style={({ pressed }) => [
+                  styles.modelTownBtn,
+                  Platform.OS === 'web' && ({ cursor: 'pointer' } as object),
+                  pressed && styles.locBtnPressed,
+                ]}
               >
-                <View style={styles.locIcon}>
-                  {logo ? (
-                    <Image source={logo} style={{ width: 40, height: 40 }} resizeMode="contain" />
-                  ) : (
-                    <Icon name="mapPin" size={18} color={colors.navy} />
-                  )}
+                <View style={styles.modelTownLogoWrap}>
+                  <Icon name="store" size={28} color={colors.navy} />
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={text.bodyStrong}>{loc.name}</Text>
-                  <Text style={text.caption} numberOfLines={1}>
-                    {loc.city} · {loc.serviceModes.includes('HOME_PICKUP') ? 'Drop-off & home pickup' : 'Office drop-off'}
+                <View style={styles.modelTownTextWrap}>
+                  <Text style={styles.modelTownTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.88}>
+                    Model Town
+                  </Text>
+                  <Text style={styles.modelTownCity} numberOfLines={1}>
+                    Jalandhar
                   </Text>
                 </View>
-                <View style={styles.locPin}>
-                  <Text style={styles.locPinText}>{loc.pincode}</Text>
+                <View style={styles.modelTownPin}>
+                  <Text style={styles.modelTownPinText}>{modelTown.pincode}</Text>
                 </View>
               </Pressable>
             );
-          })}
+          })()}
         </View>
-        <Button label="Try another PIN code" variant="outline" onPress={tryAnotherPin} style={{ marginTop: space.lg }} />
+        <Button label="Try another PIN code" variant="dark" onPress={tryAnotherPin} style={{ marginTop: 20 }} />
       </BottomSheet>
     </View>
   );
@@ -329,6 +463,8 @@ function SkipButton({ style, onPress }: { style: object; onPress: () => void }) 
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
+  /** Off-screen and invisible; only ever holds focus between two steps. */
+  keeper: { position: 'absolute', left: -1000, top: 0, width: 1, height: 1, opacity: 0 },
   flex: { flex: 1 },
   hero: { position: 'absolute', overflow: 'hidden' },
   dim: { backgroundColor: '#0B1220' },
@@ -352,13 +488,179 @@ const styles = StyleSheet.create({
         }),
   },
   sheetWide: { paddingHorizontal: 28 },
-  sheetArt: { alignSelf: 'center', width: 220, height: 220 / UNAVAILABLE_ASPECT, marginBottom: 18 },
-  sheetText: { textAlign: 'center', alignSelf: 'center', maxWidth: 360, marginTop: 8, paddingHorizontal: 8 },
-  locList: { marginTop: space.lg, gap: space.sm },
-  locRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.md, borderRadius: 18, backgroundColor: app.cream },
-  locIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  locPin: { paddingHorizontal: 10, height: 30, borderRadius: 15, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
-  locPinText: { fontFamily: fonts.semibold, fontSize: 13, letterSpacing: 1.5, color: '#FFFFFF', fontVariant: ['tabular-nums'] },
+  sheetArt: { alignSelf: 'center', width: 140, height: 140 / UNAVAILABLE_ASPECT, marginBottom: 8 },
+  sheetTitle: { textAlign: 'center', fontSize: 20, lineHeight: 24, fontFamily: fonts.bold, color: colors.ink },
+  sheetText: { textAlign: 'center', alignSelf: 'center', width: '100%', maxWidth: 420, marginTop: 4, paddingHorizontal: 8, fontSize: 13, lineHeight: 18, color: colors.inkMuted },
+  locLayout: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 12,
+    marginTop: 18,
+  },
+  collegeCol: {
+    flex: 1.35,
+    flexDirection: 'column',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  collegeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: app.cream,
+    borderWidth: 1.5,
+    borderColor: 'rgba(10, 28, 62, 0.07)',
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 2px 8px rgba(11, 18, 32, 0.05)',
+          transition: 'transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease',
+        } as any)
+      : {
+          shadowColor: '#0B1220',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 6,
+          elevation: 2,
+        }),
+  },
+  collegeLogoWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(10, 28, 62, 0.08)',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 2px 6px rgba(10, 28, 62, 0.08)' } as any)
+      : {
+          shadowColor: '#0B1220',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.08,
+          shadowRadius: 4,
+          elevation: 2,
+        }),
+  },
+  collegeLogo: {
+    width: 48,
+    height: 48,
+  },
+  collegeTextWrap: {
+    marginLeft: 12,
+    flex: 1,
+    minWidth: 0,
+    justifyContent: 'center',
+  },
+  collegeName: {
+    fontFamily: fonts.bold,
+    fontSize: 13.5,
+    lineHeight: 18,
+    color: colors.ink,
+  },
+  collegePin: {
+    alignSelf: 'flex-start',
+    marginTop: 5,
+    paddingHorizontal: 10,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#0A1C3E',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  collegePinText: {
+    fontFamily: fonts.bold,
+    fontSize: 12,
+    letterSpacing: 0.8,
+    color: '#FFFFFF',
+    fontVariant: ['tabular-nums'],
+  },
+  modelTownBtn: {
+    flex: 0.9,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    backgroundColor: app.cream,
+    borderWidth: 1.5,
+    borderColor: 'rgba(10, 28, 62, 0.07)',
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 2px 8px rgba(11, 18, 32, 0.05)',
+          transition: 'transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease',
+        } as any)
+      : {
+          shadowColor: '#0B1220',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 6,
+          elevation: 2,
+        }),
+  },
+  modelTownLogoWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(10, 28, 62, 0.08)',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 2px 6px rgba(10, 28, 62, 0.08)' } as any)
+      : {
+          shadowColor: '#0B1220',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.08,
+          shadowRadius: 4,
+          elevation: 2,
+        }),
+  },
+  modelTownTextWrap: {
+    alignItems: 'center',
+    marginVertical: 6,
+  },
+  modelTownTitle: {
+    fontFamily: fonts.bold,
+    fontSize: 13.5,
+    lineHeight: 18,
+    color: colors.ink,
+    textAlign: 'center',
+  },
+  modelTownCity: {
+    fontFamily: fonts.medium,
+    fontSize: 11.5,
+    lineHeight: 15,
+    color: colors.inkMuted,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  modelTownPin: {
+    paddingHorizontal: 10,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#0A1C3E',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modelTownPinText: {
+    fontFamily: fonts.bold,
+    fontSize: 12,
+    letterSpacing: 0.8,
+    color: '#FFFFFF',
+    fontVariant: ['tabular-nums'],
+  },
+  locBtnPressed: {
+    opacity: 0.88,
+    transform: [{ scale: 0.98 }],
+    backgroundColor: '#EBEFF5',
+  },
   skip: {
     position: 'absolute',
     paddingVertical: 9,

@@ -25,7 +25,7 @@ The OTP is always **123456**.
 
 | Who | Phone number | Then |
 | --- | --- | --- |
-| Staff | **9876543210** (this number only) | Enter a location PIN: **654321** LPU, **123456** NIT Jalandhar, **000000** Outside Campus |
+| Staff | **9876543210** (this number only) | Enter a location PIN: **144411** LPU, **144011** NIT Jalandhar, **144003** Model Town (Outside Campus) |
 | New customer | Any other 10-digit number | Name and email, then your PIN code. The three PINs above pick that location; any other PIN opens a sheet listing the active locations. New customers get a ₹1,500 demo wallet credit |
 | Seed customer | e.g. 9218721686 (Kiran Thomas) or 9347489248 (Meera Iyer) | Opens their existing orders: WB-1008 with a failed payment (low balance), WB-1003 with an open issue |
 

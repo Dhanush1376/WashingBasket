@@ -97,8 +97,15 @@ export type Customer = {
   status: 'ACTIVE' | 'PAUSED';
 };
 
-export type StaffRole = 'COUNTER_STAFF' | 'PICKUP_AGENT' | 'LOCATION_MANAGER';
-export type StaffPermission = 'ORDER_ACCEPT' | 'ORDER_REJECT' | 'ORDER_PROCESS' | 'PICKUP_COLLECT' | 'DELIVERY_CONFIRM';
+/**
+ * One staff app, four kinds of work. A role decides what the app shows; permissions decide what the engine allows.
+ *   COUNTER_STAFF      the campus/store counter: accepts drop-offs, hands completed orders back
+ *   PROCESSING_STAFF   the wash floor: moves orders through sorting, washing, drying, ironing and quality check
+ *   PICKUP_AGENT       off-campus pickups and deliveries at the customer's door
+ *   LOCATION_MANAGER   the branch supervisor: sees everything at the branch and assigns work
+ */
+export type StaffRole = 'COUNTER_STAFF' | 'PROCESSING_STAFF' | 'PICKUP_AGENT' | 'LOCATION_MANAGER';
+export type StaffPermission = 'ORDER_ACCEPT' | 'ORDER_REJECT' | 'ORDER_PROCESS' | 'PICKUP_COLLECT' | 'DELIVERY_CONFIRM' | 'ORDER_ASSIGN' | 'ISSUE_REPORT';
 
 export type Staff = {
   id: string;
@@ -130,6 +137,12 @@ export type OrderStatus =
   | 'CANCELLED'
   | 'REFUND_PENDING'
   | 'REFUNDED';
+
+/**
+ * The wash floor's own steps inside PROCESSING. Customers keep seeing one simple "Processing" status; staff see
+ * these. RECEIVED is the order's ACCEPTED/PICKUP_CONFIRMED status, and READY_FOR_DISPATCH is READY_FOR_DELIVERY.
+ */
+export type ProcessingStage = 'SORTING' | 'WASHING' | 'DRYING' | 'IRONING' | 'QUALITY_CHECK';
 
 export type PaymentStatus = 'REQUIRED' | 'COMPLETED' | 'FAILED' | 'REVERSED';
 
@@ -199,6 +212,12 @@ export type LaundryOrder = {
   deliveredBy?: string;
   deliveredAt?: ISO;
   receiptId?: string;
+  /** Wash-floor step while the order is PROCESSING. Absent on orders processed before stages existed. */
+  processingStage?: ProcessingStage;
+  /** The staff member a supervisor gave this order to. Others at the branch can't act on it while it's set. */
+  assignedTo?: string;
+  assignedBy?: string;
+  assignedAt?: ISO;
   createdAt: ISO;
   updatedAt: ISO;
 };
@@ -273,6 +292,10 @@ export type DeliveryIssue = {
   mismatches: { itemId: string; name: string; expected: number; received: number }[];
   note: string;
   status: 'OPEN' | 'RESOLVED';
+  /** Who raised it: the customer while checking their clothes, or staff during processing. Customer if absent. */
+  source?: 'customer' | 'staff';
+  /** Staff id, when staff raised it. */
+  reportedBy?: string;
   reportedAt: ISO;
   resolvedAt?: ISO;
   resolvedBy?: string;
@@ -327,6 +350,8 @@ export type ActivityType =
   | 'VERIFICATION_CONFIRMED'
   | 'ISSUE_REPORTED'
   | 'ISSUE_RESOLVED'
+  | 'STAGE_CHANGED'
+  | 'ASSIGNED'
   | 'NOTE';
 
 export type OrderActivity = {

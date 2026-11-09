@@ -22,7 +22,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Line, Path, Rect } from 'react-native-svg';
 
 import { CollapsingBar, useCollapsingBar } from '../../components/app/CollapsingBar';
 import { Icon, type IconName } from '../../components/app/Icon';
@@ -31,13 +30,14 @@ import { Avatar, Button } from '../../components/app/primitives';
 import { ErrorState, Skeleton } from '../../components/app/states';
 import { TopBar } from '../../components/app/TopBar';
 import { FloatingBottomBar } from '../../components/navigation/FloatingBottomBar';
+import { HangingPass } from '../../components/refer/HangingPass';
 import { ReferralCodeDrawer } from '../../components/refer/ReferralCodeDrawer';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 import { dateParts, money } from '../../lib/format';
 import { haptic } from '../../lib/haptics';
 import { invalidate, keys, useQuery } from '../../lib/query';
 import type { ScreenProps } from '../../navigation/types';
-import { getReferrals, type ReferralSummary } from '../../services/mock/account.service';
+import { getReferrals } from '../../services/mock/account.service';
 import { colors, fonts, space } from '../../theme';
 import type { Referral, ReferralStatus } from '../../types/models';
 
@@ -45,14 +45,7 @@ const CANVAS = '#FAF9F6';
 const BEIGE = '#F4F1EA';
 const BEIGE_RGB = '244, 241, 234';
 const NAVY = '#0A1C3E';
-const YELLOW = '#FEC837';
-const STUB_GOLD = '#EFB21C';
 const PAGE = space.lg;
-const MONO = Platform.select({
-  ios: 'Menlo',
-  android: 'monospace',
-  default: 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace',
-});
 const webCursor = Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null;
 const EASE_OUT = Easing.out(Easing.cubic);
 
@@ -112,178 +105,6 @@ const REFERRAL_FAQS = [
       'Yes! Your referral wallet balance can be applied towards any laundry service, including wash & fold, steam iron, premium dry cleaning, and shoe care.',
   },
 ];
-
-const ticketShadow =
-  Platform.OS === 'web'
-    ? ({
-        boxShadow:
-          '0 14px 32px -4px rgba(10, 28, 62, 0.16), 0 3px 10px -2px rgba(10, 28, 62, 0.08)',
-      } as object)
-    : {
-        shadowColor: NAVY,
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
-        shadowRadius: 16,
-        elevation: 6,
-      };
-
-/** Authentic VIP Invitation Ticket geometry with horizontal tear perforation */
-function horizontalTicketPath(w: number, h: number, r: number, nr: number, sy: number) {
-  return (
-    `M${r} 0` +
-    `H${w - r}` +
-    `A${r} ${r} 0 0 1 ${w} ${r}` +
-    `V${sy - nr}` +
-    `A${nr} ${nr} 0 0 0 ${w} ${sy + nr}` +
-    `V${h - r}` +
-    `A${r} ${r} 0 0 1 ${w - r} ${h}` +
-    `H${r}` +
-    `A${r} ${r} 0 0 1 0 ${h - r}` +
-    `V${sy + nr}` +
-    `A${nr} ${nr} 0 0 0 0 ${sy - nr}` +
-    `V${r}` +
-    `A${r} ${r} 0 0 1 ${r} 0Z`
-  );
-}
-
-/** Exclusive VIP Campus Invitation Boarding Pass (Not a generic coupon code) */
-function ReferralTicket({
-  w,
-  data,
-  code,
-  copied,
-  onCopy,
-}: {
-  w: number;
-  data: ReferralSummary;
-  code: string;
-  copied: boolean;
-  onCopy: () => void;
-}) {
-  const u = Math.min(1.15, Math.max(0.88, w / 340));
-  const ticketH = Math.round(218 * u);
-  const notchR = Math.round(10 * u);
-  const cornerR = Math.round(24 * u);
-  const splitY = Math.round(ticketH * 0.63);
-
-  const d = horizontalTicketPath(w, ticketH, cornerR, notchR, splitY);
-
-  return (
-    <View style={[styles.ticketContainer, ticketShadow]}>
-      <View style={{ width: w, height: ticketH }}>
-        {/* Pass Base: Deep Midnight Navy with subtle border */}
-        <Svg width={w} height={ticketH} style={StyleSheet.absoluteFill}>
-          <Path d={d} fill={NAVY} />
-          <Path d={d} fill="none" stroke="rgba(255, 255, 255, 0.16)" strokeWidth={1.5} />
-          {/* Horizontal tear-off perforation line */}
-          <Line
-            x1={notchR + 4 * u}
-            y1={splitY}
-            x2={w - notchR - 4 * u}
-            y2={splitY}
-            stroke="#FFFFFF"
-            strokeWidth={1.2}
-            strokeDasharray={`${5 * u} ${4 * u}`}
-            strokeOpacity={0.22}
-          />
-        </Svg>
-
-        {/* ── Top Body: Pass Header, Big Value & Key Perks ── */}
-        <View
-          style={[
-            styles.ticketTopBody,
-            {
-              height: splitY,
-              paddingHorizontal: 18 * u,
-              paddingTop: 16 * u,
-              paddingBottom: 10 * u,
-            },
-          ]}
-        >
-          {/* Header Row */}
-          <View style={styles.ticketHeaderRow}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 * u }}>
-              <Icon name="sparkle" size={12 * u} color="#FFA742" strokeWidth={2.4} />
-              <Text style={[styles.ticketKicker, { fontSize: 10 * u, letterSpacing: 1.2 * u }]}>
-                CAMPUS INVITATION PASS
-              </Text>
-            </View>
-
-            <View style={[styles.ticketVipBadge, { paddingHorizontal: 8 * u, height: 20 * u, borderRadius: 10 * u }]}>
-              <Text style={[styles.ticketVipBadgeText, { fontSize: 9 * u }]}>VIP PASS</Text>
-            </View>
-          </View>
-
-          {/* Value Prop Headline */}
-          <View style={{ marginTop: 6 * u }}>
-            <Text style={[styles.ticketHeadline, { fontSize: 20 * u }]}>
-              Give ₹{data.rules.welcomeReward} • Get <Text style={{ color: '#FFA742' }}>₹{data.rewardPerReferral}</Text>
-            </Text>
-            <Text style={[styles.ticketSubtext, { fontSize: 11.5 * u, marginTop: 2 * u }]}>
-              Friend saves ₹{data.rules.welcomeReward} on 1st wash • You get ₹{data.rewardPerReferral} wallet cash
-            </Text>
-          </View>
-
-          {/* Micro Perks Tagline */}
-          <View style={[styles.ticketPerksStrip, { marginTop: 8 * u }]}>
-            <Text style={[styles.ticketPerksText, { fontSize: 10 * u }]}>
-              ⚡ Instant Cash  •  👥 Unlimited Friends  •  🧺 All Services
-            </Text>
-          </View>
-        </View>
-
-        {/* ── Bottom Stub: Code Pill & Claim Action ── */}
-        <View
-          style={[
-            styles.ticketBottomStub,
-            {
-              top: splitY,
-              height: ticketH - splitY,
-              paddingHorizontal: 18 * u,
-            },
-          ]}
-        >
-          {/* Monospaced Code Pill */}
-          <View style={[styles.ticketCodePill, { height: 40 * u, borderRadius: 20 * u }]}>
-            <Text style={[styles.ticketCodeText, { fontSize: 16 * u }]}>{code}</Text>
-            <Pressable
-              onPress={onCopy}
-              accessibilityRole="button"
-              accessibilityLabel={copied ? 'Code copied' : 'Copy referral code'}
-              style={({ pressed }) => [
-                styles.ticketCopyBtn,
-                copied && styles.ticketCopyBtnCopied,
-                webCursor,
-                pressed && { transform: [{ scale: 0.94 }] },
-                { height: 32 * u, paddingHorizontal: 12 * u, borderRadius: 16 * u },
-              ]}
-            >
-              <Icon
-                name={copied ? 'check' : 'copy'}
-                size={12 * u}
-                color="#FFFFFF"
-                strokeWidth={2.4}
-              />
-              <Text style={[styles.ticketCopyBtnText, { fontSize: 10.5 * u }]}>
-                {copied ? 'COPIED' : 'COPY'}
-              </Text>
-            </Pressable>
-          </View>
-
-          {/* Right Pass Metadata */}
-          <View style={styles.ticketStubMeta}>
-            <Text style={[styles.ticketStubMetaTop, { fontSize: 8.5 * u }]}>
-              ADMIT: ALL FRIENDS
-            </Text>
-            <Text style={[styles.ticketStubMetaBtm, { fontSize: 8.5 * u }]}>
-              NO EXPIRY • 100% CASH
-            </Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
-}
 
 /**
  * Refer & earn screen:
@@ -400,7 +221,7 @@ export function ReferScreen({ navigation }: ScreenProps<'Refer'>) {
   const rewardedCount = data ? data.history.filter((r) => r.status === 'rewarded').length : 0;
   const pendingCount = data ? data.history.filter((r) => r.status === 'joined').length : 0;
   const invitedCount = data ? data.history.filter((r) => r.status === 'invited').length : 0;
-  const ticketW = Math.min(Math.round(screenW - PAGE * 2), 440);
+  const passW = Math.min(Math.round(screenW - PAGE * 2), 528);
 
   return (
     <View style={styles.root}>
@@ -409,7 +230,7 @@ export function ReferScreen({ navigation }: ScreenProps<'Refer'>) {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: bar.height + space.xs,
+          paddingTop: bar.height,
           paddingBottom: bottomGap + 100,
         }}
       >
@@ -425,62 +246,38 @@ export function ReferScreen({ navigation }: ScreenProps<'Refer'>) {
           </View>
         ) : (
           <>
-            {/* ── 1. Top Warm Beige Header Panel ── */}
+            {/* ── 1. Header: your pass, hanging from a lanyard ── */}
             <View style={styles.panel}>
-              <View style={styles.panelInner}>
-                <Rise delay={60} distance={12}>
-                  <Text style={styles.hello}>
-                    Give ₹{data.rules.welcomeReward}, get{' '}
-                    <Text style={styles.helloOrange}>₹{data.rewardPerReferral}</Text>
-                  </Text>
-                  <Text style={styles.helloSub}>
-                    Invite campus friends to Washing Basket & earn instant cash
-                  </Text>
-                  <View style={styles.tags}>
-                    <View style={styles.tag}>
-                      <Text style={styles.tagText}>NO LIMIT</Text>
-                    </View>
-                    <View style={styles.tag}>
-                      <Text style={styles.tagText}>INSTANT WALLET CASH</Text>
-                    </View>
-                  </View>
-                </Rise>
-              </View>
+              <Rise delay={80} distance={0} style={styles.hangWrap}>
+                <HangingPass
+                  id="refer-pass"
+                  width={passW}
+                  canvas={BEIGE}
+                  reward={money(data.rewardPerReferral)}
+                  friendReward={money(data.rules.welcomeReward)}
+                  code={code}
+                  serial={serialOf(code)}
+                  copied={copied}
+                  onCopy={copy}
+                />
+              </Rise>
+              <Rise delay={700} distance={6}>
+                <View style={styles.hint}>
+                  <Icon name="refresh" size={11} color="rgba(10,28,62,0.45)" strokeWidth={2.4} />
+                  <Text style={styles.hintText}>Swing it · tap to turn it over</Text>
+                </View>
+              </Rise>
             </View>
 
-            {/* ── 2. Content Body overlapping top panel ── */}
+            {/* ── 2. Content ── */}
             <View style={styles.page}>
               <View style={styles.cards}>
-                {/* ── The VIP Invitation Ticket ── */}
-                <Deal delay={120}>
-                  <ReferralTicket
-                    w={ticketW}
-                    data={data}
-                    code={code}
-                    copied={copied}
-                    onCopy={copy}
-                  />
-                </Deal>
-
-                {/* ── Total Earned / Stats Strip Card ── */}
+                {/* ── Earnings at a glance ── */}
                 <Deal delay={200}>
-                  <View style={styles.statsCard}>
-                    <View style={styles.statCol}>
-                      <Text style={styles.statNum}>{money(data.earned)}</Text>
-                      <Text style={styles.statLabel}>Total Earned</Text>
-                    </View>
-                    <View style={styles.statRule} />
-                    <View style={styles.statCol}>
-                      <Text style={styles.statNum}>{joined}</Text>
-                      <Text style={styles.statLabel}>Friends Joined</Text>
-                    </View>
-                    <View style={styles.statRule} />
-                    <View style={styles.statCol}>
-                      <Text style={[styles.statNum, styles.statPending]}>
-                        {money(data.pending)}
-                      </Text>
-                      <Text style={styles.statLabel}>Pending Cash</Text>
-                    </View>
+                  <View style={styles.statsRow}>
+                    <StatTile icon="wallet" tint="#E7F6EC" fg="#1F8A47" value={money(data.earned)} label="Earned" />
+                    <StatTile icon="user" tint="#E9EFFA" fg="#2F4570" value={String(joined)} label="Joined" />
+                    <StatTile icon="clock" tint="#FFF3DC" fg="#B7741A" value={money(data.pending)} label="Pending" />
                   </View>
                 </Deal>
 
@@ -626,7 +423,7 @@ export function ReferScreen({ navigation }: ScreenProps<'Refer'>) {
 
                     {/* Bottom encouraging footer note */}
                     <View style={styles.friendsCardFoot}>
-                      <Icon name="sparkle" size={12} color="#FFA742" strokeWidth={2.2} />
+                      <Icon name="gift" size={12} color="#FFA742" strokeWidth={2.2} />
                       <Text style={styles.friendsCardFootText}>
                         Invite more campus friends to earn ₹200 on every first wash.
                       </Text>
@@ -646,7 +443,7 @@ export function ReferScreen({ navigation }: ScreenProps<'Refer'>) {
         style={{ paddingTop: Math.max(insets.top, 6), paddingBottom: space.xs }}
       >
         <View style={styles.barInner}>
-          <TopBar padded={false} leading="back" title="Refer & earn" />
+          <TopBar padded={false} title="Refer & earn" />
         </View>
       </CollapsingBar>
 
@@ -699,6 +496,28 @@ export function ReferScreen({ navigation }: ScreenProps<'Refer'>) {
 
       {/* Floating Bottom Navigation Bar */}
       <FloatingBottomBar />
+    </View>
+  );
+}
+
+/** A six-digit ticket number that always comes out the same for the same code. */
+function serialOf(code: string) {
+  let h = 7;
+  for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) % 1000003;
+  return String(h % 1000000).padStart(6, '0');
+}
+
+/** One earnings figure: a tinted icon, the value, a one-word label. */
+function StatTile({ icon, tint, fg, value, label }: { icon: IconName; tint: string; fg: string; value: string; label: string }) {
+  return (
+    <View style={styles.statTile}>
+      <View style={[styles.statIcon, { backgroundColor: tint }]}>
+        <Icon name={icon} size={15} color={fg} strokeWidth={2.3} />
+      </View>
+      <Text style={styles.statNum} numberOfLines={1} adjustsFontSizeToFit>
+        {value}
+      </Text>
+      <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
@@ -875,202 +694,37 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 
-  /* Top Beige Panel */
+  /* Header */
   panel: {
     backgroundColor: BEIGE,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
-    paddingTop: 18,
-    paddingBottom: 72,
+    paddingTop: 0,
+    paddingBottom: 18,
+    overflow: 'hidden',
   },
-  panelInner: {
-    paddingHorizontal: PAGE + 4,
-    maxWidth: 560,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  hello: {
-    fontFamily: fonts.bold,
-    fontSize: 32,
-    lineHeight: 37,
-    letterSpacing: -1.1,
-    color: NAVY,
-  },
-  helloOrange: {
-    fontFamily: fonts.bold,
-    fontSize: 32,
-    lineHeight: 37,
-    letterSpacing: -1.1,
-    color: colors.orange,
-  },
-  helloSub: {
-    fontFamily: fonts.medium,
-    fontSize: 13.5,
-    lineHeight: 18,
-    color: 'rgba(10,28,62,0.65)',
-    marginTop: 6,
-  },
-  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
-  tag: {
-    height: 28,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E8E4DA',
-    justifyContent: 'center',
-  },
-  tagText: { fontFamily: fonts.bold, fontSize: 10.5, letterSpacing: 0.8, color: NAVY },
+  hangWrap: { alignItems: 'center' },
+  hint: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 14 },
+  hintText: { fontFamily: fonts.medium, fontSize: 11.5, color: 'rgba(10,28,62,0.45)' },
 
-  cards: { marginTop: -46, gap: 14 },
+  cards: { marginTop: space.lg, gap: 14 },
 
-  /* VIP Invitation Ticket Styles (Deep Navy Boarding Pass) */
-  ticketContainer: {
-    borderRadius: 24,
-    alignSelf: 'center',
-  },
-  ticketTopBody: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    justifyContent: 'space-between',
-  },
-  ticketHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  ticketKicker: {
-    fontFamily: fonts.bold,
-    color: '#FFA742',
-  },
-  ticketVipBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ticketVipBadgeText: {
-    fontFamily: fonts.bold,
-    color: '#FFFFFF',
-  },
-  ticketHeadline: {
-    fontFamily: fonts.bold,
-    color: '#FFFFFF',
-    letterSpacing: -0.4,
-  },
-  ticketSubtext: {
-    fontFamily: fonts.regular,
-    color: 'rgba(255, 255, 255, 0.72)',
-    lineHeight: 16,
-  },
-  ticketPerksStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ticketPerksText: {
-    fontFamily: fonts.medium,
-    color: '#FFA742',
-    letterSpacing: 0.2,
-  },
-  ticketBottomStub: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  ticketCodePill: {
+  /* Earnings tiles */
+  statsRow: { flexDirection: 'row', gap: 10 },
+  statTile: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    padding: 14,
+    borderRadius: 20,
     backgroundColor: '#FFFFFF',
-    paddingLeft: 14,
-    paddingRight: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.35)',
+    borderColor: '#EFEBE3',
     ...(Platform.OS === 'web'
-      ? ({ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)' } as object)
-      : { shadowColor: '#000000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 2 }),
+      ? ({ boxShadow: '0 6px 16px -8px rgba(10, 28, 62, 0.12)' } as object)
+      : { shadowColor: NAVY, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 1 }),
   },
-  ticketCodeText: {
-    fontFamily: MONO,
-    fontWeight: '800',
-    color: NAVY,
-    letterSpacing: 2,
-  },
-  ticketCopyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    backgroundColor: colors.orange,
-  },
-  ticketCopyBtnCopied: {
-    backgroundColor: '#059669',
-  },
-  ticketCopyBtnText: {
-    fontFamily: fonts.bold,
-    color: '#FFFFFF',
-    letterSpacing: 0.8,
-  },
-  ticketStubMeta: {
-    alignItems: 'flex-end',
-    gap: 2,
-  },
-  ticketStubMetaTop: {
-    fontFamily: MONO,
-    color: 'rgba(255, 255, 255, 0.75)',
-    letterSpacing: 0.8,
-  },
-  ticketStubMetaBtm: {
-    fontFamily: fonts.bold,
-    color: '#FFA742',
-    letterSpacing: 0.6,
-  },
-
-  /* Stats Card Strip */
-  statsCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 22,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#D4CFBF',
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-  },
-  statCol: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statNum: {
-    fontFamily: fonts.extrabold,
-    fontSize: 20,
-    color: NAVY,
-    fontVariant: ['tabular-nums'],
-  },
-  statPending: {
-    color: colors.orange,
-  },
-  statLabel: {
-    fontFamily: fonts.medium,
-    fontSize: 11.5,
-    color: colors.inkMuted,
-    marginTop: 2,
-  },
-  statRule: {
-    width: 1,
-    height: 32,
-    backgroundColor: '#F0ECE4',
-  },
+  statIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  statNum: { fontFamily: fonts.extrabold, fontSize: 19, letterSpacing: -0.5, color: NAVY, marginTop: 12, fontVariant: ['tabular-nums'] },
+  statLabel: { fontFamily: fonts.medium, fontSize: 12, color: colors.inkMuted, marginTop: 1 },
 
   /* Section Header */
   head: {

@@ -18,16 +18,17 @@ import { ReceiptScreen } from '../screens/laundry/ReceiptScreen';
 import { VerifyClothesScreen } from '../screens/laundry/VerifyClothesScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { StaffDeliveryScreen } from '../screens/staff/StaffDeliveryScreen';
-import { StaffHomeScreen } from '../screens/staff/StaffHomeScreen';
+import { StaffNotificationsScreen } from '../screens/staff/StaffNotificationsScreen';
 import { StaffOrderScreen } from '../screens/staff/StaffOrderScreen';
 import { StaffReviewScreen } from '../screens/staff/StaffReviewScreen';
-import { StaffScanScreen } from '../screens/staff/StaffScanScreen';
+import { StaffSalaryScreen } from '../screens/staff/StaffSalaryScreen';
 import { LaundryBridge } from '../laundry/LaundryBridge';
 import { useSession } from '../session/session';
 import { app, colors } from '../theme';
 import { DrawerProvider } from './AppDrawer';
 import { MainTabs } from './MainTabs';
 import { navigationRef } from './ref';
+import { StaffTabs } from './StaffTabs';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -60,13 +61,14 @@ export function RootNavigator() {
           }}
         >
           {isStaff ? (
-            // staff signed in with the demo staff number: their location's orders, nothing of the customer app
+            // staff signed in with the demo staff number: five tabs for their branch's work, nothing of the customer app
             <Stack.Group screenOptions={{ contentStyle: { backgroundColor: app.canvas } }}>
-              <Stack.Screen name="StaffHome" component={StaffHomeScreen} options={{ animation: 'fade' }} />
-              <Stack.Screen name="StaffScan" component={StaffScanScreen} options={{ animation: 'fade_from_bottom' }} />
-              <Stack.Screen name="StaffReview" component={StaffReviewScreen} />
+              <Stack.Screen name="StaffTabs" component={StaffTabs} options={{ animation: 'fade' }} />
               <Stack.Screen name="StaffOrder" component={StaffOrderScreen} />
-              <Stack.Screen name="StaffDelivery" component={StaffDeliveryScreen} />
+              <Stack.Screen name="StaffReview" component={StaffReviewScreen} options={{ gestureEnabled: false }} />
+              <Stack.Screen name="StaffDelivery" component={StaffDeliveryScreen} options={{ gestureEnabled: false }} />
+              <Stack.Screen name="StaffNotifications" component={StaffNotificationsScreen} />
+              <Stack.Screen name="StaffSalary" component={StaffSalaryScreen} />
             </Stack.Group>
           ) : (session && session.role !== 'staff' && stage === 'ONBOARDING_COMPLETED') || (!session && guest) ? (
             // the customer app: tabs, plus the screens pushed over them

@@ -1,13 +1,16 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Rect, Stop } from 'react-native-svg';
 import Animated, {
+  FadeIn,
   FadeInLeft,
   FadeInRight,
+  FadeOut,
   interpolate,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '../../components/app/Icon';
@@ -16,7 +19,7 @@ import { Rise, useFocusReplay } from '../../components/app/motion';
 import { TopBar } from '../../components/app/TopBar';
 import { KeyValue } from '../../components/app/primitives';
 import { ListSkeleton } from '../../components/app/states';
-import { BasketCard } from '../../components/laundry/BasketCard';
+import { BASKET_PEEK, BasketCard } from '../../components/laundry/BasketCard';
 import { QtyStepper } from '../../components/laundry/QtyStepper';
 import { PillField, PillTextArea } from '../../components/ui/SheetForm';
 import { useAppUser } from '../../hooks/useAppUser';
@@ -36,52 +39,7 @@ import type { Location, ServiceMode } from '../../mock/types';
 import type { TabProps } from '../../navigation/types';
 import { useSession } from '../../session/session';
 import { app, colors, fonts, shape, space, text } from '../../theme';
-import type { Offer, ServiceId } from '../../types/models';
-
-const DEFAULT_OFFERS: Offer[] = [
-  {
-    id: 'of-5',
-    code: 'FIRSTWASH',
-    discountBadge: '20% OFF',
-    badgeLabel: 'Limited Offer',
-    title: 'Flat 20% off',
-    description: 'On your first laundry pickup or drop-off.',
-    validFrom: '2026-10-01',
-    validUntil: '2026-12-31',
-    eligibility: 'New customers',
-    serviceIds: 'all',
-    status: 'active',
-    discountValue: '20%',
-  },
-  {
-    id: 'of-1',
-    code: 'CLEAN15',
-    discountBadge: '15% OFF',
-    badgeLabel: 'Special',
-    title: '15% off orders',
-    description: 'Valid on wash & iron and laundry baskets.',
-    validFrom: '2026-10-01',
-    validUntil: '2026-12-31',
-    eligibility: 'All orders',
-    serviceIds: 'all',
-    status: 'active',
-    discountValue: '15%',
-  },
-  {
-    id: 'of-2',
-    code: 'FREEDEL',
-    discountBadge: 'FREE DELIVERY',
-    badgeLabel: 'Campus Special',
-    title: 'Free delivery',
-    description: 'Zero delivery fee on your doorstep pickup.',
-    validFrom: '2026-10-01',
-    validUntil: '2026-12-31',
-    eligibility: 'All orders',
-    serviceIds: 'all',
-    status: 'active',
-    discountValue: '₹30',
-  },
-];
+import type { ServiceId } from '../../types/models';
 
 type Step = 'items' | 'pickup' | 'review';
 const webCursor = Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null;
@@ -111,7 +69,7 @@ const LOOK: Record<string, { color: string; icon: IconName }> = {
   'dry-clean': { color: INK, icon: 'shield' },
   blanket: { color: '#4A6FA5', icon: 'package' },
 };
-const lookOf = (id: string) => LOOK[id] ?? { color: INK, icon: 'sparkle' as IconName };
+const lookOf = (id: string) => LOOK[id] ?? { color: INK, icon: 'shirt' as IconName };
 
 const UNIT_LABEL: Record<string, string> = {
   'only-wash': 'PER KG',
@@ -157,8 +115,6 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
   const [day, setDay] = useState<string | null>(null);
   const [pickedSlot, setSlotId] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
-  const [appliedOffer, setAppliedOffer] = useState<Offer | null>(null);
-  const [showOffersPicker, setShowOffersPicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -249,19 +205,7 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
   const charge = catalog.serviceCharges[mode];
   const isHome = mode === 'HOME_PICKUP';
 
-  const discountAmount = (() => {
-    if (!appliedOffer) return 0;
-    if (appliedOffer.code === 'FIRSTWASH') return Math.round(priced.subtotal * 0.2);
-    if (appliedOffer.code === 'CLEAN15') return Math.round(priced.subtotal * 0.15);
-    if (appliedOffer.code === 'FREEDEL') return Math.min(priced.serviceCharge || 30, 30);
-    if (appliedOffer.discountValue?.includes('%')) {
-      const pct = parseInt(appliedOffer.discountValue, 10);
-      return Math.round(priced.subtotal * (pct / 100));
-    }
-    return 20;
-  })();
-
-  const finalTotal = Math.max(0, priced.total - discountAmount);
+  const finalTotal = priced.total;
   const steps: Step[] = isHome ? ['items', 'pickup', 'review'] : ['items', 'review'];
   const at = steps.indexOf(step);
 
@@ -300,8 +244,6 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
     setDay(null);
     setSlotId(null);
     setError(null);
-    setAppliedOffer(null);
-    setShowOffersPicker(false);
   };
 
   async function submit() {
@@ -318,8 +260,8 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
         locationId: location.id,
         serviceMode: mode,
         basket,
-        discount: discountAmount,
-        couponCode: appliedOffer?.code,
+        discount: 0,
+        couponCode: undefined,
         pickup: isHome
           ? {
               address: address.trim(),
@@ -346,7 +288,7 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
     step === 'review'
       ? guest
         ? 'Sign in to order'
-        : `Unlock QR · Pay ${money(finalTotal)}`
+        : `Unlock QR · Pay ${money(priced.total)}`
       : 'Continue';
 
   // the checkout bar: dark, floating just above the tab bar, with the total in yellow
@@ -376,7 +318,7 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
         ) : null}
         <View style={styles.flex}>
           <Text style={[styles.total, at === 0 && styles.totalPad]}>
-            {money(step === 'review' ? finalTotal : priced.total)}
+            {money(priced.total)}
           </Text>
         </View>
         <Pressable
@@ -414,12 +356,12 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
       <Animated.View
         style={[
           styles.orangeCardWrap,
-          { top: Math.max(insets.top, 6) + 68 },
+          { top: restingTop - BASKET_PEEK },
           orangeCardStyle,
         ]}
       >
         <BasketCard
-          total={step === 'review' ? finalTotal : priced.total}
+          total={priced.total}
           pieces={priced.pieces}
           place={place}
         />
@@ -446,9 +388,7 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
               <Text style={styles.sheetTitle}>
                 {step === 'items' ? 'All services' : step === 'pickup' ? 'Pickup details' : 'Order review'}
               </Text>
-              {step === 'items' ? (
-                <Text style={styles.sheetCount}>{catalog.categories.length} categories</Text>
-              ) : step === 'review' ? (
+              {step === 'review' ? (
                 <Text style={styles.sheetCount}>{totalItemsCount} {totalItemsCount === 1 ? 'item' : 'items'}</Text>
               ) : null}
             </View>
@@ -487,16 +427,6 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
               })}
             </View>
           </View>
-
-          <Text style={styles.sub} numberOfLines={1}>
-            {step === 'items'
-              ? 'Add each item and how many · Mix services in one order'
-              : step === 'pickup'
-              ? 'Choose your address, pickup day and time slot'
-              : isHome
-              ? 'Check your items and pickup details'
-              : 'Check your items and drop-off location'}
-          </Text>
 
           <View style={styles.headingDivider} />
 
@@ -697,116 +627,6 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
               ))}
             </View>
 
-            {/* Offers & Coupons Selection Card */}
-            <View style={[styles.reviewCard, styles.reviewCardNext, soft]}>
-              {appliedOffer ? (
-                <View style={styles.appliedCardRow}>
-                  <View style={styles.appliedCardLeft}>
-                    <View style={styles.appliedIconCircle}>
-                      <Icon name="tag" size={16} color="#059669" strokeWidth={2.4} />
-                    </View>
-                    <View style={styles.flex}>
-                      <View style={styles.appliedTitleRow}>
-                        <Text style={styles.appliedCode}>{appliedOffer.code}</Text>
-                        <View style={styles.savingsPill}>
-                          <Text style={styles.savingsPillText}>Saved {money(discountAmount)}</Text>
-                        </View>
-                      </View>
-                      <Text style={styles.appliedDesc}>{appliedOffer.title}</Text>
-                    </View>
-                  </View>
-                  <Pressable
-                    onPress={() => {
-                      haptic.tap();
-                      setAppliedOffer(null);
-                    }}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel="Remove coupon"
-                    style={({ pressed }) => [styles.removeCouponBtn, webCursor, pressed && { opacity: 0.7 }]}
-                  >
-                    <Text style={styles.removeCouponText}>Remove</Text>
-                  </Pressable>
-                </View>
-              ) : (
-                <View>
-                  <Pressable
-                    onPress={() => {
-                      haptic.tap();
-                      setShowOffersPicker(!showOffersPicker);
-                    }}
-                    accessibilityRole="button"
-                    accessibilityLabel="Apply coupon or offer"
-                    style={({ pressed }) => [styles.offerSelectRow, webCursor, pressed && { opacity: 0.8 }]}
-                  >
-                    <View style={styles.offerSelectLeft}>
-                      <View style={styles.offerIconCircle}>
-                        <Icon name="tag" size={16} color={colors.orange} strokeWidth={2.4} />
-                      </View>
-                      <View style={styles.flex}>
-                        <Text style={styles.offerSelectTitle}>Apply Coupon / Offer</Text>
-                        <Text style={styles.offerSelectSub}>
-                          {DEFAULT_OFFERS.length} available offers · Save up to 20%
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={styles.offerSelectRight}>
-                      <Text style={styles.offerSelectActionText}>
-                        {showOffersPicker ? 'Hide' : 'Select'}
-                      </Text>
-                      <Icon
-                        name={showOffersPicker ? 'chevronDown' : 'chevronRight'}
-                        size={14}
-                        color={colors.navy}
-                        strokeWidth={2.4}
-                      />
-                    </View>
-                  </Pressable>
-
-                  {showOffersPicker ? (
-                    <View style={styles.offersPickerList}>
-                      {DEFAULT_OFFERS.map((offer) => {
-                        const estDiscount =
-                          offer.code === 'FIRSTWASH'
-                            ? Math.round(priced.subtotal * 0.2)
-                            : offer.code === 'CLEAN15'
-                            ? Math.round(priced.subtotal * 0.15)
-                            : offer.code === 'FREEDEL'
-                            ? Math.min(priced.serviceCharge || 30, 30)
-                            : 20;
-
-                        return (
-                          <View key={offer.id} style={styles.offerItemRow}>
-                            <View style={styles.offerItemLeft}>
-                              <View style={styles.offerItemBadgeRow}>
-                                <Text style={styles.offerItemCode}>{offer.code}</Text>
-                                <View style={styles.offerBadgeTag}>
-                                  <Text style={styles.offerBadgeTagText}>{offer.discountBadge}</Text>
-                                </View>
-                              </View>
-                              <Text style={styles.offerItemTitle}>{offer.title}</Text>
-                              <Text style={styles.offerItemSavings}>Saves {money(estDiscount)} on this order</Text>
-                            </View>
-                            <Pressable
-                              onPress={() => {
-                                haptic.success();
-                                setAppliedOffer(offer);
-                                setShowOffersPicker(false);
-                              }}
-                              accessibilityRole="button"
-                              accessibilityLabel={`Apply coupon ${offer.code}`}
-                              style={({ pressed }) => [styles.applyBtn, webCursor, pressed && { transform: [{ scale: 0.96 }] }]}
-                            >
-                              <Text style={styles.applyBtnText}>APPLY</Text>
-                            </Pressable>
-                          </View>
-                        );
-                      })}
-                    </View>
-                  ) : null}
-                </View>
-              )}
-            </View>
 
             <View style={[styles.reviewCard, styles.reviewCardNext, soft]}>
               <View style={styles.reviewHead}>
@@ -814,19 +634,9 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
               </View>
               <KeyValue label="Subtotal" value={money(priced.subtotal)} />
               <KeyValue label={charge.label} value={priced.serviceCharge ? money(priced.serviceCharge) : 'Free'} />
-              {appliedOffer ? (
-                <KeyValue label={`Coupon (${appliedOffer.code})`} value={`- ${money(discountAmount)}`} valueColor="#059669" />
-              ) : null}
               <View style={styles.totalRow}>
                 <Text style={text.h2}>Total</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
-                  {appliedOffer ? (
-                    <Text style={{ fontFamily: fonts.semibold, fontSize: 15, color: '#71717A', textDecorationLine: 'line-through' }}>
-                      {money(priced.total)}
-                    </Text>
-                  ) : null}
-                  <Text style={styles.totalBig}>{money(finalTotal)}</Text>
-                </View>
+                <Text style={styles.totalBig}>{money(priced.total)}</Text>
               </View>
             </View>
           </Animated.View>
@@ -996,7 +806,7 @@ const styles = StyleSheet.create({
   headingDivider: {
     height: 1,
     backgroundColor: '#E8E4DA',
-    marginTop: 8,
+    marginTop: 12,
     marginBottom: space.xs,
     marginHorizontal: space.lg,
   },
@@ -1249,173 +1059,5 @@ const styles = StyleSheet.create({
   error: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: space.sm, padding: space.sm, backgroundColor: '#FDECEE', borderRadius: 8 },
   errorText: { fontFamily: fonts.medium, fontSize: 12, color: colors.danger },
 
-  offerSelectRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  offerSelectLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  offerIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FFF4EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  offerSelectTitle: {
-    fontFamily: fonts.bold,
-    fontSize: 14.5,
-    color: colors.ink,
-  },
-  offerSelectSub: {
-    fontFamily: fonts.medium,
-    fontSize: 11.5,
-    color: colors.inkMuted,
-    marginTop: 2,
-  },
-  offerSelectRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#F1EDE4',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-  },
-  offerSelectActionText: {
-    fontFamily: fonts.bold,
-    fontSize: 11,
-    color: colors.ink,
-  },
-  offersPickerList: {
-    marginTop: 12,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#F4F1EB',
-    gap: 10,
-  },
-  offerItemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 10,
-    borderRadius: 14,
-    backgroundColor: '#FAF9F6',
-    borderWidth: 1,
-    borderColor: '#EFECE6',
-  },
-  offerItemLeft: {
-    flex: 1,
-    paddingRight: 8,
-  },
-  offerItemBadgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 2,
-  },
-  offerItemCode: {
-    fontFamily: fonts.bold,
-    fontSize: 13,
-    color: colors.navy,
-  },
-  offerBadgeTag: {
-    backgroundColor: '#FFF4EB',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  offerBadgeTagText: {
-    fontFamily: fonts.bold,
-    fontSize: 9.5,
-    color: colors.orange,
-  },
-  offerItemTitle: {
-    fontFamily: fonts.medium,
-    fontSize: 11.5,
-    color: colors.ink,
-  },
-  offerItemSavings: {
-    fontFamily: fonts.semibold,
-    fontSize: 10.5,
-    color: '#059669',
-    marginTop: 2,
-  },
-  applyBtn: {
-    backgroundColor: colors.navy,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-  },
-  applyBtnText: {
-    fontFamily: fonts.bold,
-    fontSize: 11,
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
-  appliedCardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  appliedCardLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  appliedIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#ECFDF5',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  appliedTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  appliedCode: {
-    fontFamily: fonts.bold,
-    fontSize: 14.5,
-    color: '#059669',
-  },
-  savingsPill: {
-    backgroundColor: '#D1FAE5',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  savingsPillText: {
-    fontFamily: fonts.bold,
-    fontSize: 10,
-    color: '#065F46',
-  },
-  appliedDesc: {
-    fontFamily: fonts.medium,
-    fontSize: 11.5,
-    color: colors.inkMuted,
-    marginTop: 2,
-  },
-  removeCouponBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 10,
-    backgroundColor: '#FEE2E2',
-  },
-  removeCouponText: {
-    fontFamily: fonts.bold,
-    fontSize: 11,
-    color: colors.danger,
-  },
+
 });

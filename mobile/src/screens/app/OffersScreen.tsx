@@ -17,7 +17,7 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Line, Path } from 'react-native-svg';
+import Svg, { Defs, Ellipse, Line, Path, RadialGradient, Stop } from 'react-native-svg';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { TopBar } from '../../components/app/TopBar';
@@ -61,7 +61,7 @@ const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'ui-
 type Theme = { paper: string; stub: string; ink: string };
 const THEMES: Theme[] = [
   { paper: '#013E86', stub: '#002A5C', ink: '#FFFFFF' }, // brand navy
-  { paper: '#FE8701', stub: '#E07405', ink: '#FFFFFF' }, // brand orange
+  { paper: '#FFA742', stub: '#E08620', ink: '#FFFFFF' }, // brand orange
   { paper: '#D30D24', stub: '#A80A1C', ink: '#FFFFFF' }, // brand red
   { paper: '#FEDB7D', stub: '#F7C35D', ink: '#012A5C' }, // warm yellow
   { paper: '#0A4E9E', stub: '#063773', ink: '#FFFFFF' }, // royal blue
@@ -619,10 +619,34 @@ function Slide({
     };
   });
   const floorW = Math.round(cardW * 0.8);
+  const floorH = 24;
   return (
     <View style={{ width: pageW, height, alignItems: 'center', paddingTop: SLIDE_TOP }}>
       <View style={[StyleSheet.absoluteFill, hidden && { opacity: 0 }]} pointerEvents="none">
-        <Animated.View style={[styles.floor, { width: floorW, left: (pageW - floorW) / 2, top: SLIDE_TOP + cardH - 6 }, floor]} />
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              width: floorW,
+              height: floorH,
+              left: (pageW - floorW) / 2,
+              top: SLIDE_TOP + cardH - 10,
+            },
+            floor,
+          ]}
+        >
+          <Svg width={floorW} height={floorH}>
+            <Defs>
+              <RadialGradient id={`floorGrad-${index}`} cx="50%" cy="50%" rx="50%" ry="50%" fx="50%" fy="50%">
+                <Stop offset="0%" stopColor="#0B1220" stopOpacity="0.22" />
+                <Stop offset="45%" stopColor="#0B1220" stopOpacity="0.10" />
+                <Stop offset="75%" stopColor="#0B1220" stopOpacity="0.03" />
+                <Stop offset="100%" stopColor="#0B1220" stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
+            <Ellipse cx={floorW / 2} cy={floorH / 2} rx={floorW / 2} ry={floorH / 2} fill={`url(#floorGrad-${index})`} />
+          </Svg>
+        </Animated.View>
       </View>
       <Animated.View style={anim}>
         <View style={hidden ? { opacity: 0 } : null}>{children}</View>
@@ -711,19 +735,18 @@ function OfferDetails({ offer, theme }: { offer: Offer; theme: Theme }) {
   return (
     <Rise distance={8}>
       <View style={styles.detailsHead}>
-        <View style={[styles.accent, { backgroundColor: theme.paper }]} />
-        <View style={styles.headText}>
+        <View style={styles.headTopRow}>
           <Text style={styles.detailsTitle} numberOfLines={1}>
             {offer.title}
           </Text>
-          {/* the streaming-app meta line: status in colour, then plain facts, then a small outlined tag */}
-          <View style={styles.meta}>
-            <Text style={[styles.metaLead, { color: valid.tone.fg }]}>{valid.tag}</Text>
+          <View style={[styles.statusChip, { backgroundColor: valid.tone.bg }]}>
+            <View style={[styles.statusChipDot, { backgroundColor: valid.tone.fg }]} />
+            <Text style={[styles.statusChipText, { color: valid.tone.fg }]}>{valid.tag}</Text>
           </View>
-          <Text style={styles.detailsBody} numberOfLines={2}>
-            {offer.description}
-          </Text>
         </View>
+        <Text style={styles.detailsBody} numberOfLines={2}>
+          {offer.description}
+        </Text>
       </View>
 
       <View style={styles.facts}>
@@ -985,8 +1008,6 @@ function CouponReveal({ offer, theme, no, from, onClose, onBook }: { offer: Offe
   const code = codeOf(offer);
   const [copied, setCopied] = useState(false);
   const active = offer.status === 'active';
-  // the button speaks in the coupon's colour; a light coupon (white-on-yellow would vanish) uses a deeper gold
-  const accent = theme.ink === '#FFFFFF' ? theme.paper : '#B07A00';
 
   // the whole set (coupon, code strip, button) is one tilted group, centred on screen
   const total = h + STRIP_H - STRIP_TUCK + BTN_GAP + BTN_H;
@@ -1064,7 +1085,7 @@ function CouponReveal({ offer, theme, no, from, onClose, onBook }: { offer: Offe
               accessibilityLabel={`Copy code ${code}`}
               style={({ pressed }) => [styles.stripCopy, copied && styles.stripCopied, webCursor, pressed && { opacity: 0.75 }]}
             >
-              <Icon name={copied ? 'check' : 'copy'} size={16} color={copied ? '#FFFFFF' : brand.navy} />
+              <Icon name={copied ? 'check' : 'copy'} size={16} color={copied ? '#FFFFFF' : colors.ink} />
               <Text style={[styles.stripCopyText, copied && { color: '#FFFFFF' }]}>{copied ? 'Copied' : 'Copy'}</Text>
             </Pressable>
           </View>
@@ -1083,8 +1104,8 @@ function CouponReveal({ offer, theme, no, from, onClose, onBook }: { offer: Offe
               accessibilityRole="button"
               style={({ pressed }) => [styles.revealBtn, styles.revealBtnWhite, webCursor, pressed && { transform: [{ scale: 0.98 }] }]}
             >
-              <Text style={[styles.revealBtnText, { color: accent }]}>Book with this offer</Text>
-              <View style={[styles.revealBtnArrow, { backgroundColor: accent }]}>
+              <Text style={styles.revealBtnText}>Book with this offer</Text>
+              <View style={styles.revealBtnArrow}>
                 <Icon name="arrowRight" size={16} color="#FFFFFF" />
               </View>
             </Pressable>
@@ -1134,29 +1155,21 @@ const styles = StyleSheet.create({
       ? ({ boxShadow: '0 -14px 36px rgba(11, 18, 32, 0.16), 0 -2px 8px rgba(11, 18, 32, 0.06)' } as object)
       : { shadowColor: '#0B1220', shadowOffset: { width: 0, height: -8 }, shadowOpacity: 0.16, shadowRadius: 22, elevation: 16 }),
   },
-  floor: {
-    position: 'absolute',
-    height: 18,
-    borderRadius: 999,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    ...(Platform.OS === 'web' ? ({ filter: 'blur(10px)' } as object) : { opacity: 0.5 }),
-  },
   carouselSlot: { alignItems: 'center', justifyContent: 'center', paddingTop: space.xs },
   dots: { flexDirection: 'row', gap: 6, marginTop: -30, marginBottom: space.md + SHEET_OVERLAP },
   segment: { height: 4, borderRadius: 2, backgroundColor: 'rgba(20, 20, 20, 0.12)', overflow: 'hidden' },
   segmentFill: { height: '100%', borderRadius: 2, backgroundColor: CHARCOAL },
 
-  detailsHead: { flexDirection: 'row', gap: space.md },
-  // a fixed height, with the text centred on the line, so every coupon's block matches
-  headText: { flex: 1, height: 92, justifyContent: 'center' },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
-  metaLead: { fontFamily: fonts.bold, fontSize: 13 },
+  detailsHead: {},
+  headTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.md },
+  statusChip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 26, paddingHorizontal: 10, borderRadius: 13, flexShrink: 0 },
+  statusChipDot: { width: 6, height: 6, borderRadius: 3 },
+  statusChipText: { fontFamily: fonts.bold, fontSize: 12, letterSpacing: -0.1 },
   handleHit: { alignSelf: 'center', paddingTop: 10, paddingBottom: 6, paddingHorizontal: 24 },
   handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: '#D5D9E0' },
   sheetBody: { paddingHorizontal: space.xl, paddingTop: space.sm },
-  accent: { width: 2, alignSelf: 'stretch', borderRadius: 1 }, // thin, running the full height of title and line
-  detailsTitle: { fontFamily: fonts.extrabold, fontSize: 20, letterSpacing: -0.6, color: colors.ink },
-  detailsBody: { fontFamily: fonts.regular, fontSize: 13.5, lineHeight: 19, color: colors.inkSoft, marginTop: 3 },
+  detailsTitle: { flex: 1, fontFamily: fonts.extrabold, fontSize: 20, letterSpacing: -0.6, color: colors.ink },
+  detailsBody: { fontFamily: fonts.regular, fontSize: 13.5, lineHeight: 19, color: colors.inkSoft, marginTop: 6 },
   facts: { marginTop: space.lg, borderRadius: 18, backgroundColor: '#F6F7F9', paddingHorizontal: space.lg },
   factRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, height: 40 },
   factRowRule: { borderTopWidth: 1, borderTopColor: '#E9EBEF' },
@@ -1268,7 +1281,7 @@ const styles = StyleSheet.create({
   stripCode: { fontFamily: MONO, fontWeight: '700', fontSize: 21, letterSpacing: 4, color: colors.ink, marginTop: 2 },
   stripCopy: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: app.navySoft },
   stripCopied: { backgroundColor: '#0F8A26' },
-  stripCopyText: { fontFamily: fonts.semibold, fontSize: 13, color: brand.navy },
+  stripCopyText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.ink },
   revealBtn: {
     alignSelf: 'center',
     width: '92%',
@@ -1285,8 +1298,8 @@ const styles = StyleSheet.create({
   },
   revealBtnWhite: { backgroundColor: '#FFFFFF' },
   revealBtnOff: { justifyContent: 'center', paddingRight: space.xl, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
-  revealBtnText: { fontFamily: fonts.bold, fontSize: 15, letterSpacing: -0.1 },
-  revealBtnArrow: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  revealBtnText: { fontFamily: fonts.bold, fontSize: 15, letterSpacing: -0.1, color: colors.ink },
+  revealBtnArrow: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
   closeWrap: { position: 'absolute', right: 20 },
   closeBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
 });

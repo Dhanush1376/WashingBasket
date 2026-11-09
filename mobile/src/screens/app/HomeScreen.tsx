@@ -1,7 +1,6 @@
 import React from "react";
 import {
   Image,
-  Modal,
   Platform,
   Pressable,
   RefreshControl,
@@ -26,6 +25,8 @@ import { Card, SectionHeader } from "../../components/app/primitives";
 import { ORDER_STATUS, STAGE_LABEL } from "../../components/app/status";
 import { EmptyState, ErrorState, Skeleton } from "../../components/app/states";
 import { OfferShowcase } from "../../components/home/OfferShowcase";
+import { AddressesDrawer, type NewAddress } from "../../components/profile/ProfileDrawers";
+import { BottomSheet } from "../../components/ui/BottomSheet";
 import { OverviewGrid } from "../../components/home/OverviewGrid";
 import { PriceTeaser } from "../../components/home/PriceTeaser";
 import { ReferCard } from "../../components/home/ReferCard";
@@ -35,12 +36,14 @@ import { haptic } from "../../lib/haptics";
 import { invalidate, keys, triggerAppRefresh, useQuery } from "../../lib/query";
 import type { TabProps } from "../../navigation/types";
 import {
+  addAddress,
   getAddresses,
   getReferrals,
   getWallet,
   listOffers,
   setDefaultAddress,
 } from "../../services/mock/account.service";
+import { addProfileAddress, getSavedAddresses, setDefaultProfileAddress } from "../../services/mock/profile.service";
 import { slotById } from "../../services/mock/booking.service";
 import {
   getDashboardContent,
@@ -59,7 +62,7 @@ import {
   startingPrice,
 } from "../../services/mock/pricing.service";
 import { app, colors, fonts, shape, space, text } from "../../theme";
-import { Address, ORDER_STAGES } from "../../types/models";
+import { ORDER_STAGES } from "../../types/models";
 
 const webCursor =
   Platform.OS === "web" ? ({ cursor: "pointer" } as object) : null;
@@ -75,6 +78,18 @@ export function HomeScreen({ navigation }: TabProps<"Home">) {
   const services = useQuery(keys.services, getServices);
   const notifications = useQuery(keys.notifications, listNotifications);
   const addresses = useQuery(keys.addresses, getAddresses);
+  // the same saved-addresses drawer as Profile, so picking an address looks and works the same everywhere
+  const savedAddresses = useQuery(keys.profileAddresses, getSavedAddresses);
+  const makeDefault = async (id: string) => {
+    await Promise.all([setDefaultProfileAddress(id), setDefaultAddress(id)]);
+    invalidate(keys.profileAddresses, keys.addresses, keys.dashboard);
+    setTimeout(() => setAddressBoxOpen(false), 280); // let the tick land, then close
+  };
+  const addNewAddress = async (input: NewAddress) => {
+    const [saved] = await Promise.all([addProfileAddress(input), addAddress(input)]);
+    invalidate(keys.profileAddresses, keys.addresses, keys.dashboard);
+    return saved;
+  };
   const requests = useQuery(keys.requests, listRequests);
   const wallet = useQuery(keys.wallet, getWallet);
   const offers = useQuery(keys.offers, listOffers);
@@ -459,23 +474,11 @@ export function HomeScreen({ navigation }: TabProps<"Home">) {
         />
       </CollapsingBar>
 
-      <AddressPopover
-        visible={addressBoxOpen}
-        onClose={() => setAddressBoxOpen(false)}
-        addresses={addresses.data ?? []}
-        selectedId={home?.id}
-        onSelect={async (id) => {
-          haptic.tap();
-          await setDefaultAddress(id);
-          invalidate(keys.addresses, keys.dashboard, keys.profileAddresses);
-          setAddressBoxOpen(false);
-        }}
-        onAdd={() => {
-          setAddressBoxOpen(false);
-          navigation.navigate("AddAddress");
-        }}
-        topOffset={Math.max(insets.top, 6) + 58}
-      />
+      <BottomSheet visible={addressBoxOpen} onClose={() => setAddressBoxOpen(false)}>
+        {savedAddresses.data ? (
+          <AddressesDrawer addresses={savedAddresses.data} onMakeDefault={makeDefault} onAdd={addNewAddress} />
+        ) : null}
+      </BottomSheet>
     </View>
   );
 }
@@ -705,367 +708,4 @@ const styles = StyleSheet.create({
   servicePrice: { fontFamily: fonts.semibold, color: colors.ink },
   offers: { marginTop: space.sm },
   referSection: { marginTop: space.xl },
-  popoverBackdrop: {
-    flex: 1,
-    backgroundColor: "transparent",
-    alignItems: "center",
-  },
-  popoverCaret: {
-    position: "absolute",
-    top: -7,
-    left: 54,
-    width: 14,
-    height: 14,
-    backgroundColor: "#FFFFFF",
-    borderTopWidth: 1,
-    borderLeftWidth: 1,
-    borderColor: "#EAE6DB",
-    transform: [{ rotate: "45deg" }],
-    zIndex: 10,
-  },
-  popoverCard: {
-    position: "absolute",
-    width: "92%",
-    maxWidth: 360,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: "#EAE6DB",
-    padding: space.md,
-    maxHeight: "75%",
-    ...(Platform.OS === "web"
-      ? ({
-          boxShadow:
-            "0 16px 40px rgba(20, 33, 61, 0.18), 0 2px 10px rgba(20, 33, 61, 0.08)",
-        } as object)
-      : {
-          shadowColor: "#14213D",
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.16,
-          shadowRadius: 20,
-          elevation: 12,
-        }),
-  },
-  popoverHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingBottom: space.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0ECE4",
-    marginBottom: space.xs,
-  },
-  popoverTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-  },
-  popoverDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#12AD2B",
-  },
-  popoverHeading: {
-    fontFamily: fonts.bold,
-    fontSize: 13.5,
-    lineHeight: 18,
-    letterSpacing: -0.2,
-    color: colors.ink,
-  },
-  popoverClose: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#F4F2EC",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  popoverScroll: {
-    maxHeight: 260,
-  },
-  popoverItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
-    padding: space.md,
-    borderRadius: 16,
-    marginTop: space.xs,
-    borderWidth: 1,
-    borderColor: "transparent",
-    backgroundColor: "#FAF9F6",
-  },
-  popoverItemSelected: {
-    backgroundColor: "#FFFFFF",
-    borderColor: colors.ink,
-    borderWidth: 1.25,
-    ...(Platform.OS === "web"
-      ? ({
-          boxShadow: "0 2px 8px rgba(20, 33, 61, 0.05)",
-        } as object)
-      : {
-          shadowColor: "#14213D",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.04,
-          shadowRadius: 6,
-          elevation: 2,
-        }),
-  },
-  popoverItemIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#EAE6DB",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  popoverItemIconSelected: {
-    backgroundColor: colors.ink,
-  },
-  popoverItemBody: {
-    flex: 1,
-    minWidth: 0,
-  },
-  popoverItemLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  popoverItemLabel: {
-    fontFamily: fonts.semibold,
-    fontSize: 14,
-    lineHeight: 18,
-    color: colors.ink,
-  },
-  popoverItemLabelSelected: {
-    fontFamily: fonts.bold,
-  },
-  activePill: {
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 6,
-    backgroundColor: "#E3F7E6",
-  },
-  activePillText: {
-    fontFamily: fonts.medium,
-    fontSize: 10.5,
-    color: "#0D7A21",
-  },
-  popoverItemLine1: {
-    fontFamily: fonts.regular,
-    fontSize: 12,
-    lineHeight: 16,
-    color: colors.inkSoft,
-    marginTop: 2,
-  },
-  popoverItemLine2: {
-    fontFamily: fonts.regular,
-    fontSize: 11.5,
-    lineHeight: 15,
-    color: colors.inkMuted,
-  },
-  popoverRadio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "#D4CFC4",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  popoverRadioSelected: {
-    backgroundColor: colors.ink,
-    borderColor: colors.ink,
-  },
-  popoverFooter: {
-    marginTop: space.sm,
-    paddingTop: space.xs,
-    borderTopWidth: 1,
-    borderTopColor: "#F0ECE4",
-  },
-  popoverAction: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
-    paddingVertical: 10,
-    paddingHorizontal: space.xs,
-  },
-  popoverActionIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  popoverActionText: {
-    flex: 1,
-    fontFamily: fonts.medium,
-    fontSize: 13,
-    color: colors.ink,
-  },
-  popoverDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "#F0ECE4",
-    marginVertical: 2,
-  },
 });
-
-function AddressPopover({
-  visible,
-  onClose,
-  addresses,
-  selectedId,
-  onSelect,
-  onAdd,
-  topOffset,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  addresses: Address[];
-  selectedId?: string;
-  onSelect: (id: string) => void;
-  onAdd: () => void;
-  topOffset: number;
-}) {
-  if (!visible) return null;
-
-  return (
-    <Modal transparent visible animationType="fade" onRequestClose={onClose}>
-      <View style={styles.popoverBackdrop}>
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={onClose}
-          accessibilityLabel="Close address menu"
-        />
-        <View style={[styles.popoverCard, { top: topOffset }]}>
-          <View style={styles.popoverCaret} />
-          {/* Header */}
-          <View style={styles.popoverHeader}>
-            <View style={styles.popoverTitleRow}>
-              <View style={styles.popoverDot} />
-              <Text style={styles.popoverHeading}>
-                Delivery & pickup address
-              </Text>
-            </View>
-            <Pressable
-              onPress={onClose}
-              hitSlop={8}
-              style={[styles.popoverClose, webCursor]}
-            >
-              <Icon name="x" size={14} color={colors.ink} strokeWidth={2.2} />
-            </Pressable>
-          </View>
-
-          {/* Addresses list */}
-          <ScrollView
-            style={styles.popoverScroll}
-            showsVerticalScrollIndicator={false}
-          >
-            {addresses.map((a) => {
-              const isSelected =
-                a.id === selectedId || (!selectedId && a.isDefault);
-              return (
-                <Pressable
-                  key={a.id}
-                  onPress={() => onSelect(a.id)}
-                  style={({ pressed }) => [
-                    styles.popoverItem,
-                    isSelected && styles.popoverItemSelected,
-                    webCursor,
-                    pressed && { opacity: 0.8 },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.popoverItemIcon,
-                      isSelected && styles.popoverItemIconSelected,
-                    ]}
-                  >
-                    <Icon
-                      name={
-                        a.label === "Home"
-                          ? "home"
-                          : a.label === "Work"
-                            ? "bag"
-                            : "mapPin"
-                      }
-                      size={16}
-                      color={isSelected ? "#FFFFFF" : colors.ink}
-                      strokeWidth={2}
-                    />
-                  </View>
-
-                  <View style={styles.popoverItemBody}>
-                    <Text
-                      style={[
-                        styles.popoverItemLabel,
-                        isSelected && styles.popoverItemLabelSelected,
-                      ]}
-                    >
-                      {a.label}
-                    </Text>
-                    <Text style={styles.popoverItemLine1} numberOfLines={1}>
-                      {a.line1}
-                    </Text>
-                    <Text style={styles.popoverItemLine2} numberOfLines={1}>
-                      {a.line2 ? `${a.line2}, ${a.city}` : a.city}
-                    </Text>
-                  </View>
-
-                  <View
-                    style={[
-                      styles.popoverRadio,
-                      isSelected && styles.popoverRadioSelected,
-                    ]}
-                  >
-                    {isSelected ? (
-                      <Icon
-                        name="check"
-                        size={12}
-                        color="#FFFFFF"
-                        strokeWidth={2.8}
-                      />
-                    ) : null}
-                  </View>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-
-          {/* Footer actions */}
-          <View style={styles.popoverFooter}>
-            <Pressable
-              onPress={onAdd}
-              style={({ pressed }) => [
-                styles.popoverAction,
-                webCursor,
-                pressed && { opacity: 0.7 },
-              ]}
-            >
-              <View
-                style={[
-                  styles.popoverActionIcon,
-                  { backgroundColor: "#FFF4E5" },
-                ]}
-              >
-                <Icon
-                  name="plus"
-                  size={14}
-                  color={colors.orange}
-                  strokeWidth={2.4}
-                />
-              </View>
-              <Text style={styles.popoverActionText}>Add a new address</Text>
-              <Icon
-                name="chevronRight"
-                size={14}
-                color={colors.inkMuted}
-                strokeWidth={2}
-              />
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { Avatar } from '@/components/ui/Avatar';
 import { IconButton } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { ErrorBoundary } from '@/components/ui/States';
 import { useQuery } from '@/lib/query';
+import { signOut } from '@/lib/demoAuth';
 import { dashboardApi } from '@/services';
 import { AlertTicker } from './AlertTicker';
 import { LocationPicker } from './LocationPicker';
@@ -27,6 +28,7 @@ export function AdminLayout() {
   const sidebarRef = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const counts = useQuery('nav-counts', dashboardApi.getNavCounts);
   const profile = useQuery('admin-profile', dashboardApi.getAdminProfile);
   const dashboard = useQuery('dashboard', dashboardApi.getDashboard);
@@ -179,6 +181,17 @@ export function AdminLayout() {
                 </span>
               </div>
             ) : null}
+            <IconButton
+              icon="logout"
+              label="Sign out"
+              tone="outline"
+              size={36}
+              className="topbar__signout"
+              onClick={() => {
+                signOut();
+                navigate('/login', { replace: true });
+              }}
+            />
           </div>
         </header>
 

@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     backgroundColor: brand.orange,
     ...(Platform.OS === 'web'
-      ? ({ boxShadow: '0 4px 14px rgba(254, 135, 1, 0.32)' } as object)
+      ? ({ boxShadow: '0 4px 14px rgba(255, 167, 66, 0.32)' } as object)
       : { shadowColor: brand.orange, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 }),
   },
   raiseText: { flex: 1, fontFamily: fonts.bold, fontSize: 15, color: '#FFFFFF' },

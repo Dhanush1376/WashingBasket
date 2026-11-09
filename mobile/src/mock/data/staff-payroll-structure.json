@@ -1,0 +1,55 @@
+{
+  "_note": "DEMO DATA: illustrative monthly pay by role, input to scripts/staff/generate-workforce.ts. Not real salaries.",
+  "esiCeiling": 21000,
+  "byRole": {
+    "COUNTER_STAFF": {
+      "gross": 16500,
+      "components": [
+        { "label": "Basic", "share": 0.5 },
+        { "label": "House rent allowance", "share": 0.2 },
+        { "label": "Special allowance", "share": 0.3 }
+      ],
+      "incentives": {
+        "2026-10": [{ "label": "Festive season incentive", "amount": 750 }]
+      }
+    },
+    "PROCESSING_STAFF": {
+      "gross": 15000,
+      "components": [
+        { "label": "Basic", "share": 0.5 },
+        { "label": "House rent allowance", "share": 0.2 },
+        { "label": "Special allowance", "share": 0.3 }
+      ],
+      "incentives": {
+        "2026-10": [{ "label": "Festive season incentive", "amount": 750 }]
+      }
+    },
+    "PICKUP_AGENT": {
+      "gross": 17000,
+      "components": [
+        { "label": "Basic", "share": 0.5 },
+        { "label": "House rent allowance", "share": 0.2 },
+        { "label": "Fuel & conveyance", "share": 0.15 },
+        { "label": "Special allowance", "share": 0.15 }
+      ],
+      "incentives": {
+        "2026-09": [{ "label": "On-time delivery incentive", "amount": 400 }],
+        "2026-10": [
+          { "label": "On-time delivery incentive", "amount": 600 },
+          { "label": "Festive season incentive", "amount": 750 }
+        ]
+      }
+    },
+    "LOCATION_MANAGER": {
+      "gross": 26000,
+      "components": [
+        { "label": "Basic", "share": 0.5 },
+        { "label": "House rent allowance", "share": 0.2 },
+        { "label": "Special allowance", "share": 0.3 }
+      ],
+      "incentives": {
+        "2026-10": [{ "label": "Branch performance bonus", "amount": 1500 }]
+      }
+    }
+  }
+}

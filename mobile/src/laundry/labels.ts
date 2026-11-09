@@ -14,8 +14,9 @@ export const TONE: Record<StatusTone, Tone> = {
 
 export const STAFF_ROLE_LABEL: Record<StaffRole, string> = {
   COUNTER_STAFF: 'Counter staff',
+  PROCESSING_STAFF: 'Processing staff',
   PICKUP_AGENT: 'Pickup & delivery agent',
-  LOCATION_MANAGER: 'Location manager',
+  LOCATION_MANAGER: 'Branch supervisor',
 };
 
 export const NOTIFICATION_LOOK: Record<NotificationKind, { icon: IconName; tone: StatusTone }> = {

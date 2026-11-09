@@ -1,6 +1,7 @@
 /** Brand palette sampled directly from WashingBasket-logo.png. */
 export const brand = {
-  orange: '#FE8701',
+  orange: '#FFA742',
+  logoOrange: '#FE8701',
   red: '#D30D24',
   navy: '#013E86',
 } as const;
@@ -38,12 +39,12 @@ export const colors = {
   lineStrong: '#CBD5E1',
   navyPressed: '#002F68',
   navyTint: '#EEF3FB',
-  orangePressed: '#E67A00',
+  orangePressed: '#E58E2E',
   /** Primary buttons: matches the rich brand orange from the logo. */
   cta: brand.orange,
-  ctaPressed: '#E67A00',
-  ctaTint: '#FFF1E0',
-  orangeTint: '#FFF1E0',
+  ctaPressed: '#E58E2E',
+  ctaTint: '#FFF4E8',
+  orangeTint: '#FFF4E8',
   danger: '#C8102E',
   dangerTint: brandShades.redTint,
   /** Parrot green: bright and unmistakably positive. */
