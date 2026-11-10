@@ -7,6 +7,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import { AppScreen } from '../../components/app/AppScreen';
 import { Icon } from '../../components/app/Icon';
+import { showToast } from '../../components/app/PaymentCelebration';
 import { Button } from '../../components/app/primitives';
 import { EmptyState, ListSkeleton } from '../../components/app/states';
 import { useCurrentCustomer, useLaundryState } from '../../laundry/hooks';
@@ -61,6 +62,7 @@ export function ReceiptScreen({ navigation, route }: ScreenProps<'Receipt'>) {
         if (nav?.share) await nav.share({ title: `Receipt ${v.receipt.number}`, text: message });
         else {
           await Clipboard.setStringAsync(message);
+          showToast('Receipt copied');
           setToast('Receipt copied');
         }
       } else await Share.share({ title: `Receipt ${v.receipt.number}`, message });
@@ -80,16 +82,18 @@ export function ReceiptScreen({ navigation, route }: ScreenProps<'Receipt'>) {
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 2000);
+      showToast('Receipt downloaded');
       setToast('Receipt downloaded');
     } else {
       await Clipboard.setStringAsync(receiptText(v));
+      showToast('Receipt copied');
       setToast('Receipt copied');
     }
     haptic.success();
   };
 
   return (
-    <AppScreen title="Receipt">
+    <AppScreen title="Receipt" hideBottomBar>
       <View style={styles.page}>
         <Printed view={v} animate={!!animate} onPrinted={() => markAnimationShown(v.receipt.id).catch(() => {})} />
         <View style={styles.actions}>
@@ -233,6 +237,21 @@ const styles = StyleSheet.create({
   stamp: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'center', paddingHorizontal: space.md, paddingVertical: 6, borderRadius: 999, borderWidth: 1.5, borderColor: '#0D7A21', transform: [{ rotate: '-4deg' }] },
   stampText: { fontFamily: fonts.bold, fontSize: 12, letterSpacing: 1.4, textTransform: 'uppercase', color: '#0D7A21' },
   actions: { flexDirection: 'row', gap: space.sm, marginTop: space.xl },
-  toast: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'center', marginTop: space.md, paddingHorizontal: space.lg, paddingVertical: space.sm, borderRadius: 999, backgroundColor: colors.ink },
+  toast: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'center',
+    marginTop: space.md,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.sm + 2,
+    borderRadius: 999,
+    backgroundColor: colors.ink,
+    zIndex: 99999,
+    elevation: 99999,
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 8px 24px rgba(10, 28, 62, 0.22)' } as object)
+      : { shadowColor: '#0A1C3E', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.22, shadowRadius: 10 }),
+  },
   toastText: { fontFamily: fonts.semibold, fontSize: 13, color: '#FFFFFF' },
 });

@@ -39,13 +39,20 @@ export function SheetPortalHost() {
   const list = useSyncExternalStore(subscribe, snapshot, snapshot);
   if (!list.length) return null;
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+    <View style={[StyleSheet.absoluteFill, styles.host]} pointerEvents="box-none">
       {list.map((e) => (
         <React.Fragment key={e.id}>{e.node}</React.Fragment>
       ))}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  host: {
+    zIndex: 1000,
+    elevation: 1000,
+  },
+});
 
 /** Draws `node` in the host while it is not null; carries the caller's navigation, route and theme along. */
 export function useSheetPortal(node: React.ReactNode | null) {

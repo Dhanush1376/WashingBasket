@@ -33,12 +33,17 @@ export type PaymentCelebrationInfo = {
   toast?: string;
 };
 
-type Shown = PaymentCelebrationInfo & { id: number; ok: boolean };
+type Shown = PaymentCelebrationInfo & { id: number; ok: boolean; confetti?: boolean };
 let listener: ((c: Shown) => void) | null = null;
 let seq = 0;
 
 export function celebratePayment(info: PaymentCelebrationInfo) {
   listener?.({ ...info, id: ++seq, ok: true });
+}
+
+/** In-app toast notification shown at the top over every screen and drawer. */
+export function showToast(text: string) {
+  listener?.({ amount: '', title: text, toast: text, id: ++seq, ok: true, confetti: false });
 }
 
 /** The same toast for a payment that didn't go through: red X, no confetti. `amount` can carry a short reason. */
@@ -60,10 +65,14 @@ export function PaymentCelebrationHost() {
 
   useEffect(() => {
     listener = (c) => {
-      if (c.ok) {
+      if (c.ok && c.confetti !== false) {
         haptic.success();
         setBlast(c);
-      } else haptic.error();
+      } else if (!c.ok) {
+        haptic.error();
+      } else {
+        haptic.tap();
+      }
       setToast(c);
     };
     return () => {
@@ -84,7 +93,7 @@ export function PaymentCelebrationHost() {
   }, [toast]);
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+    <View style={[StyleSheet.absoluteFill, styles.host]} pointerEvents="box-none">
       {blast ? <ConfettiBlast key={blast.id} /> : null}
       {toast ? <TopToast key={toast.id} info={toast} onClose={() => setToast(null)} /> : null}
     </View>
@@ -177,7 +186,18 @@ function ConfettiPiece({ i, t, spread, drop }: { i: number; t: SharedValue<numbe
 }
 
 const styles = StyleSheet.create({
-  toastWrap: { position: 'absolute', left: 16, right: 16, alignItems: 'center', zIndex: 20 },
+  host: {
+    zIndex: 99999,
+    elevation: 99999,
+  },
+  toastWrap: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    alignItems: 'center',
+    zIndex: 100000,
+    elevation: 100000,
+  },
   toast: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -190,15 +210,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(10, 28, 62, 0.06)',
+    zIndex: 100001,
+    elevation: 100001,
     ...(Platform.OS === 'web'
       ? ({ boxShadow: '0 10px 28px rgba(10, 28, 62, 0.18)' } as object)
-      : { shadowColor: '#0A1C3E', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 18, elevation: 12 }),
+      : { shadowColor: '#0A1C3E', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 18, elevation: 10001 }),
   },
   toastTick: { width: 24, height: 24, borderRadius: 12, backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center' },
   toastCross: { backgroundColor: RED },
   toastText: { flexShrink: 1, fontFamily: fonts.bold, fontSize: 14, color: colors.ink },
   toastAmount: { fontFamily: fonts.medium, color: colors.inkMuted },
 
-  confettiOrigin: { position: 'absolute', width: 0, height: 0, zIndex: 19 },
+  confettiOrigin: { position: 'absolute', width: 0, height: 0, zIndex: 99998, elevation: 99998 },
   piece: { position: 'absolute', borderRadius: 1.5 },
 });

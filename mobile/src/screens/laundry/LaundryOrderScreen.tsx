@@ -380,8 +380,10 @@ export function LaundryOrderScreen({ navigation, route }: ScreenProps<'LaundryOr
         const paid = money(payableTotal);
         setTimeout(() => {
           celebratePayment({ amount: `${paid} paid` });
-          setSlipOpen(true);
         }, 340);
+        setTimeout(() => {
+          setSlipOpen(true);
+        }, 650);
       }
       else {
         paymentFailed({ amount: `${money(r.shortfall)} short` });

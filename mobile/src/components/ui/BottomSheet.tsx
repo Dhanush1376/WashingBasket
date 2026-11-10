@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   BackHandler,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -77,7 +76,7 @@ export function BottomSheet({ visible, onClose, children, footer }: Props) {
     native ? Math.max(0, kb.height.value - bottomInset) : 0,
   );
 
-  // Android Back closes the drawer (a Modal does this itself through onRequestClose)
+  // Android Back closes the drawer
   useEffect(() => {
     if (!android || !visible) return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -86,6 +85,16 @@ export function BottomSheet({ visible, onClose, children, footer }: Props) {
     });
     return () => sub.remove();
   }, [android, visible, onClose]);
+
+  // Web Escape key closes the drawer
+  useEffect(() => {
+    if (Platform.OS !== "web" || !visible || typeof window === "undefined") return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [visible, onClose]);
 
   const backdrop = useAnimatedStyle(() => ({ opacity: t.value * 0.45 }));
   const sheet = useAnimatedStyle(() => ({
@@ -129,29 +138,21 @@ export function BottomSheet({ visible, onClose, children, footer }: Props) {
     </View>
   );
 
-  useSheetPortal(android ? overlay : null);
-  if (!overlay || android) return null;
-  return (
-    <Modal
-      transparent
-      visible
-      animationType="none"
-      onRequestClose={onClose}
-      statusBarTranslucent
-    >
-      {overlay}
-    </Modal>
-  );
+  useSheetPortal(overlay);
+  return null;
 }
 
 const styles = StyleSheet.create({
   fill: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: "flex-end",
     alignItems: "center",
-    ...(Platform.OS === "android"
-      ? { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, elevation: 1000 }
-      : null),
+    zIndex: 1000,
+    elevation: 1000,
   },
   backdrop: { backgroundColor: "#0B1220" },
   sheet: {
