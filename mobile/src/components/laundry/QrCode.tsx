@@ -73,16 +73,20 @@ export function QrFrame({ value, locked, size = 220, label }: { value: string; l
   return (
     <View style={[styles.frame, { width: size + 28, height: size + 28 }]} accessible accessibilityLabel={label ?? (locked ? 'QR code, locked until payment' : 'QR code')}>
       <Animated.View style={codeStyle}>
-        <QrCode value={locked ? decoy : value} size={size} />
+        <QrCode value={locked ? decoy : value} size={size} color={locked ? '#94A3B8' : colors.ink} />
       </Animated.View>
       {veilShown ? (
         <Animated.View style={[StyleSheet.absoluteFill, styles.veil, veilStyle]} pointerEvents="none">
           <BlurView intensity={Platform.OS === 'web' ? 18 : 40} tint="light" style={StyleSheet.absoluteFill} />
           <View style={[StyleSheet.absoluteFill, styles.veilWash]} />
-          <View style={styles.lock}>
-            <Icon name="lock" size={26} color="#FFFFFF" strokeWidth={2.1} />
+          <View style={styles.lockContainer}>
+            <View style={styles.lock}>
+              <Icon name="lock" size={24} color="#FFFFFF" strokeWidth={2.4} />
+            </View>
+            <View style={styles.lockPill}>
+              <Text style={styles.lockPillText}>LOCKED</Text>
+            </View>
           </View>
-          <Text style={styles.lockText}>Locked</Text>
         </Animated.View>
       ) : null}
       {/* corner marks, like a scanner frame */}
@@ -114,22 +118,59 @@ const styles = StyleSheet.create({
         } as object)
       : {}),
   },
-  veilWash: { backgroundColor: 'rgba(255,255,255,0.55)' },
-  lock: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.ink,
+  veilWash: {
+    backgroundColor: Platform.OS === 'web' ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.85)',
+  },
+  lockContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
+    zIndex: 5,
   },
-  lockText: {
-    marginTop: 10,
-    fontFamily: fonts.semibold,
-    fontSize: 13,
-    letterSpacing: 1.6,
+  lock: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.ink,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 4px 14px rgba(10, 28, 62, 0.22)' } as object)
+      : {
+          shadowColor: '#0A1C3E',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.25,
+          shadowRadius: 8,
+          elevation: 6,
+        }),
+  },
+  lockPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 4.5,
+    borderRadius: 12,
+    backgroundColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 2px 8px rgba(10, 28, 62, 0.18)' } as object)
+      : {
+          shadowColor: '#0A1C3E',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.2,
+          shadowRadius: 6,
+          elevation: 4,
+        }),
+  },
+  lockPillText: {
+    fontFamily: fonts.bold,
+    fontSize: 11,
+    letterSpacing: 1.4,
     textTransform: 'uppercase',
-    color: colors.ink,
+    color: '#FFFFFF',
   },
   corner: {
     position: 'absolute',

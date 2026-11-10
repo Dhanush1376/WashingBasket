@@ -277,14 +277,14 @@ export function OrderRow({
   const status = ORDER_STATUS[order.status];
   const count = totals.garments ? plural(totals.garments, 'garment') : `${totals.lines.reduce((s, l) => s + l.qty, 0)} kg`;
   const theme = getOrderTheme(order.status, index);
-  const dateKicker = formatCardDate(order.placedAt);
+  const formattedDate = order.placedAt ? date(order.placedAt) : '';
   const dotColor = getStatusDot(order.status);
 
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`Order #${order.id}, ${service.name}, ${status.label}, ${money(totals.total)}`}
+      accessibilityLabel={`${service.name}, Order #${order.id}, ${status.label}, ${money(totals.total)}`}
       style={({ pressed }) => [
         styles.card,
         {
@@ -299,12 +299,12 @@ export function OrderRow({
       {/* ── Top row: date + title on left, circular arrow on right ── */}
       <View style={styles.topRow}>
         <View style={styles.topMain}>
-          {dateKicker ? <Text style={[styles.dateKicker, { color: theme.sub }]}>{dateKicker}</Text> : null}
+          {formattedDate ? <Text style={[styles.dateKicker, { color: theme.sub }]}>{formattedDate}</Text> : null}
           <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
-            Order #{order.id}
+            {service.name}
           </Text>
           <Text style={[styles.subtitle, { color: theme.sub }]} numberOfLines={1}>
-            {service.name} · {count}
+            Order #{order.id} · {count}
           </Text>
         </View>
         <View style={[styles.arrowCircle, { backgroundColor: theme.arrowBg }]}>

@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useCurrentCustomer, useLaundryState } from '../../laundry/hooks';
-import { money, plural } from '../../lib/format';
+import { date, money, plural } from '../../lib/format';
 import { haptic } from '../../lib/haptics';
 import { isOpen, STATUS_COPY } from '../../mock/engine/lifecycle';
 import { get5StepJourney } from '../laundry/OrderTimeline';
@@ -129,6 +129,19 @@ export function OverviewGrid({
   const orderSteps = progress ? progress.steps.slice(0, 5) : [];
   const orderAt = progress ? progress.stepIndex - 1 : 0;
   const orderLoc = currentOrder && state ? findLocation(state, currentOrder.locationId) : null;
+
+  const orderDate = currentOrder ? date(currentOrder.createdAt) : '';
+  const orderService = useMemo(() => {
+    if (!currentOrder) return '';
+    if (currentOrder.lines && currentOrder.lines.length > 0) {
+      const names = currentOrder.lines.map((l) => l.name.replace(/ · .*/, '')).filter(Boolean);
+      const unique = Array.from(new Set(names));
+      if (unique.length === 1) return unique[0];
+      if (unique.length === 2) return `${unique[0]} & ${unique[1]}`;
+      return `${unique[0]} + ${unique.length - 1} more`;
+    }
+    return plural(currentOrder.pieces, 'piece');
+  }, [currentOrder]);
 
   const hasAnyUrgent = laundryOpen.some((o) => ['PAYMENT_PENDING', 'AWAITING_STAFF_ACCEPTANCE', 'AWAITING_CUSTOMER_VERIFICATION'].includes(o.status));
 
@@ -308,7 +321,7 @@ export function OverviewGrid({
               <View style={styles.leadTop}>
                 <View style={styles.leadText}>
                   <Text style={[styles.personLabel, { color: a.soft }]} numberOfLines={1}>
-                    #{currentOrder.id}{currentOrder.status === 'PAYMENT_PENDING' ? ' · Payment pending' : orderLoc ? ` · ${orderLoc.shortName}` : ''}
+                    {orderDate ? `${orderDate} · ` : ''}#{currentOrder.id} · {orderService}
                   </Text>
                   <Text style={[styles.personValue, { color: a.fg }]} numberOfLines={1} adjustsFontSizeToFit>
                     {orderInfo.title}

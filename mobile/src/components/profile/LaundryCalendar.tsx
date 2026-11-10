@@ -100,15 +100,17 @@ const LEGEND: { type: LaundryEventType; label: string }[] = [
  * delivery for one of the customer's orders. Tapping a day hands its events to `onSelectDay`.
  */
 export function LaundryCalendar({
-  width,
+  width: initialWidth = 340,
   onSelectDay,
   renderDay,
 }: {
-  width: number;
+  width?: number;
   onSelectDay?: (day: string, events: LaundryEventDetail[]) => void;
   /** When given, a tapped date opens a small card pointing at it, filled with this. */
   renderDay?: (day: string, events: LaundryEventDetail[], close: () => void) => React.ReactNode;
 }) {
+  const [containerWidth, setContainerWidth] = useState(initialWidth);
+  const width = containerWidth || initialWidth || 340;
   const today = dayKey(new Date().toISOString());
   const reduced = useReducedMotion();
   const [cursor, setCursor] = useState(() => {
@@ -236,7 +238,7 @@ export function LaundryCalendar({
   });
 
   const gap = 6;
-  const cell = Math.floor((width - gap * 6) / 7);
+  const cell = Math.max(28, Math.floor((width - gap * 6) / 7));
   const tileH = Math.round(cell * 1.18); // a touch taller than wide, like the reference
   const monthEvents = [...byDay.values()].reduce((n, list) => n + list.length, 0);
 
@@ -247,7 +249,14 @@ export function LaundryCalendar({
   const gridH = rows * tileH + (rows - 1) * gap;
 
   return (
-    <View>
+    <View
+      onLayout={(e) => {
+        const w = Math.round(e.nativeEvent.layout.width);
+        if (w > 0 && Math.abs(w - containerWidth) > 1) {
+          setContainerWidth(w);
+        }
+      }}
+    >
       <View style={styles.head}>
         <View style={{ flex: 1, position: 'relative' }}>
           <Text style={styles.kicker}>Laundry activity</Text>
@@ -272,13 +281,15 @@ export function LaundryCalendar({
 
       <View style={[styles.weekdays, { gap }]}>
         {WEEKDAYS.map((w) => (
-          <Text key={w} style={[styles.weekday, { width: cell }]}>
-            {w}
-          </Text>
+          <View key={w} style={styles.weekdayCol}>
+            <Text style={styles.weekday} numberOfLines={1}>
+              {w}
+            </Text>
+          </View>
         ))}
       </View>
 
-      <View style={[styles.carouselWrap, { minHeight: 5 * tileH + 4 * gap, overflow: outgoing ? 'hidden' : 'visible' }]}>
+      <View style={[styles.carouselWrap, { minHeight: rows * tileH + (rows - 1) * gap, overflow: outgoing ? 'hidden' : 'visible' }]}>
         {outgoing ? (
           <Animated.View style={[styles.outgoingWrap, outgoingAnim]} pointerEvents="none">
             <MonthGrid
@@ -286,7 +297,6 @@ export function LaundryCalendar({
               month={outgoing.month}
               today={today}
               selected={null}
-              cell={cell}
               tileH={tileH}
               gap={gap}
               byDay={outgoing.byDay}
@@ -299,7 +309,6 @@ export function LaundryCalendar({
             month={month}
             today={today}
             selected={selected}
-            cell={cell}
             tileH={tileH}
             gap={gap}
             byDay={byDay}
@@ -478,7 +487,6 @@ function MonthGrid({
   month,
   today,
   selected,
-  cell,
   tileH,
   gap,
   byDay,
@@ -488,7 +496,6 @@ function MonthGrid({
   month: number;
   today: string;
   selected: string | null;
-  cell: number;
   tileH: number;
   gap: number;
   byDay: Map<string, LaundryEventDetail[]>;
@@ -501,33 +508,51 @@ function MonthGrid({
   const cells: (number | null)[] = [...Array(lead).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)];
   while (cells.length % 7) cells.push(null);
 
+  // Group into strict 7-day week rows so no row can ever wrap at 6 days on any screen size
+  const weeks: (number | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 7) {
+    weeks.push(cells.slice(i, i + 7));
+  }
+
   return (
-    <View style={[styles.grid, { gap }]}>
-      {cells.map((d, i) => {
-        if (d === null) return <View key={`b${i}`} style={{ width: cell, height: tileH }} />;
-        const k = `${prefix}${String(d).padStart(2, '0')}`;
-        const list = byDay.get(k) ?? [];
-        return (
-          <DayCell
-            key={k}
-            day={d}
-            size={cell}
-            height={tileH}
-            events={list}
-            isToday={k === today}
-            isPast={k < today}
-            isSelected={k === selected}
-            onPress={() => onPressDay?.(k, list, i)}
-          />
-        );
-      })}
+    <View style={styles.grid}>
+      {weeks.map((week, weekIndex) => (
+        <View
+          key={`week-${weekIndex}`}
+          style={[
+            styles.weekRow,
+            { gap, marginBottom: weekIndex === weeks.length - 1 ? 0 : gap },
+          ]}
+        >
+          {week.map((d, colIndex) => {
+            const index = weekIndex * 7 + colIndex;
+            if (d === null) {
+              return <View key={`b-${index}`} style={[styles.cellWrap, { height: tileH }]} />;
+            }
+            const k = `${prefix}${String(d).padStart(2, '0')}`;
+            const list = byDay.get(k) ?? [];
+            return (
+              <View key={k} style={[styles.cellWrap, { height: tileH }]}>
+                <DayCell
+                  day={d}
+                  height={tileH}
+                  events={list}
+                  isToday={k === today}
+                  isPast={k < today}
+                  isSelected={k === selected}
+                  onPress={() => onPressDay?.(k, list, index)}
+                />
+              </View>
+            );
+          })}
+        </View>
+      ))}
     </View>
   );
 }
 
 function DayCell({
   day,
-  size,
   height,
   events,
   isToday,
@@ -536,7 +561,6 @@ function DayCell({
   onPress,
 }: {
   day: number;
-  size: number;
   height: number;
   events: LaundryEventDetail[];
   isToday: boolean;
@@ -578,12 +602,12 @@ function DayCell({
       onPressOut={() => pressScale.set(withSpring(1, { damping: 12, stiffness: 240 }))}
       accessibilityRole="button"
       accessibilityLabel={`${day}${isToday ? ', today' : ''}${events.length ? `, ${events.length} laundry ${events.length === 1 ? 'event' : 'events'}` : ''}`}
-      style={[{ width: size, height }, webCursor]}
+      style={[{ width: '100%', height }, webCursor]}
     >
-      <Animated.View style={[tile, { width: size, height }, cellAnim]}>
+      <Animated.View style={[tile, { width: '100%', height }, cellAnim]}>
         {look ? (
           <View style={styles.badge}>
-            <Icon name={look.icon} size={11} color={look.color} strokeWidth={2.4} />
+            <Icon name={look.icon} size={8.5} color={look.color} strokeWidth={2.4} />
           </View>
         ) : null}
         <Text
@@ -612,23 +636,26 @@ const styles = StyleSheet.create({
   month: { fontFamily: fonts.bold, fontSize: 22, letterSpacing: -0.5, color: '#0A1C3E', marginTop: 1 },
   year: { fontFamily: fonts.semibold, color: 'rgba(10, 28, 62, 0.72)' },
   nav: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255, 255, 255, 0.65)', borderWidth: 1.25, borderColor: 'rgba(255, 255, 255, 0.85)', alignItems: 'center', justifyContent: 'center' },
-  weekdays: { flexDirection: 'row', marginBottom: space.sm },
+  weekdays: { flexDirection: 'row', width: '100%', alignItems: 'center', marginBottom: space.sm },
+  weekdayCol: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   weekday: { fontFamily: fonts.bold, fontSize: 11.5, color: 'rgba(10, 28, 62, 0.75)', textAlign: 'center' },
   carouselWrap: { position: 'relative', overflow: 'hidden', zIndex: 5 },
   outgoingWrap: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1 },
   incomingWrap: { position: 'relative', zIndex: 2 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap' },
+  grid: { flexDirection: 'column', width: '100%' },
+  weekRow: { flexDirection: 'row', width: '100%', alignItems: 'center' },
+  cellWrap: { flex: 1 },
   tile: { flex: 1, borderRadius: 12, padding: 6, justifyContent: 'flex-end', alignItems: 'flex-start' },
   tilePast: { backgroundColor: '#FFFFFF', borderWidth: 1.25, borderColor: 'rgba(255, 255, 255, 0.9)' },
   tileAhead: { backgroundColor: 'rgba(255, 255, 255, 0.45)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.65)' },
   today: { backgroundColor: '#0A1C3E', borderWidth: 1.25, borderColor: '#0A1C3E' },
   badge: {
     position: 'absolute',
-    top: 5,
-    right: 5,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    top: 3.5,
+    right: 3.5,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(60, 45, 20, 0.08)',
@@ -645,16 +672,16 @@ const styles = StyleSheet.create({
   gridWrap: { position: 'relative', zIndex: 5 },
   pop: {
     position: 'absolute',
-    left: -4,
-    right: -4,
+    left: 0,
+    right: 0,
     zIndex: 50,
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
+    borderRadius: 22,
     borderWidth: 1.2,
     borderColor: '#E8E4DA',
-    paddingHorizontal: space.lg,
-    paddingTop: 16,
-    paddingBottom: 14,
+    paddingHorizontal: 12,
+    paddingTop: 14,
+    paddingBottom: 12,
     ...(Platform.OS === 'web'
       ? ({ boxShadow: '0 16px 36px rgba(40, 30, 10, 0.14), 0 2px 8px rgba(40, 30, 10, 0.06)' } as object)
       : { shadowColor: '#0A1C3E', shadowOffset: { width: 0, height: 14 }, shadowOpacity: 0.18, shadowRadius: 26, elevation: 14 }),

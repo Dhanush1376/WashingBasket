@@ -123,7 +123,7 @@ export function OffersScreen({ navigation, route }: ScreenProps<'Offers'>) {
   const list = (offers.data ?? []).filter((o) => filter === 'all' || o.status === filter);
   const current = list[Math.min(index, list.length - 1)];
   const startAt = focusId ? Math.max(0, list.findIndex((o) => o.id === focusId)) : 0;
-  const cardW = Math.round(Math.min(290, pageW * 0.72));
+  const cardW = Math.round(Math.min(308, Math.max(274, pageW * 0.78)));
   const cardH = Math.round(cardW * 0.56);
   const book = () => navigation.navigate('Main', { screen: 'Book' });
 
@@ -864,7 +864,7 @@ function Ticket({
   const code = codeOf(offer);
   const ink = theme.ink;
   const pad = 14 * u;
-  const bigSize = (big.length > 3 ? 50 : 66) * u;
+  const bigSize = (big.length > 3 ? 44 : 54) * u;
 
   const isExpired = offer.status === 'expired';
   const faded = offer.status !== 'active';
@@ -903,22 +903,32 @@ function Ticket({
       <View style={[styles.main, { left: stubW, padding: pad, paddingRight: pad + 6 * u, opacity: textOpacity }]}>
         {/* top: the big number beside a column of small mono labels on hairlines */}
         <View style={styles.mainTop}>
-          <View>
-            <Text style={[styles.big, { color: ink, fontSize: bigSize, lineHeight: bigSize * 1.02, letterSpacing: -3 * u }]} numberOfLines={1}>
+          <View style={{ flexShrink: 0 }}>
+            <Text style={[styles.big, { color: ink, fontSize: bigSize, lineHeight: bigSize * 1.02, letterSpacing: -2 * u }]} numberOfLines={1}>
               {big}
             </Text>
-            <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 10 * u, letterSpacing: 4 * u, marginTop: -2 * u }]}>{small}</Text>
+            <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 9.5 * u, letterSpacing: 3 * u, marginTop: -2 * u }]}>{small}</Text>
           </View>
-          <View style={[styles.labels, { marginLeft: 12 * u }]}>
-            <View style={[styles.ruleRow, { borderColor: ink, paddingBottom: 3 * u }]}>
-              <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 9 * u }]}>Nº {String(no).padStart(2, '0')}</Text>
-              <Text style={[styles.mono, { color: ink, fontSize: 9 * u }]}>{(offer.badgeLabel ?? 'OFFER').toUpperCase()}</Text>
+          <View style={[styles.labels, { marginLeft: 10 * u }]}>
+            <View style={[styles.ruleRow, { borderColor: ink, paddingBottom: 2.5 * u }]}>
+              <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 8.5 * u, flexShrink: 0 }]}>
+                Nº {String(no).padStart(2, '0')}
+              </Text>
+              <Text
+                style={[styles.mono, { color: ink, fontSize: 8.5 * u, flexShrink: 1, textAlign: 'right' }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {(offer.badgeLabel ?? 'OFFER').toUpperCase()}
+              </Text>
             </View>
-            <Text style={[styles.mono, { color: ink, fontSize: 9.5 * u, lineHeight: 13 * u, marginTop: 5 * u }]} numberOfLines={3}>
+            <Text style={[styles.mono, { color: ink, fontSize: 9 * u, lineHeight: 12.5 * u, marginTop: 4 * u }]} numberOfLines={2}>
               {offer.title.toUpperCase()}
             </Text>
-            <View style={[styles.ruleRow, { borderColor: ink, borderTopWidth: 1, borderBottomWidth: 0, paddingTop: 3 * u, marginTop: 'auto' }]}>
-              <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 9 * u }]}>{validity(offer)}</Text>
+            <View style={[styles.ruleRow, { borderColor: ink, borderTopWidth: 1, borderBottomWidth: 0, paddingTop: 2.5 * u, marginTop: 'auto' }]}>
+              <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 8.5 * u, flexShrink: 1 }]} numberOfLines={1}>
+                {validity(offer)}
+              </Text>
             </View>
           </View>
         </View>
@@ -1238,11 +1248,19 @@ const styles = StyleSheet.create({
   stub: { position: 'absolute', left: 0, top: 0, bottom: 0 },
   stubTurn: { position: 'absolute', alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-90deg' }] },
   stubText: { fontFamily: MONO, fontWeight: '700', textAlign: 'center' },
-  main: { position: 'absolute', top: 0, right: 0, bottom: 0, justifyContent: 'space-between' },
-  mainTop: { flexDirection: 'row', flex: 1 },
+  main: { position: 'absolute', top: 0, right: 0, bottom: 0, justifyContent: 'space-between', overflow: 'hidden' },
+  mainTop: { flexDirection: 'row', flex: 1, minWidth: 0, alignItems: 'flex-start' },
   big: { fontFamily: fonts.extrabold },
-  labels: { flex: 1 },
-  ruleRow: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1 },
+  labels: { flex: 1, minWidth: 0, overflow: 'hidden' },
+  ruleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    width: '100%',
+    overflow: 'hidden',
+    gap: 4,
+  },
   mono: { fontFamily: MONO },
   monoBold: { fontWeight: '700' },
   underline: { textDecorationLine: 'underline' },

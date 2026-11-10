@@ -70,6 +70,9 @@ export function SheetSuccess({ title, message, size = 88 }: { title: string; mes
 
 
 
+/** Android only: a cursor pinned to the end of `text` (undefined elsewhere, where the cursor already follows). */
+const ANDROID_END = (text: string) => (Platform.OS === 'android' ? { start: text.length, end: text.length } : undefined);
+
 /* ───────────── 1. Mobile number ───────────── */
 
 export function PhoneStep({ onCode, onSocial }: { onCode: (c: Challenge) => void; onSocial: (s: Session, label: string) => Promise<void> }) {
@@ -132,6 +135,9 @@ export function PhoneStep({ onCode, onSocial }: { onCode: (c: Challenge) => void
           <PillField
             ref={inputRef}
             value={formatNational(digits, country)}
+            // Android leaves the cursor where it was when the group space is added, so the next digit landed
+            // before it and the number came out scrambled: keep the cursor at the end
+            selection={ANDROID_END(formatNational(digits, country))}
             onChangeText={(t) => {
               setDigits((d) => readNational(t, d, country));
               if (error) setError(null);

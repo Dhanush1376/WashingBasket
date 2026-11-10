@@ -1,12 +1,6 @@
-import React from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  FadeIn,
-  interpolate,
-  useAnimatedScrollHandler,
-  useAnimatedStyle,
-  useSharedValue,
-} from 'react-native-reanimated';
+import React, { useMemo, useRef } from 'react';
+import { PanResponder, Platform, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
+import Animated, { Easing, FadeIn, interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '../../components/app/Icon';
@@ -81,56 +75,53 @@ export function NotificationsScreen({ navigation }: ScreenProps<'Notifications'>
   const latest = unread[0] ?? all[0];
   const groups = dayGroups(all);
 
-  const scrollY = useSharedValue(0);
-
-  const onListScroll = useAnimatedScrollHandler({
-    onScroll: (e) => {
-      'worklet';
-      scrollY.value = e.contentOffset.y;
-    },
-  });
-
-  const orangeCardStyle = useAnimatedStyle(() => {
-    const y = Math.max(0, scrollY.value);
-    return {
-      transform: [
-        {
-          translateY: interpolate(y, [0, 36], [0, 42], 'clamp'),
-        },
-      ],
-      opacity: interpolate(y, [0, 24], [1, 0], 'clamp'),
-    };
-  });
-
-  const restingTop = Math.max(insets.top, 6) + 104;
-  const targetTop = Math.max(insets.top, 0);
+  const statusBarH = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0);
+  const restingTop = Math.max(statusBarH, 6) + 104;
+  const targetTop = statusBarH;
   const lift = restingTop - targetTop;
 
-  const sheetStyle = useAnimatedStyle(() => {
-    const y = Math.max(0, scrollY.value);
-    const progress = interpolate(y, [0, 60], [0, 1], 'clamp');
-    return {
-      transform: [
-        {
-          translateY: -progress * lift,
-        },
-      ],
-      borderTopLeftRadius: interpolate(progress, [0, 1], [28, 0]),
-      borderTopRightRadius: interpolate(progress, [0, 1], [28, 0]),
-    };
-  });
+  const pos = useSharedValue(0);
+  const settle = (to: number) => {
+    'worklet';
+    pos.value = withTiming(to, { duration: 280, easing: Easing.out(Easing.cubic) });
+  };
 
-  const handleStyle = useAnimatedStyle(() => {
-    const y = Math.max(0, scrollY.value);
-    return {
-      opacity: interpolate(y, [0, 30], [1, 0], 'clamp'),
-      transform: [
-        {
-          scale: interpolate(y, [0, 30], [1, 0.8], 'clamp'),
+  const startPos = useRef(0);
+  const handlePan = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 4,
+        onPanResponderGrant: () => {
+          startPos.current = pos.value;
         },
-      ],
-    };
-  });
+        onPanResponderMove: (_, g) => {
+          const next = startPos.current - g.dy / lift;
+          pos.value = Math.max(0, Math.min(1, next));
+        },
+        onPanResponderRelease: (_, g) => {
+          if (g.vy < -0.2) settle(1);
+          else if (g.vy > 0.2) settle(0);
+          else settle(pos.value > 0.5 ? 1 : 0);
+        },
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lift, pos],
+  );
+
+  const orangeCardStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: interpolate(pos.value, [0, 1], [0, 36], 'clamp') }],
+    opacity: 1 - pos.value,
+  }));
+
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -pos.value * lift }],
+    borderTopLeftRadius: interpolate(pos.value, [0, 1], [28, 0]),
+    borderTopRightRadius: interpolate(pos.value, [0, 1], [28, 0]),
+  }));
+
+  const statusBarOverlayStyle = useAnimatedStyle(() => ({
+    opacity: pos.value,
+  }));
 
   const open = async (n: AppNotification) => {
     if (!n.read) {
@@ -149,6 +140,16 @@ export function NotificationsScreen({ navigation }: ScreenProps<'Notifications'>
 
   return (
     <View style={styles.root}>
+      {/* ── Status bar background overlay: cream at rest, white when scrolled up ── */}
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.statusBarOverlay,
+          { height: statusBarH },
+          statusBarOverlayStyle,
+        ]}
+      />
+
       {/* ── Top stage: TopBar ── */}
       <View style={[styles.page, { paddingTop: Math.max(insets.top, 6) }]}>
         <Rise distance={8}>
@@ -160,7 +161,7 @@ export function NotificationsScreen({ navigation }: ScreenProps<'Notifications'>
       <Animated.View
         style={[
           styles.orangeCardWrap,
-          { top: Math.max(insets.top, 6) + 68 },
+          { top: Math.max(statusBarH, 6) + 68 },
           orangeCardStyle,
         ]}
       >
@@ -170,20 +171,31 @@ export function NotificationsScreen({ navigation }: ScreenProps<'Notifications'>
         </View>
       </Animated.View>
 
-      {/* ── White App Drawer Sheet (slides up to full screen on scroll) ── */}
+      {/* ── White App Drawer Sheet (stable, non-glitching) ── */}
       <Animated.View
         nativeID={SHEET_ID}
         style={[
           styles.sheet,
-          { top: restingTop, bottom: -lift },
+          { top: restingTop, bottom: 0 },
           sheetStyle,
         ]}
       >
         <View style={styles.sheetInner}>
-          {/* Drag Handle */}
-          <Animated.View style={[styles.handleHit, handleStyle]}>
-            <View style={styles.handle} />
-          </Animated.View>
+          {/* Top indicator handle — tap or drag to expand/collapse */}
+          <Pressable
+            onPress={() => {
+              settle(pos.value > 0.5 ? 0 : 1);
+            }}
+            hitSlop={14}
+            accessibilityRole="button"
+            accessibilityLabel={pos.value > 0.5 ? 'Collapse updates' : 'Expand updates'}
+            style={webCursor}
+            {...handlePan.panHandlers}
+          >
+            <View style={styles.handleHit}>
+              <View style={styles.handle} />
+            </View>
+          </Pressable>
 
           {/* Sheet Header */}
           <View style={styles.sheetHead}>
@@ -223,8 +235,16 @@ export function NotificationsScreen({ navigation }: ScreenProps<'Notifications'>
               style={{ flex: 1 }}
               contentContainerStyle={{ paddingHorizontal: PAGE, paddingBottom: Math.max(insets.bottom, 12) + 110 }}
               showsVerticalScrollIndicator={false}
-              onScroll={onListScroll}
-              scrollEventThrottle={16}
+              onScrollBeginDrag={() => {
+                if (pos.value < 0.5) settle(1);
+              }}
+              onScrollEndDrag={(e) => {
+                const y = e.nativeEvent.contentOffset.y;
+                const vy = e.nativeEvent.velocity?.y ?? 0;
+                if (y <= 4 && vy < -0.2 && pos.value > 0.5) {
+                  settle(0);
+                }
+              }}
             >
               {!all.length ? (
                 <EmptyState
@@ -297,6 +317,14 @@ function Row({ n, onPress }: { n: AppNotification; onPress: () => void }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: CANVAS },
+  statusBarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    zIndex: 99,
+  },
   page: { paddingHorizontal: PAGE, maxWidth: 560, width: '100%', alignSelf: 'center' },
 
   orangeCardWrap: {

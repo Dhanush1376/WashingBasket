@@ -43,7 +43,7 @@ function editJsonModule(src, file, pairs) {
 
 // The film's demo customer (fictional). The sample profile JSON belongs to a developer test account,
 // so it is aligned with the customer who signs up on camera.
-const CUSTOMER = { name: 'Aarav Mehta', email: 'aarav@example.com', phone: '+91 98123 45670', since: '2026-11-10', code: 'WBAARV24' };
+const CUSTOMER = { name: 'Ananya Sharma', email: 'ananya@example.com', phone: '+91 98123 45670', since: '2026-11-10', code: 'WBANAN24' };
 
 module.exports = function freshAccount(src) {
   const who = [['Dhanush Atmakuri', CUSTOMER.name], ['dhanush@example.com', CUSTOMER.email], ['+91 98765 43210', CUSTOMER.phone], ['2026-09-12', CUSTOMER.since]];

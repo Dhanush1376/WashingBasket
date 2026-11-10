@@ -211,8 +211,8 @@ function WebStaggeredDrawer({ visible, onClose }: { visible: boolean; onClose: (
 
 /** The opening plays out over this time; each part takes its own slice of it. */
 const SHOW_MS = 900;
-/** Panel width, as on the web: clamp(260px, 75vw, 340px). */
-const panelWidth = (w: number) => Math.min(Math.max(260, w * 0.75), 340);
+/** Panel width: clamp(280px, w - 56px, 330px) for a natural, spacious drawer on any phone. */
+const panelWidth = (w: number) => Math.min(Math.max(280, w - 56), 330);
 const LAYERS = ['#FE8701', '#013E86'];
 const INK = '#0A1C3E';
 const ACCENT = '#FE8701';
@@ -307,8 +307,14 @@ function DrawerPanel({
         >
           <Animated.View style={[styles.top, header]}>
             <View style={styles.brand}>
-              <WashingBasketLogo width={48} shine={false} />
-              <Text style={styles.brandTitle} accessibilityRole="header" accessibilityLabel="Washing Basket">
+              <WashingBasketLogo width={38} shine={false} />
+              <Text
+                style={styles.brandTitle}
+                accessibilityRole="header"
+                accessibilityLabel="Washing Basket"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 <Text style={styles.brandCap}>W</Text>ashing<Text style={styles.brandCap}>B</Text>asket
               </Text>
             </View>
@@ -393,19 +399,40 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     borderBottomWidth: 1,
     borderBottomColor: HAIRLINE,
+    gap: 10,
   },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1 },
-  brandTitle: { fontFamily: fonts.displayBold, fontSize: 18, lineHeight: 24, letterSpacing: -0.35, color: INK },
-  brandCap: { fontFamily: fonts.display, fontSize: 23, lineHeight: 24, color: INK },
+  brand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    flex: 1,
+    flexShrink: 1,
+    marginRight: 6,
+  },
+  brandTitle: {
+    fontFamily: fonts.displayBold,
+    fontSize: 16.5,
+    lineHeight: 22,
+    letterSpacing: -0.3,
+    color: INK,
+    flexShrink: 1,
+  },
+  brandCap: {
+    fontFamily: fonts.display,
+    fontSize: 20,
+    lineHeight: 22,
+    color: INK,
+  },
   closeBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: HAIRLINE,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
     shadowColor: '#14213D',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,

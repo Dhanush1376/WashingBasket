@@ -63,7 +63,7 @@ export function ProfileScreen({ navigation }: TabProps<'Profile'>) {
   const [editOpen, setEditOpen] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
 
-  const calendarW = Math.min(width, 560) - PAGE * 2 - space.lg * 2;
+  const calendarW = Math.max(260, Math.min(width, 560) - PAGE * 2 - space.lg * 2 - 2);
   const openOrder = (orderId: string) => navigation.navigate('OrderDetail', { orderId });
 
   if (guest) {
@@ -428,42 +428,64 @@ function DaySheet({
         const label = isFutureDelivery ? 'Estimated delivery' : look.label;
         const when = e.type === 'scheduled_pickup' && e.until ? `${time(e.at)} – ${time(e.until)}` : time(e.at);
         const status = e.order ? ORDER_STATUS[e.order.status] : null;
-        const meta = [e.order?.service, `#${e.orderId}`, e.order?.itemsLabel].filter(Boolean).join('  ·  ');
+        const serviceName = e.order?.service || 'Laundry Service';
+        const itemsInfo = e.order?.itemsLabel || '';
+
         return (
-          <View key={e.id} style={[styles.dayCard, i > 0 && { marginTop: 8 }]}>
+          <Pressable
+            key={e.id}
+            onPress={() => onOpenOrder(e.orderId)}
+            accessibilityRole="button"
+            accessibilityLabel={`Order #${e.orderId}, ${label}, ${serviceName}. Tap to view order details`}
+            style={({ pressed }) => [
+              styles.dayCard,
+              i > 0 && { marginTop: 10 },
+              Platform.OS === 'web' && ({ cursor: 'pointer' } as object),
+              pressed && { opacity: 0.88, transform: [{ scale: 0.985 }] },
+            ]}
+          >
+            {/* ── Top row: Event badge + dot on left, Time on right ── */}
             <View style={styles.dayTop}>
-              <View style={[styles.dayDot, { backgroundColor: look.color }]} />
-              <Text style={styles.dayTitle} numberOfLines={1}>
-                {label}
-              </Text>
+              <View style={[styles.dayEventBadge, { backgroundColor: (look.tile ?? '#E0F2FE') + '35' }]}>
+                <View style={[styles.dayDot, { backgroundColor: look.color }]} />
+                <Text style={[styles.dayEventLabel, { color: look.textColor ?? '#0A1C3E' }]} numberOfLines={1}>
+                  {label}
+                </Text>
+              </View>
               <Text style={styles.dayTime}>{when}</Text>
             </View>
-            <Text style={styles.dayMeta} numberOfLines={1}>
-              {meta}
-            </Text>
-            <View style={styles.dayFoot}>
-              {status ? (
-                <View style={styles.dayNow}>
+
+            {/* ── Middle: Order number & service with arrow button ── */}
+            <View style={styles.dayOrderRow}>
+              <View style={styles.dayOrderInfo}>
+                <Text style={styles.dayOrderTitle} numberOfLines={1}>
+                  Order #{e.orderId}
+                </Text>
+                <Text style={styles.dayOrderMeta} numberOfLines={1}>
+                  {[serviceName, itemsInfo].filter(Boolean).join(' · ')}
+                </Text>
+              </View>
+              <View style={styles.dayArrowCircle}>
+                <Icon name="arrowUpRight" size={13.5} color="#FFFFFF" strokeWidth={2.4} />
+              </View>
+            </View>
+
+            {/* ── Bottom row: Status pill on left, View order prompt on right ── */}
+            {status ? (
+              <View style={styles.dayFoot}>
+                <View style={[styles.dayNow, { backgroundColor: status.tone.bg }]}>
                   <View style={[styles.dayNowDot, { backgroundColor: status.tone.fg }]} />
-                  <Text style={styles.dayNowText} numberOfLines={1}>
+                  <Text style={[styles.dayNowText, { color: status.tone.fg }]} numberOfLines={1}>
                     {status.label}
                   </Text>
                 </View>
-              ) : (
-                <View style={{ flex: 1 }} />
-              )}
-              <Pressable
-                onPress={() => onOpenOrder(e.orderId)}
-                accessibilityRole="button"
-                accessibilityLabel={`View order ${e.orderId}`}
-                hitSlop={8}
-                style={({ pressed }) => [styles.dayLink, webCursor, pressed && { opacity: 0.6 }]}
-              >
-                <Text style={styles.dayLinkText}>View order</Text>
-                <Icon name="arrowRight" size={13} color={colors.ink} strokeWidth={2.2} />
-              </Pressable>
-            </View>
-          </View>
+                <View style={styles.dayViewLink}>
+                  <Text style={styles.dayViewLinkText}>View order</Text>
+                  <Icon name="arrowRight" size={11} color={colors.ink} strokeWidth={2.2} />
+                </View>
+              </View>
+            ) : null}
+          </Pressable>
         );
       })}
     </View>
@@ -616,37 +638,127 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   dayCard: {
-    backgroundColor: '#F8F6F1',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#EAE6DF',
-    paddingHorizontal: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: '#EFECE6',
+    paddingHorizontal: 13,
     paddingVertical: 12,
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 2px 8px rgba(10, 28, 62, 0.05)',
+        } as any)
+      : {
+          shadowColor: '#0A1C3E',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 6,
+          elevation: 2,
+        }),
   },
-  dayRow: { paddingVertical: 12 },
-  dayRowRule: { borderTopWidth: 1, borderTopColor: '#F0EDE7' },
-  dayTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  dayDot: { width: 8, height: 8, borderRadius: 4 },
-  dayTitle: { flex: 1, fontFamily: fonts.bold, fontSize: 14.5, color: colors.ink, letterSpacing: -0.2 },
-  dayTime: { fontFamily: fonts.semibold, fontSize: 12.5, color: colors.inkSoft, fontVariant: ['tabular-nums'] },
-  dayMeta: { fontFamily: fonts.medium, fontSize: 12.5, color: colors.inkMuted, marginTop: 4, paddingLeft: 18 },
-  dayFoot: { flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingLeft: 18 },
-  dayNow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  dayNowDot: { width: 5, height: 5, borderRadius: 3 },
-  dayNowText: { fontFamily: fonts.medium, fontSize: 12, color: colors.inkSoft },
-  dayLink: {
+  dayTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  dayEventBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  dayDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  dayEventLabel: {
+    fontFamily: fonts.bold,
+    fontSize: 12,
+    letterSpacing: -0.1,
+  },
+  dayTime: {
+    fontFamily: fonts.semibold,
+    fontSize: 12,
+    color: colors.inkSoft,
+    fontVariant: ['tabular-nums'],
+  },
+  dayOrderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    gap: 8,
+  },
+  dayOrderInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  dayOrderTitle: {
+    fontFamily: fonts.extrabold,
+    fontSize: 15.5,
+    lineHeight: 20,
+    color: colors.ink,
+    letterSpacing: -0.3,
+  },
+  dayOrderMeta: {
+    fontFamily: fonts.medium,
+    fontSize: 12.5,
+    lineHeight: 17,
+    color: colors.inkMuted,
+    marginTop: 2,
+  },
+  dayArrowCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#0A1C3E',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  dayFoot: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F0EA',
+    gap: 8,
+  },
+  dayNow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 8,
+    maxWidth: '68%',
+  },
+  dayNowDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+  },
+  dayNowText: {
+    fontFamily: fonts.semibold,
+    fontSize: 11,
+  },
+  dayViewLink: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    height: 30,
-    paddingHorizontal: 12,
-    borderRadius: 15,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E1D8',
-    ...(Platform.OS === 'web' ? ({ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' } as object) : null),
+    flexShrink: 0,
   },
-  dayLinkText: { fontFamily: fonts.semibold, fontSize: 12, color: colors.ink },
+  dayViewLinkText: {
+    fontFamily: fonts.bold,
+    fontSize: 11.5,
+    color: colors.ink,
+  },
   dayEmpty: {
     flexDirection: 'row',
     alignItems: 'center',

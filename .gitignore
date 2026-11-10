@@ -45,6 +45,8 @@ expo-env.d.ts
 *.apk
 *.aab
 *.ipa
+promo-film/shots/
+promo-film/vo/
 
 # ─────────────────────────────────────────────────────────────
 # Native Keys, Certificates & Credentials

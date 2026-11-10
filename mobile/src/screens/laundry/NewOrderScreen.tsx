@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, PanResponder, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Rect, Stop } from 'react-native-svg';
 import Animated, {
   Easing,
@@ -167,6 +167,39 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
     },
   });
 
+  const statusBarH = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0);
+  const restingTop = Math.max(statusBarH, 6) + 104;
+  const targetTop = statusBarH;
+  const lift = restingTop - targetTop;
+
+  const pos = useSharedValue(0); // 0 = resting, 1 = raised to top
+  const settle = (to: number) => {
+    'worklet';
+    pos.value = withTiming(to, { duration: 280, easing: Easing.out(Easing.cubic) });
+  };
+
+  const startPos = useRef(0);
+  const handlePan = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 4,
+        onPanResponderGrant: () => {
+          startPos.current = pos.value;
+        },
+        onPanResponderMove: (_, g) => {
+          const next = startPos.current - g.dy / lift;
+          pos.value = Math.max(0, Math.min(1, next));
+        },
+        onPanResponderRelease: (_, g) => {
+          if (g.vy < -0.2) settle(1);
+          else if (g.vy > 0.2) settle(0);
+          else settle(pos.value > 0.5 ? 1 : 0);
+        },
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lift, pos],
+  );
+
   const entranceT = useSharedValue(0);
   useEffect(() => {
     entranceT.value = 0;
@@ -174,49 +207,34 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
   }, [replay, entranceT]);
 
   const orangeCardStyle = useAnimatedStyle(() => {
-    const y = Math.max(0, scrollY.value);
     const entranceOffset = (1 - entranceT.value) * 60;
     return {
       transform: [
         {
-          translateY: interpolate(y, [0, 36], [0, 42], 'clamp') + entranceOffset,
+          translateY: interpolate(pos.value, [0, 1], [0, 36], 'clamp') + entranceOffset,
         },
       ],
-      opacity: interpolate(y, [0, 24], [1, 0], 'clamp') * entranceT.value,
+      opacity: (1 - pos.value) * entranceT.value,
     };
   });
 
-  const restingTop = Math.max(insets.top, 6) + 104;
-  const targetTop = Math.max(insets.top, 0);
-  const lift = restingTop - targetTop;
-
   const sheetStyle = useAnimatedStyle(() => {
-    const y = Math.max(0, scrollY.value);
-    const progress = interpolate(y, [0, 60], [0, 1], 'clamp');
     const entranceOffset = (1 - entranceT.value) * 80;
     return {
       transform: [
         {
-          translateY: -progress * lift + entranceOffset,
+          translateY: -pos.value * lift + entranceOffset,
         },
       ],
       opacity: interpolate(entranceT.value, [0, 0.25, 1], [0, 0.85, 1], 'clamp'),
-      borderTopLeftRadius: interpolate(progress, [0, 1], [28, 0]),
-      borderTopRightRadius: interpolate(progress, [0, 1], [28, 0]),
+      borderTopLeftRadius: interpolate(pos.value, [0, 1], [28, 0]),
+      borderTopRightRadius: interpolate(pos.value, [0, 1], [28, 0]),
     };
   });
 
-  const handleStyle = useAnimatedStyle(() => {
-    const y = Math.max(0, scrollY.value);
-    return {
-      opacity: interpolate(y, [0, 30], [1, 0], 'clamp'),
-      transform: [
-        {
-          scale: interpolate(y, [0, 30], [1, 0.8], 'clamp'),
-        },
-      ],
-    };
-  });
+  const statusBarOverlayStyle = useAnimatedStyle(() => ({
+    opacity: pos.value,
+  }));
 
   if (!state) {
     return (
@@ -392,6 +410,16 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
 
   return (
     <View style={styles.root}>
+      {/* ── Status bar background overlay: cream at rest, white when scrolled up ── */}
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.statusBarOverlay,
+          { height: statusBarH },
+          statusBarOverlayStyle,
+        ]}
+      />
+
       {/* ── Top stage: TopBar ── */}
       <View style={[styles.page, { paddingTop: Math.max(insets.top, 6) }]}>
         <Rise replay={replay} distance={8}>
@@ -414,20 +442,31 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
         />
       </Animated.View>
 
-      {/* ── White App Drawer Sheet (slides up on scroll) ── */}
+      {/* ── White App Drawer Sheet (stable, non-glitching) ── */}
       <Animated.View
         nativeID="new-order-sheet"
         style={[
           styles.sheet,
-          { top: restingTop, bottom: -lift },
+          { top: restingTop, bottom: 0 },
           sheetStyle,
         ]}
       >
         <View style={styles.sheetInner}>
-          {/* Subtle drag handle */}
-          <Animated.View style={[styles.handleHit, handleStyle]}>
-            <View style={styles.handle} />
-          </Animated.View>
+          {/* Subtle top indicator / scroll-to-top */}
+          <Pressable
+            onPress={() => {
+              settle(pos.value > 0.5 ? 0 : 1);
+            }}
+            hitSlop={14}
+            accessibilityRole="button"
+            accessibilityLabel={pos.value > 0.5 ? 'Collapse sheet' : 'Expand sheet'}
+            style={webCursor}
+            {...handlePan.panHandlers}
+          >
+            <View style={styles.handleHit}>
+              <View style={styles.handle} />
+            </View>
+          </Pressable>
 
           {/* Drawer Header: Title, Category Count, Step Navigation */}
           <View style={styles.sheetHead}>
@@ -483,14 +522,29 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
             style={styles.sheetScroll}
             contentContainerStyle={[
               styles.scrollContent,
-              { paddingBottom: step === 'review' ? Math.max(insets.bottom, 12) + 126 : Math.max(insets.bottom, 12) + 136 },
+              {
+                paddingBottom: step === 'review' ? Math.max(insets.bottom, 12) + 240 : Math.max(insets.bottom, 12) + 160,
+                minHeight: '100%',
+              },
             ]}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             onScroll={onListScroll}
             scrollEventThrottle={16}
+            onScrollBeginDrag={() => {
+              if (pos.value < 0.5) settle(1);
+            }}
+            onScrollEndDrag={(e) => {
+              const y = e.nativeEvent.contentOffset.y;
+              const vy = e.nativeEvent.velocity?.y ?? 0;
+              if (y <= 4 && vy < -0.2 && pos.value > 0.5) {
+                settle(0);
+              }
+            }}
             alwaysBounceVertical={true}
             bounces={true}
+            overScrollMode="always"
+            nestedScrollEnabled={true}
           >
             {step === 'items' ? (
               <Animated.View key="items" entering={enter}>
@@ -508,13 +562,13 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
                   <View style={[styles.catCard, soft, focusCategory === c.id && { borderColor: look.color, borderWidth: 2 }]}>
                     <View style={styles.cardHead}>
                       <View style={[styles.ribbon, { backgroundColor: look.color }]}>
-                        <Icon name={look.icon} size={14} color="#FFFFFF" strokeWidth={2.2} />
-                        <Text style={styles.ribbonText} numberOfLines={1}>
+                        <Icon name={look.icon} size={13} color="#FFFFFF" strokeWidth={2.2} />
+                        <Text style={styles.ribbonText} numberOfLines={1} ellipsizeMode="tail">
                           {c.name}
                         </Text>
                       </View>
                       <View style={styles.unitBadge}>
-                        <Text style={styles.unitBadgeText}>{unit}</Text>
+                        <Text style={styles.unitBadgeText} numberOfLines={1}>{unit}</Text>
                       </View>
                     </View>
                     <View style={styles.cardDashedLine} />
@@ -777,6 +831,14 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: CANVAS },
+  statusBarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    zIndex: 99,
+  },
   page: { paddingHorizontal: space.lg, maxWidth: 560, width: '100%', alignSelf: 'center' },
   orangeCardWrap: {
     position: 'absolute',
@@ -931,6 +993,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: space.lg,
     paddingTop: space.xs,
+    flexGrow: 1,
   },
   label: { ...text.h2, fontSize: 15, marginTop: space.lg, marginBottom: space.sm },
   flex: { flex: 1 },
@@ -948,7 +1011,12 @@ const styles = StyleSheet.create({
       ? ({ boxShadow: '0 4px 18px rgba(10, 28, 62, 0.08), 0 1px 4px rgba(10, 28, 62, 0.04)' } as object)
       : { shadowColor: '#0A1C3E', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 14, elevation: 4 }),
   },
-  cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  cardHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   cardDashedLine: {
     borderTopWidth: 1,
     borderColor: '#CDD2DA',
@@ -959,32 +1027,35 @@ const styles = StyleSheet.create({
   ribbon: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
-    height: 30,
-    paddingLeft: 12,
-    paddingRight: 14,
-    borderRadius: 15,
+    gap: 6,
+    height: 28,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    flexShrink: 1,
+    minWidth: 0,
     alignSelf: 'flex-start',
   },
   ribbonText: {
     fontFamily: fonts.bold,
-    fontSize: 12,
-    letterSpacing: 1.1,
+    fontSize: 11,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
     color: '#FFFFFF',
+    flexShrink: 1,
   },
   unitBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
     backgroundColor: '#F4F5F7',
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    flexShrink: 0,
   },
   unitBadgeText: {
     fontFamily: fonts.bold,
-    fontSize: 11,
-    letterSpacing: 0.8,
+    fontSize: 10.5,
+    letterSpacing: 0.6,
     textTransform: 'uppercase',
     color: colors.ink,
   },

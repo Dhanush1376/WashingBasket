@@ -72,6 +72,12 @@ export const PhoneInput = forwardRef<TextInputInstance, Props>(function PhoneInp
           Platform.OS === 'web' && ({ outlineStyle: 'none', outline: 'none' } as any),
         ]}
         value={formatNational(value, country)}
+        // Android leaves the cursor before the group space it adds; keep it at the end so digits stay in order
+        selection={
+          Platform.OS === 'android'
+            ? { start: formatNational(value, country).length, end: formatNational(value, country).length }
+            : undefined
+        }
         onChangeText={(t) => onChangeDigits(readNational(t, value, country))}
         // the label stands in for the placeholder; the sample number shows once focused
         placeholder={focused ? formatNational('9876543210'.slice(0, maxDigits(country)), country) : undefined}

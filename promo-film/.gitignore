@@ -1,0 +1,4 @@
+node_modules/
+work/
+capture/.ws
+dist/video-only.mp4

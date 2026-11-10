@@ -14,7 +14,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...a) => { const s = a.join(' '); console.log(s); fs.appendFileSync(LOG, s + '\n'); };
 
 let p;
-const shot = async (name) => { await p.screenshot({ path: path.join(SHOTS, name + '.png') }); log('shot', name); };
+const shot = async (name) => {
+  const buf = await p.screenshot();
+  for (let i = 0; ; i++) { try { fs.writeFileSync(path.join(SHOTS, name + '.png'), buf); break; } catch (e) { if (i > 8) throw e; await sleep(300); } }
+  log('shot', name);
+};
 const text = () => p.evaluate(() => document.body.innerText);
 const dump = async (label) => log(`\n===== ${label}\n` + (await text()));
 
@@ -25,7 +29,7 @@ async function tap(label, { exact = true, nth = 0, within } = {}) {
     const els = [...root.querySelectorAll('div,span,button,a')].filter((e) => {
       const t = (e.innerText || '').trim();
       const r = e.getBoundingClientRect();
-      return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight && (exact ? t === label : t.includes(label));
+      if (!(r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight && (exact ? t === label : t.includes(label)))) return false; const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return !!hit && (e.contains(hit) || hit.contains(e));
     });
     els.sort((a, b) => a.getBoundingClientRect().width * a.getBoundingClientRect().height - b.getBoundingClientRect().width * b.getBoundingClientRect().height);
     const e = els[nth];
@@ -106,8 +110,8 @@ const done = async (phase) => { if (STOP === phase) { await dump('STOP ' + phase
     await done('signup');
 
     /* ── Details + PIN code (the real sign-up asks for these after the OTP) ── */
-    await typeInto('input[placeholder="Full name"]', 'Aarav Mehta', 40);
-    await typeInto('input[placeholder="Email address"]', 'aarav@example.com', 25);
+    await typeInto('input[placeholder="Full name"]', 'Ananya Sharma', 40);
+    await typeInto('input[placeholder="Email address"]', 'ananya@example.com', 25);
     await sleep(400);
     await shot('s07-details');
     await tap('Continue');
@@ -225,7 +229,16 @@ const done = async (phase) => { if (STOP === phase) { await dump('STOP ' + phase
 
     /* ── Staff partner scans the pickup QR (the app's own staff mode, demo pickup partner for Model Town) ── */
     const c = p; // customer page
-    p = await c.browser().newPage();
+    await tapAria('Home');
+    await sleep(2500);
+    await shot('h02-home-active');
+    await done('staff1');
+    // The order data lives in one storage key; each tab keeps its own signed-in session.
+    const DATA_KEY = await c.evaluate(() => Object.keys(localStorage).find((k) => k.startsWith('wb.laundry-demo.')));
+    const readData = (pg) => pg.evaluate((k) => localStorage.getItem(k), DATA_KEY);
+    const ctx = await c.browser().createBrowserContext();
+    p = await ctx.newPage();
+    const handoff = { data: await readData(c) };
     await p.setRequestInterception(true);
     p.on('request', async (req) => {
       if (!req.url().includes('/index.ts.bundle')) return req.continue();
@@ -233,17 +246,11 @@ const done = async (phase) => { if (STOP === phase) { await dump('STOP ' + phase
       req.respond({ status: 200, contentType: 'application/javascript', body: require('./fresh-account')(await r.text()) });
     });
     await p.setViewport({ width: 390, height: 844, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
+    await p.goto('http://localhost:8081/favicon.ico', { waitUntil: 'domcontentloaded' }).catch(() => {});
+    await p.evaluate((k, v) => localStorage.setItem(k, v), DATA_KEY, handoff.data);
     await p.goto('http://localhost:8081', { waitUntil: 'networkidle2', timeout: 120000 });
-    await sleep(9000);
-    await shot('h02-home-active');
-    await done('staff1');
-    await tapAria('Open menu');
-    await sleep(900);
-    await tap('Log out');
-    await sleep(1500);
-    try { await tap('Log out', { nth: 0 }); } catch {}
-    await sleep(4000);
-    await dump('after logout');
+    await p.waitForSelector('input[type=tel]', { timeout: 60000 });
+    await sleep(8000);
     await typeInto('input[type=tel]', '9876543210');
     await sleep(1500);
     await shot('t00-staff-phone');
@@ -258,8 +265,12 @@ const done = async (phase) => { if (STOP === phase) { await dump('STOP ' + phase
     await shot('t01-staff-home');
     await done('staff2');
     await tapAria('Type code');
-    await sleep(1500);
-    await tapAria('Type code');
+    await sleep(2000);
+    // on the Scan tab: press its own "Type code" button through the DOM (the scans drawer overlaps it for mouse hits)
+    log('SCANARIAS', JSON.stringify(await arias()));
+    await tapAria('Collapse scans').catch(() => log('no collapse'));
+    await sleep(1000);
+    await tap('Type code');
     await sleep(1500);
     await shot('t02-type-sheet');
     log('INPUTS', JSON.stringify(await p.evaluate(() => [...document.querySelectorAll('input,textarea')].map((i) => [i.getAttribute('aria-label'), i.placeholder]))));
@@ -276,8 +287,64 @@ const done = async (phase) => { if (STOP === phase) { await dump('STOP ' + phase
     await tapAria('Accept & collect');
     await sleep(2500);
     await shot('t04-accepted');
-    log('ARIAS', JSON.stringify((await arias()).slice(-20)));
     await done('staff3');
+    await tapAria('Open order page');
+    await sleep(2500);
+    await shot('t05-staff-order');
+    await done('staff4');
+
+    // Customer view of the same order, after each real status change.
+    const staffPage = p;
+    async function customerView(tag) {
+      const d = await readData(staffPage);
+      p = c;
+      await c.bringToFront();
+      await c.evaluate((k, v) => localStorage.setItem(k, v), DATA_KEY, d);
+      await c.reload({ waitUntil: 'networkidle2', timeout: 120000 });
+      await sleep(9000);
+      if ((await text()).includes('Gurdeep')) {
+        await tapAria('Open menu'); await sleep(900); await tap('Log out'); await sleep(1500);
+        try { await tap('Log out'); } catch {}
+        await sleep(9000);
+      }
+      if (await p.$('input[type=tel]')) {
+        // the staff sign-in on the other tab replaced the stored session: sign the customer back in
+        await typeInto('input[type=tel]', '9812345670'); await sleep(1200); await tap('Continue'); await sleep(2500);
+        await typeInto('input[aria-label="6-digit code"]', '123456', 100); await sleep(4000);
+        if (await p.$('input[placeholder="Full name"]')) { await typeInto('input[placeholder="Full name"]', 'Ananya Sharma', 20); await typeInto('input[placeholder="Email address"]', 'ananya@example.com', 15); await tap('Continue'); await sleep(2000); }
+        if (await p.$('input[placeholder="6-digit PIN code"]')) { await typeInto('input[placeholder="6-digit PIN code"]', '144003', 40); await tap('Check availability').catch(() => {}); await sleep(1800); await tap('Continue').catch(() => {}); }
+        await sleep(5000);
+      }
+      if (tag === 'picked') { await shot('h03-home-progress'); }
+      await tapAria('Orders');
+      await sleep(2500);
+      if (tag === 'picked') { await shot('r01-orders-list'); log('ORDARIAS', JSON.stringify((await arias()).slice(-25))); }
+      await tapAria('Order WB-1015,', { contains: true });
+      await sleep(2500);
+      if ((await text()).includes('Printing your receipt') || (await arias()).includes('Share')) {
+        await sleep(1500);
+        await shot('r-' + tag + '-receipt');
+        await tapAria('Back');
+        await sleep(2000);
+      }
+      await shot('r-' + tag + '-top');
+      await p.evaluate(() => { const el = [...document.querySelectorAll('div')].filter((d) => (d.innerText || '').trim() === 'Progress' && d.getBoundingClientRect().width > 0).pop(); if (el) el.scrollIntoView({ block: 'start', behavior: 'instant' }); });
+      await sleep(1200);
+      await shot('r-' + tag + '-progress');
+      log('TRACK', tag, JSON.stringify((await arias()).filter((a) => /step|upcoming|done|complete|current/i.test(a))));
+      p = staffPage;
+      await staffPage.bringToFront();
+    }
+    await customerView('picked');
+    for (const step of ['Start sorting', 'Start washing']) { await tapAria(step); await sleep(1800); }
+    await customerView('washing');
+    for (const step of ['Start drying', 'Start ironing']) { await tapAria(step); await sleep(1800); }
+    await customerView('ironing');
+    for (const step of ['Start quality check']) { await tapAria(step); await sleep(1800); }
+    await tapAria('Ready for dispatch');
+    await sleep(2000);
+    await customerView('ready');
+    await done('track1');
 
     /* @@REST@@ */
   } catch (e) {

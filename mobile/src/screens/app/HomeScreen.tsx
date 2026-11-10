@@ -20,6 +20,7 @@ import {
 import { Rise, useFocusReplay } from "../../components/app/motion";
 import { Icon } from "../../components/app/Icon";
 import { OrderRow } from "../../components/app/orders";
+import { LaundryOrderRow } from "../../components/laundry/LaundryOrderRow";
 import { TopBar, titleSubStyle } from "../../components/app/TopBar";
 import { Card, SectionHeader } from "../../components/app/primitives";
 import { ORDER_STATUS, STAGE_LABEL } from "../../components/app/status";
@@ -30,6 +31,8 @@ import { BottomSheet } from "../../components/ui/BottomSheet";
 import { OverviewGrid } from "../../components/home/OverviewGrid";
 import { PriceTeaser } from "../../components/home/PriceTeaser";
 import { ReferCard } from "../../components/home/ReferCard";
+import { useCurrentCustomer, useLaundryState } from "../../laundry/hooks";
+import { findLocation, ordersForCustomer } from "../../mock/engine/selectors";
 import { useAppUser } from "../../hooks/useAppUser";
 import { dayDate, money, plural } from "../../lib/format";
 import { haptic } from "../../lib/haptics";
@@ -99,6 +102,11 @@ export function HomeScreen({ navigation }: TabProps<"Home">) {
   // the top bar tucks away while you read down and drops back the moment you scroll up
   const bar = useCollapsingBar();
   const day = dayPart();
+  const state = useLaundryState();
+  const customer = useCurrentCustomer();
+  const laundryOrders = state && customer && !guest ? ordersForCustomer(state, customer.id) : [];
+  const recentLaundry = laundryOrders.slice(0, 3);
+
   const home = addresses.data?.find((a) => a.isDefault);
   const myOrders = guest ? [] : (orders.data ?? []);
   // the order furthest along leads: it has the most to show
@@ -106,6 +114,7 @@ export function HomeScreen({ navigation }: TabProps<"Home">) {
     .filter((o) => isActive(o.status))
     .sort((a, b) => stageIndex(b.status) - stageIndex(a.status));
   const recent = myOrders.slice(0, 3);
+  const hasOrders = recentLaundry.length > 0 || recent.length > 0;
   const openOrder = (orderId: string) =>
     navigation.navigate("OrderDetail", { orderId });
 
@@ -235,7 +244,7 @@ export function HomeScreen({ navigation }: TabProps<"Home">) {
             <View
               style={styles.perks}
               accessibilityRole="text"
-              accessibilityLabel="Free pickup, 48 hour turnaround, quality assured"
+              accessibilityLabel="Free pickup, 48 hour delivery, quality care"
             >
               {PERKS.map((k, i) => (
                 <React.Fragment key={k.label}>
@@ -243,11 +252,13 @@ export function HomeScreen({ navigation }: TabProps<"Home">) {
                   <View style={styles.perk}>
                     <Icon
                       name={k.icon}
-                      size={15}
+                      size={13.5}
                       color={k.tint}
                       strokeWidth={2}
                     />
-                    <Text style={styles.perkText}>{k.label}</Text>
+                    <Text style={styles.perkText} numberOfLines={1}>
+                      {k.label}
+                    </Text>
                   </View>
                 </React.Fragment>
               ))}
@@ -300,13 +311,25 @@ export function HomeScreen({ navigation }: TabProps<"Home">) {
             <SectionHeader
               style={{ marginTop: space.xl }}
               title="Recent orders"
-              action={recent.length ? "View all" : undefined}
+              action={hasOrders ? "View all" : undefined}
               onAction={() => navigation.navigate("Orders")}
             />
             {orders.loading ? (
               <View style={{ gap: space.md }}>
                 <Skeleton height={112} radius={shape.tile} />
                 <Skeleton height={112} radius={shape.tile} />
+              </View>
+            ) : recentLaundry.length > 0 ? (
+              <View style={{ gap: space.md }}>
+                {recentLaundry.map((o, i) => (
+                  <LaundryOrderRow
+                    key={o.id}
+                    order={o}
+                    index={i}
+                    location={state ? findLocation(state, o.locationId) : undefined}
+                    onPress={() => navigation.navigate("LaundryOrder", { orderId: o.id })}
+                  />
+                ))}
               </View>
             ) : recent.length ? (
               <View style={{ gap: space.md }}>
@@ -519,8 +542,8 @@ function dayPart() {
 
 const PERKS = [
   { icon: "truck", label: "Free pickup", tint: colors.orange },
-  { icon: "clock", label: "48h turnaround", tint: colors.navy },
-  { icon: "shield", label: "Quality assured", tint: "#1F9D3A" },
+  { icon: "clock", label: "48h delivery", tint: colors.navy },
+  { icon: "shield", label: "Quality care", tint: "#1F9D3A" },
 ] as const;
 
 const styles = StyleSheet.create({
@@ -528,16 +551,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    flexWrap: "wrap",
-    gap: 10,
+    flexWrap: "nowrap",
+    gap: 7,
     marginTop: 2,
     marginBottom: space.lg + 6,
+    paddingHorizontal: 4,
   },
-  perk: { flexDirection: "row", alignItems: "center", gap: 6 },
+  perk: { flexDirection: "row", alignItems: "center", gap: 4, flexShrink: 0 },
   perkText: {
     fontFamily: fonts.medium,
-    fontSize: 12.5,
-    letterSpacing: -0.1,
+    fontSize: 11.5,
+    letterSpacing: -0.2,
     color: colors.inkSoft,
   },
   perkSep: {

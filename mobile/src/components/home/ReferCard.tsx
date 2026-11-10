@@ -105,9 +105,6 @@ export function ReferCard({
             <Text style={styles.title} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
               Give ₹{friendReward}, get ₹{reward}
             </Text>
-            <Text style={styles.sub} numberOfLines={1}>
-              Earn instant wallet cash for every friend who joins
-            </Text>
           </View>
         </View>
         <View style={styles.goBtn}>
@@ -278,13 +275,6 @@ const styles = StyleSheet.create({
     lineHeight: 25,
     letterSpacing: -0.5,
     color: INK,
-  },
-  sub: {
-    fontFamily: fonts.regular,
-    fontSize: 12.5,
-    lineHeight: 17,
-    color: '#64748B',
-    marginTop: 1,
   },
 
   codeRow: {

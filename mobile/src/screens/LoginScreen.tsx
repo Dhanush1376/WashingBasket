@@ -364,81 +364,54 @@ export function LoginScreen() {
         <Text style={[text.body, styles.sheetText]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
           Choose an open location to continue with its PIN code.
         </Text>
-        <View style={styles.locLayout}>
-          {/* Left: Colleges up and down */}
-          <View style={styles.collegeCol}>
-            {(unavailable?.active ?? [])
-              .filter((l) => l.type === 'CAMPUS_OFFICE' || l.id === 'loc-lpu' || l.id === 'loc-nit')
-              .map((loc) => {
-                const logo = getCampusLogo(loc);
-                const displayName = loc.shortName === 'LPU' ? 'LPU Phagwara' : loc.name;
-                return (
-                  <Pressable
-                    key={loc.id}
-                    onPress={() => chooseLocation(loc)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${loc.name}, PIN code ${loc.pincode}. Use this location`}
-                    style={({ pressed }) => [
-                      styles.collegeBtn,
-                      Platform.OS === 'web' && ({ cursor: 'pointer' } as object),
-                      pressed && styles.locBtnPressed,
-                    ]}
-                  >
-                    <View style={styles.collegeLogoWrap}>
-                      {logo ? (
-                        <Image source={logo} style={styles.collegeLogo} resizeMode="contain" />
-                      ) : (
-                        <Icon name="mapPin" size={24} color={colors.navy} />
-                      )}
-                    </View>
-                    <View style={styles.collegeTextWrap}>
-                      <Text style={styles.collegeName} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.88}>
-                        {displayName}
-                      </Text>
-                      <View style={styles.collegePin}>
-                        <Text style={styles.collegePinText}>{loc.pincode}</Text>
-                      </View>
-                    </View>
-                  </Pressable>
-                );
-              })}
-          </View>
-
-          {/* Right: Model Town */}
-          {(() => {
-            const modelTown = (unavailable?.active ?? []).find(
-              (l) => l.type === 'INDEPENDENT' || l.id === 'loc-outside' || l.name.toLowerCase().includes('model town')
-            );
-            if (!modelTown) return null;
+        <View style={styles.locList}>
+          {(unavailable?.active ?? []).map((loc) => {
+            const logo = getCampusLogo(loc);
+            const displayName = loc.shortName === 'LPU' ? 'LPU Phagwara' : loc.name;
+            const subtitle =
+              loc.id === 'loc-lpu' || loc.shortName === 'LPU'
+                ? 'Campus Counter · Phagwara'
+                : loc.id === 'loc-nit' || loc.shortName?.includes('NIT')
+                ? 'Campus Counter · Jalandhar'
+                : 'Store & Home Pickup · Jalandhar';
             return (
               <Pressable
-                key={modelTown.id}
-                onPress={() => chooseLocation(modelTown)}
+                key={loc.id}
+                onPress={() => chooseLocation(loc)}
                 accessibilityRole="button"
-                accessibilityLabel={`${modelTown.name}, PIN code ${modelTown.pincode}. Use this location`}
+                accessibilityLabel={`${displayName}, PIN code ${loc.pincode}. Use this location`}
                 style={({ pressed }) => [
-                  styles.modelTownBtn,
+                  styles.locCard,
                   Platform.OS === 'web' && ({ cursor: 'pointer' } as object),
                   pressed && styles.locBtnPressed,
                 ]}
               >
-                <View style={styles.modelTownLogoWrap}>
-                  <Icon name="store" size={28} color={colors.navy} />
+                <View style={styles.locLogoWrap}>
+                  {logo ? (
+                    <Image source={logo} style={styles.locLogo} resizeMode="contain" />
+                  ) : (
+                    <Icon name="store" size={24} color={colors.navy} />
+                  )}
                 </View>
-                <View style={styles.modelTownTextWrap}>
-                  <Text style={styles.modelTownTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.88}>
-                    Model Town
+                <View style={styles.locInfo}>
+                  <Text style={styles.locName} numberOfLines={1}>
+                    {displayName}
                   </Text>
-                  <Text style={styles.modelTownCity} numberOfLines={1}>
-                    Jalandhar
+                  <Text style={styles.locSubtitle} numberOfLines={1}>
+                    {subtitle}
                   </Text>
                 </View>
-                <View style={styles.modelTownPin}>
-                  <Text style={styles.modelTownPinText}>{modelTown.pincode}</Text>
+                <View style={styles.locRight}>
+                  <View style={styles.locPinBadge}>
+                    <Text style={styles.locPinText} numberOfLines={1}>
+                      {loc.pincode}
+                    </Text>
+                  </View>
+                  <Icon name="chevronRight" size={16} color="#94A3B8" />
                 </View>
               </Pressable>
             );
-          })()}
+          })}
         </View>
         <Button label="Try another PIN code" variant="dark" onPress={tryAnotherPin} style={{ marginTop: 20 }} />
       </BottomSheet>
@@ -493,170 +466,91 @@ const styles = StyleSheet.create({
   sheetArt: { alignSelf: 'center', width: 140, height: 140 / UNAVAILABLE_ASPECT, marginBottom: 8 },
   sheetTitle: { textAlign: 'center', fontSize: 20, lineHeight: 24, fontFamily: fonts.bold, color: colors.ink },
   sheetText: { textAlign: 'center', alignSelf: 'center', width: '100%', maxWidth: 420, marginTop: 4, paddingHorizontal: 8, fontSize: 13, lineHeight: 18, color: colors.inkMuted },
-  locLayout: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    gap: 12,
-    marginTop: 18,
-  },
-  collegeCol: {
-    flex: 1.35,
+  locList: {
     flexDirection: 'column',
-    gap: 12,
-    justifyContent: 'space-between',
+    gap: 10,
+    marginTop: 18,
+    width: '100%',
   },
-  collegeBtn: {
-    flex: 1,
+  locCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 14,
-    borderRadius: 20,
-    backgroundColor: app.cream,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: 'rgba(10, 28, 62, 0.07)',
+    borderColor: 'rgba(10, 28, 62, 0.08)',
     ...(Platform.OS === 'web'
       ? ({
-          boxShadow: '0 2px 8px rgba(11, 18, 32, 0.05)',
+          boxShadow: '0 2px 8px rgba(11, 18, 32, 0.04)',
           transition: 'transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease',
         } as any)
       : {
           shadowColor: '#0B1220',
           shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.05,
+          shadowOpacity: 0.04,
           shadowRadius: 6,
           elevation: 2,
         }),
   },
-  collegeLogoWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#FFFFFF',
+  locLogoWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FAF9F6',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(10, 28, 62, 0.08)',
-    ...(Platform.OS === 'web'
-      ? ({ boxShadow: '0 2px 6px rgba(10, 28, 62, 0.08)' } as any)
-      : {
-          shadowColor: '#0B1220',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.08,
-          shadowRadius: 4,
-          elevation: 2,
-        }),
   },
-  collegeLogo: {
-    width: 48,
-    height: 48,
+  locLogo: {
+    width: 40,
+    height: 40,
   },
-  collegeTextWrap: {
-    marginLeft: 12,
+  locInfo: {
     flex: 1,
+    marginLeft: 12,
+    marginRight: 8,
     minWidth: 0,
     justifyContent: 'center',
   },
-  collegeName: {
+  locName: {
     fontFamily: fonts.bold,
-    fontSize: 13.5,
-    lineHeight: 18,
+    fontSize: 14.5,
+    lineHeight: 19,
     color: colors.ink,
   },
-  collegePin: {
-    alignSelf: 'flex-start',
-    marginTop: 5,
-    paddingHorizontal: 10,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#0A1C3E',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  collegePinText: {
-    fontFamily: fonts.bold,
-    fontSize: 12,
-    letterSpacing: 0.8,
-    color: '#FFFFFF',
-    fontVariant: ['tabular-nums'],
-  },
-  modelTownBtn: {
-    flex: 0.9,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    backgroundColor: app.cream,
-    borderWidth: 1.5,
-    borderColor: 'rgba(10, 28, 62, 0.07)',
-    ...(Platform.OS === 'web'
-      ? ({
-          boxShadow: '0 2px 8px rgba(11, 18, 32, 0.05)',
-          transition: 'transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease',
-        } as any)
-      : {
-          shadowColor: '#0B1220',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 6,
-          elevation: 2,
-        }),
-  },
-  modelTownLogoWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(10, 28, 62, 0.08)',
-    ...(Platform.OS === 'web'
-      ? ({ boxShadow: '0 2px 6px rgba(10, 28, 62, 0.08)' } as any)
-      : {
-          shadowColor: '#0B1220',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.08,
-          shadowRadius: 4,
-          elevation: 2,
-        }),
-  },
-  modelTownTextWrap: {
-    alignItems: 'center',
-    marginVertical: 6,
-  },
-  modelTownTitle: {
-    fontFamily: fonts.bold,
-    fontSize: 13.5,
-    lineHeight: 18,
-    color: colors.ink,
-    textAlign: 'center',
-  },
-  modelTownCity: {
+  locSubtitle: {
     fontFamily: fonts.medium,
-    fontSize: 11.5,
-    lineHeight: 15,
+    fontSize: 12,
+    lineHeight: 16,
     color: colors.inkMuted,
     marginTop: 2,
-    textAlign: 'center',
   },
-  modelTownPin: {
+  locRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 0,
+  },
+  locPinBadge: {
     paddingHorizontal: 10,
-    height: 24,
-    borderRadius: 12,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: '#0A1C3E',
     alignItems: 'center',
     justifyContent: 'center',
+    minWidth: 68,
   },
-  modelTownPinText: {
+  locPinText: {
     fontFamily: fonts.bold,
-    fontSize: 12,
-    letterSpacing: 0.8,
+    fontSize: 12.5,
+    letterSpacing: 0.6,
     color: '#FFFFFF',
     fontVariant: ['tabular-nums'],
+    includeFontPadding: false,
   },
   locBtnPressed: {
     opacity: 0.88,

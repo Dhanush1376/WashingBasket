@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useLaundryState } from '../../laundry/hooks';
-import { money, plural } from '../../lib/format';
+import { date, money, plural } from '../../lib/format';
 import { STATUS_COPY } from '../../mock/engine/lifecycle';
 import { get5StepJourney } from './OrderTimeline';
 import type { LaundryOrder, Location } from '../../mock/types';
@@ -117,7 +117,7 @@ export function LaundryOrderRow({
 }) {
   const status = STATUS_COPY[order.status];
   const theme = getOrderTheme(order.status, index);
-  const dateKicker = formatCardDate(order.createdAt);
+  const formattedDate = date(order.createdAt);
   const state = useLaundryState();
   const progress = get5StepJourney(order, state);
   const isStopped = order.status === 'REJECTED' || order.status === 'CANCELLED';
@@ -126,11 +126,22 @@ export function LaundryOrderRow({
   const badgeTheme = getOrderStatusBadgeTheme(order.status);
   const serviceArt = getLaundryServiceArt(order, progress.stepIndex);
 
+  const serviceTitle = useMemo(() => {
+    if (order.lines && order.lines.length > 0) {
+      const names = order.lines.map((l) => l.name.replace(/ · .*/, '')).filter(Boolean);
+      const unique = Array.from(new Set(names));
+      if (unique.length === 1) return unique[0];
+      if (unique.length === 2) return `${unique[0]} & ${unique[1]}`;
+      return `${unique[0]} + ${unique.length - 1} more`;
+    }
+    return `Order #${order.id}`;
+  }, [order.lines, order.id]);
+
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`Order ${order.id}, ${statusTitle}, ${money(order.total)}`}
+      accessibilityLabel={`${serviceTitle}, Order ${order.id}, ${statusTitle}, ${money(order.total)}`}
       style={({ pressed }) => [
         styles.card,
         {
@@ -149,54 +160,55 @@ export function LaundryOrderRow({
         {/* Top: date, status badge, title, pieces */}
         <View style={styles.topSection}>
           <View style={styles.headerMetaRow}>
-            {dateKicker ? <Text style={[styles.dateKicker, { color: theme.sub }]}>{dateKicker}</Text> : null}
             <View style={[styles.statusBadge, { backgroundColor: badgeTheme.bg }]}>
               <View style={[styles.statusDot, { backgroundColor: badgeTheme.dot }]} />
               <Text style={[styles.statusBadgeText, { color: badgeTheme.text }]}>
                 {statusTitle}
               </Text>
             </View>
+            {formattedDate ? <Text style={[styles.dateKicker, { color: theme.sub }]}>{formattedDate}</Text> : null}
           </View>
 
           <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
-            Order {order.id}
+            {serviceTitle}
           </Text>
 
-          <Text style={[styles.piecesText, { color: theme.sub }]}>
-            {plural(order.pieces, 'piece')}
+          <Text style={[styles.piecesText, { color: theme.sub }]} numberOfLines={1}>
+            Order #{order.id} · {plural(order.pieces, 'piece')}
           </Text>
+
+          {hint ? (
+            <View
+              style={[
+                styles.hintPill,
+                order.status === 'PAYMENT_PENDING'
+                  ? { backgroundColor: '#FFF7ED', borderColor: '#FED7AA' }
+                  : { backgroundColor: '#F1F5F9', borderColor: '#E2E8F0' },
+              ]}
+            >
+              <Icon
+                name="info"
+                size={11.5}
+                color={order.status === 'PAYMENT_PENDING' ? '#EA580C' : '#0284C7'}
+                strokeWidth={2.4}
+              />
+              <Text
+                style={[
+                  styles.hintText,
+                  { color: order.status === 'PAYMENT_PENDING' ? '#9A3412' : '#0369A1' },
+                ]}
+                numberOfLines={1}
+              >
+                {hint}
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         {/* Bottom row: amount + progress on left, 3 overlapping avatar circles on right */}
         <View style={styles.bottomRow}>
           <View style={styles.bottomMain}>
             <Text style={[styles.amount, { color: theme.text }]}>{money(order.total)}</Text>
-            {hint ? (
-              <View
-                style={[
-                  styles.hintPill,
-                  order.status === 'PAYMENT_PENDING'
-                    ? { backgroundColor: '#FFF7ED', borderColor: '#FED7AA' }
-                    : { backgroundColor: '#F1F5F9', borderColor: '#E2E8F0' },
-                ]}
-              >
-                <Icon
-                  name="info"
-                  size={11.5}
-                  color={order.status === 'PAYMENT_PENDING' ? '#EA580C' : '#0284C7'}
-                  strokeWidth={2.4}
-                />
-                <Text
-                  style={[
-                    styles.hintText,
-                    { color: order.status === 'PAYMENT_PENDING' ? '#9A3412' : '#0369A1' },
-                  ]}
-                  numberOfLines={1}
-                >
-                  {hint}
-                </Text>
-              </View>
-            ) : null}
 
             {/* 5-step segmented progress track: exact step color sequence; all green when delivered */}
             {!isStopped ? (
@@ -226,13 +238,13 @@ export function LaundryOrderRow({
           {/* 3 overlapping circular avatar badges matching the reference image */}
           <View style={styles.avatarStack}>
             <View style={[styles.avatarCircle, { zIndex: 1 }]}>
-              <ServiceThumb art={serviceArt} size={34} />
+              <ServiceThumb art={serviceArt} size={32} />
             </View>
             <View style={[styles.avatarCircle, { zIndex: 2, marginLeft: -12 }]}>
-              <Icon name="shirt" size={17} color="#0A1C3E" strokeWidth={1.8} />
+              <Icon name="shirt" size={16} color="#0A1C3E" strokeWidth={1.8} />
             </View>
             <View style={[styles.avatarCircle, { zIndex: 3, marginLeft: -12 }]}>
-              <Icon name="bag" size={15} color="#0A1C3E" strokeWidth={1.8} />
+              <Icon name="bag" size={14} color="#0A1C3E" strokeWidth={1.8} />
             </View>
           </View>
         </View>
@@ -244,7 +256,7 @@ export function LaundryOrderRow({
 const styles = StyleSheet.create({
   card: {
     borderRadius: shape.card,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 18,
     paddingBottom: 18,
     minHeight: 160,
@@ -359,7 +371,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E8E5DD',
     alignSelf: 'flex-start',
-    marginTop: 6,
+    marginTop: 7,
+    maxWidth: '100%',
     ...(Platform.OS === 'web'
       ? ({ boxShadow: '0 1px 3px rgba(10, 28, 62, 0.04)' } as object)
       : { shadowColor: '#0A1C3E', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 2, elevation: 1 }),
@@ -367,18 +380,21 @@ const styles = StyleSheet.create({
   hintText: {
     fontFamily: fonts.semibold,
     fontSize: 11.5,
-    color: '#FFFFFF',
+    color: '#0369A1',
+    flexShrink: 1,
   },
   avatarStack: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
+    alignSelf: 'flex-end',
   },
   avatarCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2.2,
+    borderWidth: 2,
     borderColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
