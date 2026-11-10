@@ -1,6 +1,7 @@
 // The book's content. One source for the PDF and the DOCX.
 // Block types: p, lead, h, list, table, fig, note(verified|proposed|rule|finding), kv, quote.
-const { PARTS, VB, logo, mono, wordmark, lockup, cmyk, hex2rgb, contrast, grade, isDark, esc } = require('./lib');
+const MK = require('./mockups');
+const { PARTS, VB, logo, mono, wordmark, lockup, cmyk, hex2rgb, contrast, grade, isDark, esc, ph, phGrid } = require('./lib');
 
 const META = {
   brand: 'Washing Basket',
@@ -138,10 +139,10 @@ function clearSpaceSVG() {
   <rect x="${VB.x}" y="${VB.y}" width="${VB.w}" height="${VB.h}" fill="#FFFFFF"/>
   ${inner}
   ${xs(VB.x - x, VB.y - x)}${xs(VB.x + VB.w, VB.y - x)}${xs(VB.x - x, VB.y + VB.h)}${xs(VB.x + VB.w, VB.y + VB.h)}
-  <text x="${VB.x - x / 2}" y="${VB.y + VB.h / 2}" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="56" fill="#013E86">x</text>
-  <text x="${VB.x + VB.w + x / 2}" y="${VB.y + VB.h / 2}" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="56" fill="#013E86">x</text>
-  <text x="${VB.x + VB.w / 2}" y="${VB.y - x / 2 + 18}" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="56" fill="#013E86">x</text>
-  <text x="${VB.x + VB.w / 2}" y="${VB.y + VB.h + x / 2 + 18}" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="56" fill="#013E86">x</text></svg>`;
+  <text x="${VB.x - x / 2}" y="${VB.y + VB.h / 2}" text-anchor="middle" font-family="Inter" font-weight="700" font-size="56" fill="#013E86">x</text>
+  <text x="${VB.x + VB.w + x / 2}" y="${VB.y + VB.h / 2}" text-anchor="middle" font-family="Inter" font-weight="700" font-size="56" fill="#013E86">x</text>
+  <text x="${VB.x + VB.w / 2}" y="${VB.y - x / 2 + 18}" text-anchor="middle" font-family="Inter" font-weight="700" font-size="56" fill="#013E86">x</text>
+  <text x="${VB.x + VB.w / 2}" y="${VB.y + VB.h + x / 2 + 18}" text-anchor="middle" font-family="Inter" font-weight="700" font-size="56" fill="#013E86">x</text></svg>`;
 }
 
 /* icons: paths copied from mobile/src/components/ui/icons.tsx and common app glyphs */
@@ -168,6 +169,33 @@ const ui = {
 };
 
 /* ───────────── pages ───────────── */
+const IMGBG = {'plate1.jpg': '#FA4A13', 'plate2.jpg': '#FC6800', 'plate3.jpg': '#FDA401', 'plate4.jpg': '#FEC603', 'plate5.jpg': '#003886', 'plate6.jpg': '#FED004', 'svc-blanket.jpg': '#FDC702', 'svc-color-dye.jpg': '#FEFEFD', 'svc-dry-clean.jpg': '#25488C', 'svc-shoes-bags-and-soft-toys.jpg': '#FA3704', 'svc-stain-treatment.jpg': '#FDC504'};
+
+/* Images still to be made. Each placeholder carries the brief; drop the finished file in and remove the placeholder. */
+const STYLE = 'Flat vector illustration in the Washing Basket process-plate style (match assets/artwork/1–6.png): soft cel shading, no outlines on figures, subtle paper grain, naturalistic adult proportions with slightly enlarged heads and hands. Staff wear a white crew-neck tee and a navy apron. Keep every person and object fully inside the frame with at least 8% margin on all sides; nothing cropped. No text, no logos, no watermarks.';
+const PHOTO = 'Photograph in natural window daylight with soft shadows and true-to-life colour (no heavy grading), clean white or light grey surroundings, uncluttered. Real staff and customers only, with written consent; no stock-photo poses.';
+const PH = {
+  d1: { file: 'divider-01-brand-foundations.png', size: '1660 × 2480 px portrait (fills the right half of the divider page)', title: 'Hand-over at the door',
+    prompt: 'A pickup partner (short beard, navy cap) takes a white drawstring laundry bag from a smiling student (long dark hair, cream sweater) at a front door, both shown from the knees up. Flat background #FD4C14. ' + STYLE },
+  d3: { file: 'divider-03-colour.png', size: '1660 × 2480 px portrait (fills the right half of the divider page)', title: 'Colour in the laundry',
+    prompt: 'Three neatly folded stacks of towels and tees seen slightly from above: one stack in Logo Orange #FE8701, one in Cloth Red #D30D24, one in Basket Navy #013E86, with two small four-point sparkles above. No people. Flat background #FD6801. ' + STYLE },
+  d5: { file: 'divider-05-illustration.png', size: '1660 × 2480 px portrait (fills the right half of the divider page)', title: 'The care partner at work',
+    prompt: 'A care partner (dark hair in a high bun) pegs a white shirt onto a washing line, a basket of folded clothes at her feet, shown from the knees up and wholly in frame. Flat background #FEA902. ' + STYLE },
+  d8: { file: 'divider-08-digital.png', size: '1660 × 2480 px portrait (fills the right half of the divider page)', title: 'Booking in the app',
+    prompt: 'Two hands hold a phone showing a simple order-tracking screen (five steps drawn as abstract UI blocks, no readable text); a folded stack of clothes and a small laundry basket sit beside it on a desk. Flat background #FEC503. ' + STYLE },
+  d10: { file: 'divider-10-applications.png', size: '1660 × 2480 px portrait (fills the right half of the divider page)', title: 'Branded items, flat lay',
+    prompt: 'Top-down flat lay of operations items with even spacing: a white cotton drawstring laundry bag, a navy hang tag on a cotton string, a thermal paper slip and an orange paper tote. Leave all items blank; the logo is placed afterwards from the master artwork. Flat background #FECF04. ' + STYLE },
+  photo: [
+    { file: 'photo-counter-handover.jpg', size: '3000 × 2000 px, 3:2', title: 'Counter hand-over',
+      prompt: 'A staff member in a navy apron and white tee hands a folded stack of clothes to a student across a campus counter; a QR scanner on the counter. Eye level, faces natural and relaxed. ' },
+    { file: 'photo-folded-order.jpg', size: '3000 × 2000 px, 3:2', title: 'Folded order, top-down',
+      prompt: 'A freshly folded order (white shirts, a towel, a blanket) stacked inside an orange laundry basket on a white table, shot from directly above with even spacing around the basket. ' },
+    { file: 'photo-care-detail.jpg', size: '3000 × 2000 px, 3:2', title: 'Care in progress',
+      prompt: 'Close-up of hands in blue nitrile gloves treating a small stain on a white shirt with a spray bottle; shallow depth of field, the shirt filling the lower half of the frame. ' },
+    { file: 'photo-ready-shelf.jpg', size: '3000 × 2000 px, 3:2', title: 'Ready for collection',
+      prompt: 'A neat row of packed return orders on clean white shelving, each with a navy hang tag; soft side light, no people. ' },
+  ],
+};
 const pages = [];
 const P = (p) => pages.push(p);
 
@@ -234,12 +262,12 @@ P({
     { t: 'table', head: ['Element', 'Location', 'Condition'], widths: [24, 44, 32], rows: [
       ['Primary mark (basket, clothes, sparkles)', 'assets/brand/WashingBasket-logo.png · admin/public/logo.png', 'Verified · PNG only, no master vector file'],
       ['Vector trace of the mark', 'website/src/logoGeometry.ts · mobile/src/components/logo/logoGeometry.ts', 'Verified · used by the product to draw and animate the logo'],
-      ['Wordmark “WashingBasket”', 'mobile/src/components/logo/Wordmark.tsx · admin brand.css', 'Verified · typeset live in Plus Jakarta Sans, no outlined artwork'],
+      ['Wordmark “WashingBasket”', 'mobile/src/components/logo/Wordmark.tsx · admin brand.css', 'Verified · typeset live in the apps; outlined as artwork for this book'],
       ['Horizontal lockup', 'CinematicLogoLockup.tsx · admin sidebar · website nav', 'Verified'],
       ['Favicon', 'admin/public/favicon.png · website/public/favicon.png', 'Verified'],
-      ['Mobile app icon & splash', 'mobile/assets/icon.png, android-icon-*.png, splash-icon.png', 'Finding · still the Expo template placeholder'],
+      ['Mobile app icon & splash', 'mobile/assets/icon.png, android-icon-*.png, splash-icon.png', 'Verified · built from the mark'],
       ['Colour tokens', 'mobile/src/theme/index.ts (source of truth for all three products)', 'Verified'],
-      ['Fonts', 'Plus Jakarta Sans, Inter, Nunito, Courier Prime (Google Fonts, OFL)', 'Verified'],
+      ['Fonts', 'Inter, Courier Prime in brand use; two retired display fonts still loaded in code (Google Fonts, OFL)', 'Verified · see finding 04'],
       ['Process illustration plates (6)', 'assets/artwork/1–6.png · mobile/assets/scenes', 'Verified'],
       ['Status vignettes (10)', 'assets/illustrations · mobile/assets/illustrations', 'Verified'],
       ['Service illustrations (5)', 'mobile/assets/services', 'Verified'],
@@ -257,16 +285,16 @@ P({
   lead: 'Places where the identity is incomplete or where two parts of the product disagree. None of these change the brand; they make it consistent.',
   body: [
     { t: 'finding', n: '01', title: 'No master vector logo', text: 'The only logo files are PNGs. The product draws the mark from a vector trace (logoGeometry.ts), which proves the shapes, but there is no signed-off SVG/PDF/EPS for print.', fix: 'Export the trace as the official SVG and EPS, check it against the PNG at 400%, and store it in assets/brand.' },
-    { t: 'finding', n: '02', title: 'App icon is a placeholder', text: 'mobile/assets/icon.png and the Android adaptive icons are the Expo template (a blue chevron). The store listing would show no Washing Basket branding.', fix: 'Build the icon from the mark on a white tile (see page “Icon-only mark”) before store submission.' },
+    { t: 'finding', n: '02', title: 'App icon replaced', text: 'mobile/assets/icon.png, the Android adaptive layers, the splash and the favicon were the Expo template. They are now built from the mark (logoGeometry.ts) on a white tile.', fix: 'Check the new icon on real iOS and Android home screens and in the store listing before submission.' },
     { t: 'finding', n: '03', title: 'White text on Action Orange', text: 'Primary buttons put white text on #FFA742. That pair measures 1.9:1, below the 4.5:1 WCAG AA minimum for text.', fix: 'Use Ink (#0A1C3E) labels on Action Orange (9.3:1), or keep white text only at 18 px bold and above as a stopgap.' },
-    { t: 'finding', n: '04', title: 'Wordmark font comment', text: 'theme/index.ts names Nunito Black as the wordmark font, but Wordmark.tsx, the lockup and the admin portal all set it in Plus Jakarta Sans.', fix: 'Plus Jakarta Sans is the shipped wordmark. Update the comment; keep Nunito out of the identity until a use is approved.' },
+    { t: 'finding', n: '04', title: 'Retired display fonts still in code', text: 'Website and admin headings load Plus Jakarta Sans, and theme/index.ts names Nunito Black. Brand typography is now Inter, with the wordmark as fixed artwork.', fix: 'Point --display and the admin heading styles at Inter, remove both fonts, and use the outlined wordmark artwork instead of live text.' },
     { t: 'finding', n: '05', title: 'Two primary-button colours', text: 'The token says CTAs are Action Orange, while the sign-in “Continue” and admin “Sign in” buttons are Ink.', fix: 'Adopt the rule: Orange for the one commercial action on a screen (Book, Pay, Top up); Ink for flow steps (Continue, Sign in).' },
     { t: 'finding', n: '06', title: 'Placeholder contact details', text: 'Support email care@washingbasket.example is a placeholder domain.', fix: 'Replace with the live address before any print or store material uses it.' },
   ],
 });
 
 /* 01 — Brand foundations */
-P({ id: 'd1', layout: 'divider', num: '01', section: 'Brand foundations', title: 'Brand foundations', plate: 'plate1.jpg', bg: '#FD4C14', fg: '#FFFFFF',
+P({ id: 'd1', layout: 'divider', num: '01', section: 'Brand foundations', title: 'Brand foundations', plate: 'div-01.jpg', bg: '#FC4F10', fg: '#FFFFFF',
   items: ['Overview and story', 'Purpose, vision and mission', 'Values and personality', 'Positioning and audience', 'Manifesto'] });
 
 P({
@@ -274,7 +302,7 @@ P({
   lead: 'Washing Basket collects laundry at your door or a campus counter, washes, dries and irons it with care, and brings it back. Booked and followed in one app.',
   side: [{ t: 'note', kind: 'verified', text: 'Headline and description are the live website hero (website/src/content.ts).' }],
   body: [
-    { t: 'fig', id: 'overview-fig', h: 62, caption: 'The five steps of every order, drawn as the brand’s process plates.', html: `<div class="strip">${PLATES.filter((p) => p[0] !== 'Pack').map((p) => `<div class="strip__i"><img src="img/${p[2]}"><span>${p[0]}</span></div>`).join('')}</div>` },
+    { t: 'fig', id: 'overview-fig', h: 50, caption: 'The five steps of every order, drawn as the brand’s process plates (shown whole).', html: `<div class="whole whole--5">${PLATES.filter((p) => p[0] !== 'Pack').map((p) => `<div class="whole__i"><div class="whole__img" style="background:${IMGBG[p[2]]}"><img src="img/${p[2]}"></div><span>${p[0]}</span></div>`).join('')}</div>` },
     { t: 'cols', items: [
       [{ t: 'h', text: 'What it is' }, { t: 'p', text: 'A digital laundry service with seven services, from **Only Wash at ₹45/kg** to dry cleaning, blankets, shoes and colour dye. Customers book, pay and track in a mobile app; staff run the counters with a QR scanner; operations run from an admin portal.' }],
       [{ t: 'h', text: 'Where it works' }, { t: 'p', text: 'Campus counters at **Lovely Professional University** and **NIT Jalandhar**, and doorstep pickup around **Model Town, Jalandhar**, in two-hour slots.' }],
@@ -408,13 +436,13 @@ P({
   id: 'lockups', section: 'Logo', layout: 'top', kicker: 'Wordmark & lockups', title: 'Wordmark and lockups',
   body: [
     { t: 'fig', id: 'lockup-fig', h: 74, html: `<div class="lockups">
-      <div class="lk lk--wide"><div class="lk__art">${lockup(34)}</div><div class="lk__l">${tag('verified')} Primary horizontal lockup</div></div>
-      <div class="lk"><div class="lk__art lk__art--stack">${logo({ h: 82 })}<div style="height:8px"></div>${wordmark(22)}</div><div class="lk__l">${tag('proposed')} Stacked lockup</div></div>
+      <div class="lk lk--wide"><div class="lk__art">${lockup(30)}</div><div class="lk__l">${tag('verified')} Primary horizontal lockup</div></div>
+      <div class="lk"><div class="lk__art lk__art--stack">${logo({ h: 78 })}<div style="height:10px"></div>${wordmark(20)}</div><div class="lk__l">${tag('proposed')} Stacked lockup</div></div>
       <div class="lk"><div class="lk__art">${logo({ h: 104 })}</div><div class="lk__l">${tag('verified')} Mark only</div></div>
-      <div class="lk"><div class="lk__art">${wordmark(26)}</div><div class="lk__l">${tag('verified')} Wordmark only</div></div></div>` },
+      <div class="lk"><div class="lk__art">${wordmark(24)}</div><div class="lk__l">${tag('verified')} Wordmark only</div></div></div>` },
     { t: 'cols', items: [
-      [{ t: 'h', text: 'Wordmark specification' }, { t: 'kv', items: [['Typeface', 'Plus Jakarta Sans'], ['Weights', 'Bold 700; capitals W and B ExtraBold 800'], ['Capitals', 'Set 1.22× the lowercase size (1.28× in the animated app intro)'], ['Tracking', '−0.35 px at 24 px (≈ −0.015 em)'], ['Colour', 'Ink #0A1C3E; white on dark'], ['Spelling', 'Set solid: WashingBasket']] }],
-      [{ t: 'h', text: 'Lockup proportions' }, { t: 'kv', items: [['Mark width', '3.42 × wordmark font size (82 px at 24 px)'], ['Gap', '0.5 × font size (12 px at 24 px)'], ['Alignment', 'Wordmark vertically centred on the mark'], ['Source', 'CinematicLogoLockup.tsx; admin sidebar and website nav']] }, { t: 'note', kind: 'rule', text: 'In running text always write the name as two words, “Washing Basket”. The solid form belongs to the wordmark only.' }],
+      [{ t: 'h', text: 'Wordmark specification' }, { t: 'kv', items: [['Form', 'Fixed artwork, outlined from the website setting (site.css .brand-title). Never retype it'], ['Capitals', 'W and B at 1.25 em, Medium weight'], ['Lowercase', '0.72 em, SemiBold weight'], ['Tracking', '−0.04 em capitals, −0.02 em lowercase; W tucked −0.11 em'], ['Colour', 'Ink #0A1C3E; white on dark'], ['Spelling', 'Set solid: WashingBasket']] }],
+      [{ t: 'h', text: 'Lockup proportions' }, { t: 'kv', items: [['Mark height', '2.28 × wordmark size (cap height ≈ 0.41 × mark)'], ['Gap', '0.47 × wordmark size'], ['Alignment', 'Capitals centred on the mark'], ['Source', 'Website lockup; admin sidebar and app intro follow the same order']] }, { t: 'note', kind: 'rule', text: 'In running text always write the name as two words, “Washing Basket”. The solid form belongs to the wordmark only.' }],
       [{ t: 'h', text: 'When to use which' }, { t: 'list', items: ['Horizontal lockup: default for headers, nav bars, documents, signage.', 'Mark only: app icon, favicon, avatars, loaders, small spaces where the name is already present.', 'Wordmark only: rare; footers or legal lines where the mark appears elsewhere.', 'Stacked: square formats such as social avatars and packaging fronts (proposed).'] }],
     ] },
   ],
@@ -445,7 +473,7 @@ P({
   body: [
     { t: 'fig', id: 'versions-fig', h: 108, html: `<div class="tiles t4">
       ${tile(logo({ h: 120 }), '#FFFFFF', `${tag('verified')} Full colour on white`)}
-      ${tile(logo({ h: 120, c: { knock: '#FBF9F4' } }), '#FBF9F4', `${tag('verified')} Full colour on ivory`)}
+      ${tile(logo({ h: 120, c: { knock: '#F3F5F8' } }), '#F3F5F8', `${tag('verified')} Full colour on light grey`)}
       ${tile(logo({ h: 120, c: { navy: '#FFFFFF', knock: '#012A5C' } }), '#012A5C', `${tag('proposed')} Reversed on deep navy`)}
       ${tile(logo({ h: 120, c: mono('#013E86', '#FFFFFF') }), '#FFFFFF', `${tag('proposed')} Navy monochrome`)}
       ${tile(logo({ h: 120, c: mono('#0A1C3E', '#FFFFFF') }), '#FFFFFF', `${tag('proposed')} Ink monochrome`)}
@@ -464,7 +492,7 @@ P({
   id: 'backgrounds', section: 'Logo', layout: 'top', kicker: 'Backgrounds & placement', title: 'Backgrounds and placement',
   body: [
     { t: 'fig', id: 'bg-fig', h: 62, html: `<div class="tiles t5">
-      ${doTile(logo({ h: 92 }), 'White, Ivory, Paper')}
+      ${doTile(logo({ h: 92 }), 'White or light grey')}
       ${doTile(`<div class="appicon">${logo({ h: 74 })}</div>`, 'On colour: inside a white tile', '#FD6801')}
       ${doTile(logo({ h: 92, c: { navy: '#FFFFFF', knock: '#012A5C' } }), 'Deep navy: reversed', '#012A5C')}
       ${dontTile(logo({ h: 92, c: { knock: '#FE8701' } }), 'Full colour on orange', '#FE8701')}
@@ -484,15 +512,15 @@ P({
   id: 'iconmark', section: 'Logo', layout: 'top', cols: 2, kicker: 'Icon-only mark', title: 'App icon and favicon',
   body: [
     { t: 'fig', id: 'appicon-fig', h: 100, html: `<div class="icons-row">
-      <div class="ic-col"><div class="appicon appicon--xl">${logo({ h: 150 })}</div><span>${tag('proposed')} App icon 1024 px</span></div>
+      <div class="ic-col"><div class="appicon appicon--xl">${logo({ h: 150 })}</div><span>${tag('verified')} App icon 1024 px</span></div>
       <div class="ic-col"><div class="appicon appicon--m">${logo({ h: 60 })}</div><span>180 px</span></div>
       <div class="ic-col"><div class="appicon appicon--s">${logo({ h: 32 })}</div><span>87 px</span></div>
       <div class="ic-col"><img src="img/favicon.png" style="width:40px;height:40px"><span>${tag('verified')} Favicon</span></div>
-      <div class="ic-col"><div class="placeholder"><img src="img/expo-placeholder-icon.png"></div><span>${tag('finding')} Current app icon</span></div></div>` },
+      <div class="ic-col"><div class="appicon appicon--m" style="border-radius:50%;overflow:hidden;padding:0"><img src="img/app-icon-fg.png" style="width:100%;height:100%;transform:scale(1.5)"></div><span>Adaptive</span></div></div>` },
     { t: 'stack', items: [
       { t: 'p', text: 'The mark carries the brand wherever the name cannot fit. On device home screens it sits on a **white tile** with the mark at about 70% of the tile width, centred optically (nudge 2% down so the sparkles do not crowd the top).' },
       { t: 'kv', items: [['Tile colour', 'White #FFFFFF'], ['Mark size', '~70% of tile width'], ['Android adaptive', 'Mark inside the 66% safe zone on a white background layer'], ['Monochrome (Android 13+)', 'Single-colour version from page “Colour versions”']] },
-      { t: 'note', kind: 'finding', text: 'The current mobile/assets/icon.png and android-icon-*.png are the Expo template. Replace before store submission.' },
+      { t: 'note', kind: 'verified', text: 'mobile/assets/icon.png, android-icon-*.png, splash-icon.png and favicon.png now use the mark, made from the product’s own vector. The Expo template icon is gone.' },
       { t: 'note', kind: 'verified', text: 'The website and admin favicon is already the mark (favicon.png).' },
     ] },
   ],
@@ -508,14 +536,14 @@ P({
       ${dontTile(`<div style="filter:drop-shadow(6px 8px 6px rgba(0,0,0,.45))">${logo({ h: 96 })}</div>`, 'Add shadows or effects')}
       ${dontTile(partialLogo(96, ['basket', 'basketRim', 'towel', 'clothOrange', 'clothRed'], { orange: '#FE8701', red: '#D30D24', navy: '#013E86' }), 'Remove or rearrange parts')}
       ${dontTile(`<span class="lockup" style="gap:10px">${logo({ h: 60 })}<span style="font-family:Georgia,serif;font-size:30px;color:#0A1C3E">Washing Basket</span></span>`, 'Retype the wordmark')}
-      ${dontTile(`<div style="position:relative;width:100%;height:100%;background:url(img/plate1.jpg) center/cover;display:flex;align-items:center;justify-content:center">${logo({ h: 80, c: { knock: '#FD4C14' } })}</div>`, 'Place on busy artwork')}
+      ${dontTile(`<div style="position:relative;width:100%;height:100%;background:#FD4C14 url(img/plate1.jpg) center/contain no-repeat;display:flex;align-items:center;justify-content:center">${logo({ h: 80, c: { knock: '#FD4C14' } })}</div>`, 'Place on busy artwork')}
       ${dontTile(`<div style="background:linear-gradient(135deg,#FE8701,#D30D24);padding:10px">${logo({ h: 80, c: mono('#FFFFFF', 'transparent') })}</div>`, 'Gradients or outlines')}</div>` },
     { t: 'note', kind: 'rule', text: 'Do not stretch, recolour, rotate, outline, add effects, separate or re-arrange the parts, retype the wordmark, or place the mark on a background that hides any of its shapes.' },
   ],
 });
 
 /* 03 — Colour */
-P({ id: 'd3', layout: 'divider', num: '03', section: 'Colour', title: 'Colour identity', plate: 'plate2.jpg', bg: '#FD6801', fg: '#FFFFFF',
+P({ id: 'd3', layout: 'divider', num: '03', section: 'Colour', title: 'Colour identity', plate: 'div-03.jpg', bg: '#FB6101', fg: '#FFFFFF',
   items: ['Core palette', 'Soft brand shades', 'Neutrals and surfaces', 'Semantic colours', 'Proportion and hierarchy', 'Contrast and combinations', 'Illustration plate colours'] });
 
 P({
@@ -598,10 +626,10 @@ P({
 P({
   id: 'proportion', section: 'Colour', layout: 'top', cols: 2, kicker: 'Hierarchy & proportion', title: 'How much of each',
   body: [
-    { t: 'fig', id: 'prop-fig', h: 104, html: `<div class="prop"><div style="flex:62;background:#FBF9F4;color:#0A1C3E"><b>62%</b>Neutrals<br>White · Ivory · Paper</div><div style="flex:16;background:#0A1C3E;color:#fff"><b>16%</b>Ink &amp; Navy</div><div style="flex:12;background:#FFA742;color:#0A1C3E"><b>12%</b>Action Orange</div><div style="flex:6;background:#54B6F8;color:#0A1C3E"><b>6%</b>Shades</div><div style="flex:4;background:#D30D24;color:#fff"><b>4%</b></div></div>
-    <div class="combos"><div class="combo"><i style="background:#FFFFFF"></i><i style="background:#0A1C3E"></i><i style="background:#FFA742"></i><span>${tag('verified')} App: white, ink, orange</span></div><div class="combo"><i style="background:#FBF9F4"></i><i style="background:#0A1C3E"></i><i style="background:#013E86"></i><i style="background:#FFA742"></i><span>${tag('verified')} Website</span></div><div class="combo"><i style="background:#FE8701"></i><i style="background:#D30D24"></i><i style="background:#013E86"></i><span>${tag('verified')} Brand bands</span></div><div class="combo combo--x"><i style="background:#FE8701"></i><i style="background:#FFA742"></i><span>${tag('finding')} Two oranges side by side</span></div><div class="combo combo--x"><i style="background:#D30D24"></i><i style="background:#12AD2B"></i><span>✕ Red with green</span></div><div class="combo combo--x"><i style="background:#013E86"></i><i style="background:#0A1C3E"></i><span>✕ Navy text on ink</span></div></div>` },
+    { t: 'fig', id: 'prop-fig', h: 104, html: `<div class="prop"><div style="flex:62;background:#FFFFFF;color:#0A1C3E;box-shadow:inset 0 0 0 1px #E3E6EB"><b>62%</b>Neutrals<br>White · Mist · Line</div><div style="flex:16;background:#0A1C3E;color:#fff"><b>16%</b>Ink &amp; Navy</div><div style="flex:12;background:#FFA742;color:#0A1C3E"><b>12%</b>Action Orange</div><div style="flex:6;background:#54B6F8;color:#0A1C3E"><b>6%</b>Shades</div><div style="flex:4;background:#D30D24;color:#fff"><b>4%</b></div></div>
+    <div class="combos"><div class="combo"><i style="background:#FFFFFF"></i><i style="background:#0A1C3E"></i><i style="background:#FFA742"></i><span>${tag('verified')} App: white, ink, orange</span></div><div class="combo"><i style="background:#FFFFFF;box-shadow:inset 0 0 0 1px #E3E6EB"></i><i style="background:#0A1C3E"></i><i style="background:#013E86"></i><i style="background:#FFA742"></i><span>${tag('verified')} Website</span></div><div class="combo"><i style="background:#FE8701"></i><i style="background:#D30D24"></i><i style="background:#013E86"></i><span>${tag('verified')} Brand bands</span></div><div class="combo combo--x"><i style="background:#FE8701"></i><i style="background:#FFA742"></i><span>${tag('finding')} Two oranges side by side</span></div><div class="combo combo--x"><i style="background:#D30D24"></i><i style="background:#12AD2B"></i><span>✕ Red with green</span></div><div class="combo combo--x"><i style="background:#013E86"></i><i style="background:#0A1C3E"></i><span>✕ Navy text on ink</span></div></div>` },
     { t: 'stack', items: [
-      { t: 'p', text: 'The product reads as **calm first, bright second.** Most of every screen is white or ivory. Ink and Navy give structure. Orange marks the one thing to do next. Shades and semantic colours are accents.' },
+      { t: 'p', text: 'The product reads as **calm first, bright second.** Most of every screen is white. Ink and Navy give structure. Orange marks the one thing to do next. Shades and semantic colours are accents.' },
       { t: 'list', items: ['One Action Orange element per view where possible: the primary action.', 'Red is a brand colour, not an alert colour, except in the semantic Danger role.', 'Plate colours (next page) belong to illustration and campaigns, not UI chrome.', 'Dark sections use Deep Navy, never pure black.'] },
       { t: 'note', kind: 'proposed', text: 'Percentages are a guide measured from the live app and website screens, not a mathematical rule.' },
       { t: 'note', kind: 'verified', text: 'The orange-red-navy band sequence is the website’s brand moment: Collected. Cleaned. Returned.' },
@@ -613,7 +641,7 @@ P({
   id: 'plates', section: 'Colour', layout: 'top', kicker: 'Campaign palette', title: 'Illustration plate colours',
   lead: 'Each step of the care process has its own saturated plate colour. Together they run warm, from red-orange to gold, with one navy plate for contrast.',
   body: [
-    { t: 'fig', id: 'plates-fig', h: 100, html: `<div class="plates">${PLATES.map(([n, h, f]) => `<div class="plate"><img src="img/${f}"><div class="plate__k" style="background:${h};color:${txtOn(h)}"><b>${n}</b><span>${h}</span></div></div>`).join('')}</div>` },
+    { t: 'fig', id: 'plates-fig', h: 100, html: `<div class="plates">${PLATES.map(([n, h, f]) => `<div class="plate"><div class="plate__img" style="background:${IMGBG[f]}"><img src="img/${f}"></div><div class="plate__k" style="background:${h};color:${txtOn(h)}"><b>${n}</b><span>${h}</span></div></div>`).join('')}</div>` },
     { t: 'cols', items: [
       [{ t: 'p', text: 'These colours live **inside the artwork**. They are the backgrounds of the six process plates and the hero cards (Collect #FC4C13, Care #FE6900, Return #FDCE03 in content.ts).' }],
       [{ t: 'p', text: 'Offer tickets borrow the same family: #FF6F3C, #013E86, #FEC837, #D30D24 and #FEDB7D, each with a darker stub.' }],
@@ -624,57 +652,57 @@ P({
 
 /* 04 — Typography */
 P({ id: 'd4', layout: 'divider', num: '04', section: 'Typography', title: 'Typography system', typeDivider: true, bg: '#0A1C3E', fg: '#FFFFFF',
-  items: ['Typefaces', 'Plus Jakarta Sans', 'Inter', 'Type scale', 'Supporting faces'] });
+  items: ['Typefaces', 'Inter for display', 'Inter for text', 'Type scale', 'Supporting faces'] });
 
 P({
-  id: 'faces', section: 'Typography', layout: 'top', kicker: 'Typefaces', title: 'Two families do the work',
+  id: 'faces', section: 'Typography', layout: 'top', kicker: 'Typefaces', title: 'One family, one supporting face',
   body: [
     { t: 'fig', id: 'faces-fig', h: 76, html: `<div class="faces">
-      <div class="face"><div class="face__aa" style="font-family:'Plus Jakarta Sans';font-weight:800">Aa</div><b>Plus Jakarta Sans</b><span>Display · headings · wordmark</span>${tag('verified')}</div>
-      <div class="face"><div class="face__aa" style="font-family:Inter;font-weight:600">Aa</div><b>Inter</b><span>Body · UI · numbers</span>${tag('verified')}</div>
+      <div class="face"><div class="face__aa" style="font-family:Inter;font-weight:700">Aa</div><b>Inter · display</b><span>Headlines · titles · big numbers</span>${tag('rule')}</div>
+      <div class="face"><div class="face__aa" style="font-family:Inter;font-weight:400">Aa</div><b>Inter · text</b><span>Body · UI · tables · prices</span>${tag('verified')}</div>
       <div class="face face--sm"><div class="face__aa" style="font-family:'Courier Prime';font-weight:700">Aa</div><b>Courier Prime</b><span>Laundry slips &amp; receipts</span>${tag('verified')}</div>
-      <div class="face face--sm"><div class="face__aa" style="font-family:Nunito;font-weight:900">Aa</div><b>Nunito Black</b><span>Loaded, not used in identity</span>${tag('finding')}</div></div>` },
+      <div class="face face--sm"><div class="face__aa face__aa--wm">${wordmark(19)}</div><b>Wordmark</b><span>Fixed artwork, never typed</span>${tag('rule')}</div></div>` },
     { t: 'table', head: ['Typeface', 'Role', 'Why it belongs', 'Weights in use'], widths: [17, 20, 43, 20], rows: [
-      ['Plus Jakarta Sans', 'Primary · display', 'A geometric sans with open, friendly curves and a modern edge. Its round bowls echo the capsule-ended cloths of the mark.', '500, 600, 700, 800'],
-      ['Inter', 'Secondary · text & UI', '“Crisp, precise and highly legible at every size.” Tabular figures keep prices and order numbers aligned.', '400, 500, 600, 700'],
-      ['Courier Prime', 'Supporting · print slips', '“The typewriter print on the laundry slip” — a tactile, receipt-like voice for order tickets and tags.', '400, 700'],
-      ['Nunito', 'Not in identity', 'Bundled in the app and named in a theme comment, but no shipped screen uses it for the wordmark.', '—'],
+      ['Inter', 'Display and text', 'Crisp, precise and highly legible at every size. One family keeps headlines and UI in the same voice. Tabular figures keep prices and order numbers aligned.', '400, 500, 600, 700'],
+      ['Courier Prime', 'Supporting · print slips', 'The typewriter print on the laundry slip: a tactile, receipt-like voice for order tickets and tags.', '400, 700'],
+      ['Wordmark', 'Artwork', 'Supplied as outlines. It is never set from a font, so it cannot drift between apps.', 'n/a'],
+      ['Plus Jakarta Sans · Nunito', 'Retired', 'Still loaded in website, admin and app code. Not part of the identity from v1.0 (finding 04).', 'none'],
     ] },
-    { t: 'note', kind: 'verified', text: 'All four are open-source Google Fonts (SIL OFL) loaded by @expo-google-fonts and @fontsource. This book is set in the same files.' },
+    { t: 'note', kind: 'rule', text: 'Inter and Courier Prime are open-source Google Fonts (SIL OFL). This book is set in the same files.' },
   ],
 });
 
-const spec = (fam, w, name) => `<div class="spec"><div class="spec__big" style="font-family:'${fam}';font-weight:${w}">Aa Bb Cc</div><div class="spec__chars" style="font-family:'${fam}';font-weight:${w === 800 ? 700 : 400}">ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789 ₹ &amp; @ ? ! % ( ) / –</div></div>`;
+const spec = (fam, w, name) => `<div class="spec"><div class="spec__big" style="font-family:'${fam}';font-weight:${w}">Aa Bb Cc</div><div class="spec__chars" style="font-family:'${fam}';font-weight:${w >= 700 ? 600 : 400}">ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789 ₹ &amp; @ ? ! % ( ) / –</div></div>`;
 const weights = (fam, ws) => `<div class="weights">${ws.map(([w, n]) => `<div style="font-family:'${fam}';font-weight:${w}"><span>${n} ${w}</span>Collected. Cleaned. Returned.</div>`).join('')}</div>`;
 
 P({
-  id: 'jakarta', section: 'Typography', layout: 'top', cols: 2, kicker: 'Primary typeface', title: 'Plus Jakarta Sans',
+  id: 'jakarta', section: 'Typography', layout: 'top', cols: 2, kicker: 'Display', title: 'Inter for display',
   body: [
-    { t: 'fig', id: 'jakarta-fig', h: 120, html: spec('Plus Jakarta Sans', 800) },
+    { t: 'fig', id: 'jakarta-fig', h: 120, html: spec('Inter', 700) },
     { t: 'stack', items: [
-      { t: 'fig', id: 'jakarta-w', h: 52, html: weights('Plus Jakarta Sans', [[500, 'Medium'], [600, 'SemiBold'], [700, 'Bold'], [800, 'ExtraBold']]) },
-      { t: 'kv', items: [['Personality', 'Confident, warm, contemporary'], ['Use for', 'Hero headlines, section titles, big numbers, the wordmark'], ['Tracking', 'Tight: −0.03 em at display sizes, −0.01 em at 20–32 px'], ['Line height', '1.05–1.15 for display, 1.2 for headings'], ['Avoid', 'Body paragraphs, small labels under 14 px, all-caps blocks']] },
+      { t: 'fig', id: 'jakarta-w', h: 52, html: weights('Inter', [[500, 'Medium'], [600, 'SemiBold'], [700, 'Bold']]) },
+      { t: 'kv', items: [['Personality', 'Confident, calm, contemporary'], ['Use for', 'Hero headlines, section titles, big numbers'], ['Tracking', '−0.02 em at display sizes, −0.01 em at 20–32 px'], ['Line height', '1.15–1.2 for display, 1.25 for headings, never tighter'], ['Avoid', 'Weights under 500 for headlines; all-caps blocks']] },
     ] },
   ],
 });
 
 P({
-  id: 'inter', section: 'Typography', layout: 'top', cols: 2, kicker: 'Secondary typeface', title: 'Inter',
+  id: 'inter', section: 'Typography', layout: 'top', cols: 2, kicker: 'Text', title: 'Inter for text',
   body: [
-    { t: 'fig', id: 'inter-fig', h: 120, html: spec('Inter', 600) },
+    { t: 'fig', id: 'inter-fig', h: 120, html: spec('Inter', 400) },
     { t: 'stack', items: [
       { t: 'fig', id: 'inter-w', h: 52, html: weights('Inter', [[400, 'Regular'], [500, 'Medium'], [600, 'SemiBold'], [700, 'Bold']]) },
-      { t: 'kv', items: [['Personality', 'Neutral, precise, highly legible'], ['Use for', 'Body text, UI labels, buttons, forms, tables, prices'], ['Numbers', 'Tabular figures (tnum) for amounts, order IDs, times'], ['Admin', 'Stylistic sets cv11 and ss01 enabled'], ['Line height', '1.4–1.55 body; 1.3 for labels']] },
+      { t: 'kv', items: [['Personality', 'Neutral, precise, highly legible'], ['Use for', 'Body text, UI labels, buttons, forms, tables, prices'], ['Numbers', 'Tabular figures (tnum) for amounts, order IDs, times'], ['Admin', 'Stylistic sets cv11 and ss01 enabled'], ['Line height', '1.5–1.65 body; 1.35 for labels']] },
     ] },
   ],
 });
 
 const scale = [
-  ['Hero headline', 'Plus Jakarta Sans', 800, 64, 1.04, '-0.035em', 'Clean clothes, without the laundry day.'],
-  ['Section heading', 'Plus Jakarta Sans', 800, 40, 1.08, '-0.03em', 'Five careful steps, every single order.'],
-  ['Subheading', 'Plus Jakarta Sans', 700, 24, 1.25, '-0.6px', 'Schedule a pickup'],
+  ['Hero headline', 'Inter', 700, 64, 1.15, '-0.02em', 'Clean clothes, without the laundry day.'],
+  ['Section heading', 'Inter', 700, 40, 1.2, '-0.02em', 'Five careful steps, every single order.'],
+  ['Subheading', 'Inter', 600, 24, 1.3, '-0.01em', 'Schedule a pickup'],
   ['Screen title (app)', 'Inter', 700, 22, 1.27, '-0.6px', 'Welcome to Washing Basket'],
-  ['Body paragraph', 'Inter', 400, 14, 1.43, '0', 'Pick a date, a time slot and your address. A partner collects your basket during your two-hour slot.'],
+  ['Body paragraph', 'Inter', 400, 14, 1.6, '0', 'Pick a date, a time slot and your address. A partner collects your basket during your two-hour slot.'],
   ['Button label', 'Inter', 600, 15, 1.2, '0.2px', 'Book now'],
   ['Navigation label', 'Inter', 500, 12, 1.33, '0.2px', 'Home   Orders   Wallet   Profile'],
   ['Amount', 'Inter', 600, 18, 1.33, '-0.3px', '₹1,293.00'],
@@ -686,7 +714,7 @@ P({
     { t: 'fig', id: 'scale-fig', h: 146, html: `<div class="tscale">${scale.map(([n, f, w, s, lh, ls, ex]) => `<div class="ts"><div class="ts__m"><b>${n}</b><span>${f} ${w} · ${s}/${Math.round(s * lh)} · ${ls}</span></div><div class="ts__ex" style="font-family:'${f}';font-weight:${w};font-size:${s > 30 ? s * 0.42 : s * 0.62}pt;line-height:${lh};letter-spacing:${ls};${n === 'Amount' ? 'font-variant-numeric:tabular-nums' : ''}">${ex}</div></div>`).join('')}</div>` },
     { t: 'stack', items: [
       { t: 'table', head: ['Style', 'Font', 'Weight', 'Size / line', 'Tracking'], widths: [24, 24, 14, 20, 18], rows: scale.map(([n, f, w, s, lh, ls]) => [n, f, String(w), `${s} / ${Math.round(s * lh)} px`, ls]) },
-      { t: 'note', kind: 'verified', text: 'App styles from type and text in mobile/src/theme/index.ts. Hero and section sizes are the website’s desktop values (fluid on smaller screens). Example sizes in the figure are reduced to fit the page.' },
+      { t: 'note', kind: 'verified', text: 'App styles from type and text in mobile/src/theme/index.ts. Hero and section sizes are the website’s desktop values, set in Inter from v1.0. Example sizes in the figure are reduced to fit the page.' },
     ] },
   ],
 });
@@ -698,25 +726,25 @@ P({
     { t: 'stack', items: [
       { t: 'p', text: '**Courier Prime** is the voice of the physical laundry slip, the order tag and the receipt. Use it in uppercase for labels and mixed case for line items; never for headlines or UI.' },
       { t: 'h', text: 'Typography rules' },
-      { t: 'list', items: ['Sentence case for every heading, button and label. No Title Case, no ALL CAPS except short eyebrow labels and slips.', 'Headlines often break into two short lines with a full stop: “Seven services, / one basket.”', 'Use the rupee sign ₹ before amounts with no space; tabular figures in lists.', 'Left-align text. Centre only short headlines on marketing moments.', 'Never set body text in Plus Jakarta Sans, or headlines in Courier Prime.', 'Never substitute Arial, Helvetica or system fonts in brand materials; install the brand fonts.'] },
-      { t: 'note', kind: 'rule', text: 'Only Plus Jakarta Sans, Inter and Courier Prime may appear in Washing Basket materials.' },
+      { t: 'list', items: ['Sentence case for every heading, button and label. No Title Case, no ALL CAPS except short eyebrow labels and slips.', 'Headlines often break into two short lines with a full stop: “Seven services, / one basket.”', 'Use the rupee sign ₹ before amounts with no space; tabular figures in lists.', 'Left-align text. Centre only short headlines on marketing moments.', 'Never set headlines in Courier Prime, or retype the wordmark in any font.', 'Never substitute Arial, Helvetica or system fonts in brand materials; install the brand fonts.'] },
+      { t: 'note', kind: 'rule', text: 'Only Inter and Courier Prime may appear in Washing Basket materials, plus the wordmark artwork.' },
       { t: 'note', kind: 'proposed', text: 'The slip shown is a concept built on the theme’s stated use of Courier Prime; layout to be approved.' },
     ] },
   ],
 });
 
 /* 05 — Illustration */
-P({ id: 'd5', layout: 'divider', num: '05', section: 'Illustration', title: 'Illustration & characters', plate: 'plate3.jpg', bg: '#FEA902', fg: '#0A1C3E',
+P({ id: 'd5', layout: 'divider', num: '05', section: 'Illustration', title: 'Illustration & characters', plate: 'div-05.jpg', bg: '#FDBC02', fg: '#0A1C3E',
   items: ['Four illustration families', 'The characters', 'Process plates', 'Status vignettes', 'Services and avatars', 'Rules for new illustration'] });
 
 P({
   id: 'families', section: 'Illustration', layout: 'top', kicker: 'Graphic language', title: 'Four illustration families',
   body: [
     { t: 'fig', id: 'families-fig', h: 88, html: `<div class="fam">
-      <div><div class="fam__img"><img src="img/plate4.jpg"></div><b>Process plates</b><span>Full-bleed colour, one scene, one step. Hero, onboarding, brand films.</span></div>
+      <div><div class="fam__img" style="background:${IMGBG['plate4.jpg']}"><img src="img/plate4.jpg"></div><b>Process plates</b><span>Full-bleed colour, one scene, one step. Hero, onboarding, brand films.</span></div>
       <div><div class="fam__img" style="background:#fff"><img src="img/ill-washing-and-drying.jpg" style="object-fit:contain"></div><b>Status vignettes</b><span>White ground, soft blob, leaves. Order states and empty states.</span></div>
-      <div><div class="fam__img"><img src="img/svc-stain-treatment.jpg"></div><b>Service scenes</b><span>Richer props for each service: gloves, bottles, plants.</span></div>
-      <div><div class="fam__img" style="background:#fff;display:flex;gap:4px;align-items:center;justify-content:center"><img src="img/avatar-ananya.png" style="width:31%;height:auto;object-fit:contain"><img src="img/avatar-rahul.png" style="width:31%;height:auto;object-fit:contain"><img src="img/avatar-sneha.png" style="width:31%;height:auto;object-fit:contain"></div><b>Avatars</b><span>Ink line portraits on pastel tints. Profiles, referrals, reviews.</span></div></div>` },
+      <div><div class="fam__img" style="background:${IMGBG['svc-stain-treatment.jpg']}"><img src="img/svc-stain-treatment.jpg"></div><b>Service scenes</b><span>Richer props for each service: gloves, bottles, plants.</span></div>
+      <div><div class="fam__img fam__img--av"><img src="img/avatar-ananya.png"><img src="img/avatar-rahul.png"><img src="img/avatar-sneha.png"></div><b>Avatars</b><span>Ink line portraits on pastel tints. Profiles, referrals, reviews.</span></div></div>` },
     { t: 'table', head: ['Attribute', 'Shared rule across all families'], widths: [22, 78], rows: [
       ['Style', 'Flat vector with soft cel shading; no outlines on bodies, minimal texture, gentle grain on plates'],
       ['Shape language', 'Rounded and soft; capsule folds on cloth stacks, round baskets and tubs, no sharp angles'],
@@ -733,9 +761,9 @@ P({
   lead: 'There is no mascot. The brand is carried by three recurring people: two care partners and a customer, drawn consistently across every family.',
   body: [
     { t: 'fig', id: 'chars-fig', h: 96, html: `<div class="chars">
-      <div class="char"><div class="char__img"><img src="img/plate2.jpg" style="object-position:50% 30%"></div><b>The care partner (she)</b><span>Dark hair in a high bun, navy apron over a white tee. Washes, dries, folds. Focused, gentle smile.</span></div>
-      <div class="char"><div class="char__img"><img src="img/plate4.jpg" style="object-position:40% 20%"></div><b>The pickup partner (he)</b><span>Short beard, navy cap, navy apron, white tee. Collects, irons and delivers. Open, friendly expression.</span></div>
-      <div class="char"><div class="char__img"><img src="img/plate6.jpg" style="object-position:85% 30%"></div><b>The customer</b><span>Long dark hair, cream sweater, dark trousers. Hands over and receives. Relieved, happy.</span></div></div>` },
+      <div class="char"><div class="char__img" style="background:${IMGBG['plate2.jpg']}"><img src="img/plate2.jpg"></div><b>The care partner (she)</b><span>Dark hair in a high bun, navy apron over a white tee. Washes, dries, folds. Focused, gentle smile.</span></div>
+      <div class="char"><div class="char__img" style="background:${IMGBG['plate4.jpg']}"><img src="img/plate4.jpg"></div><b>The pickup partner (he)</b><span>Short beard, navy cap, navy apron, white tee. Collects, irons and delivers. Open, friendly expression.</span></div>
+      <div class="char"><div class="char__img" style="background:${IMGBG['plate6.jpg']}"><img src="img/plate6.jpg"></div><b>The customer</b><span>Long dark hair, cream sweater, dark trousers. Hands over and receives. Relieved, happy.</span></div></div>` },
     { t: 'cols', items: [
       [{ t: 'h', text: 'Uniform' }, { t: 'p', text: 'Partners always wear a **navy apron over a white crew-neck tee**; the pickup partner adds a navy cap. This is the brand’s only fixed costume — it makes staff instantly recognisable.' }],
       [{ t: 'h', text: 'Expressions & poses' }, { t: 'p', text: 'Calm concentration at work; warm smiles at hand-over; one worried look for the “stained shirt” problem state. Poses are mid-action: handing, scrubbing, hanging, pressing, folding, riding.' }],
@@ -747,7 +775,7 @@ P({
 P({
   id: 'plates-system', section: 'Illustration', layout: 'top', kicker: 'Process plates', title: 'One step, one colour, one scene',
   body: [
-    { t: 'fig', id: 'platesys-fig', h: 104, html: `<div class="psys">${[['01', 'Collect', 'plate1.jpg', 'Handing over the bag'], ['02', 'Wash', 'plate2.jpg', 'Scrubbing in a tub of suds'], ['03', 'Dry', 'plate3.jpg', 'Hanging on the line'], ['04', 'Iron', 'plate4.jpg', 'Pressing a white shirt'], ['05', 'Pack', 'plate5.jpg', 'Folding into stacks'], ['06', 'Return', 'plate6.jpg', 'Handing back the stack']].map(([n, w, f, d]) => `<div class="ps"><img src="img/${f}"><b>${n} ${w}</b><span>${d}</span></div>`).join('')}</div>` },
+    { t: 'fig', id: 'platesys-fig', h: 70, html: `<div class="psys">${[['01', 'Collect', 'plate1.jpg', 'Handing over the bag'], ['02', 'Wash', 'plate2.jpg', 'Scrubbing in a tub of suds'], ['03', 'Dry', 'plate3.jpg', 'Hanging on the line'], ['04', 'Iron', 'plate4.jpg', 'Pressing a white shirt'], ['05', 'Pack', 'plate5.jpg', 'Folding into stacks'], ['06', 'Return', 'plate6.jpg', 'Handing back the stack']].map(([n, w, f, d]) => `<div class="ps"><div class="ps__img" style="background:${IMGBG[f]}"><img src="img/${f}"></div><b>${n} ${w}</b><span>${d}</span></div>`).join('')}</div>` },
     { t: 'cols', items: [
       [{ t: 'p', text: '**Composition.** One or two figures, cropped at the waist or knees, filling the lower two-thirds. A plain saturated background with soft grain; a few props only (tub, basket, line, iron, stack).' }],
       [{ t: 'p', text: '**Use.** Website hero cards and care journey, the mobile sign-in carousel, the admin sign-in film, and the hero loop and brand film generated from these plates.' }],
@@ -771,7 +799,7 @@ P({
 P({
   id: 'services-ill', section: 'Illustration', layout: 'top', kicker: 'Service scenes & avatars', title: 'Services and people',
   body: [
-    { t: 'fig', id: 'svc-fig', h: 72, html: `<div class="svcs">${[['blanket', 'Blanket'], ['color-dye', 'Colour Dye'], ['dry-clean', 'Dry Clean'], ['shoes-bags-and-soft-toys', 'Shoes, Bags & Soft Toys'], ['stain-treatment', 'Stain Treatment']].map(([f, l]) => `<div class="sv"><img src="img/svc-${f}.jpg"><span>${l}</span></div>`).join('')}</div>` },
+    { t: 'fig', id: 'svc-fig', h: 72, html: `<div class="svcs">${[['blanket', 'Blanket'], ['color-dye', 'Colour Dye'], ['dry-clean', 'Dry Clean'], ['shoes-bags-and-soft-toys', 'Shoes, Bags & Soft Toys'], ['stain-treatment', 'Stain Treatment']].map(([f, l]) => `<div class="sv"><div class="sv__img" style="background:${IMGBG['svc-' + f + '.jpg']}"><img src="img/svc-${f}.jpg"></div><span>${l}</span></div>`).join('')}</div>` },
     { t: 'fig', id: 'av-fig', h: 40, html: `<div class="avs">${['ananya', 'rahul', 'sneha'].map((a) => `<div class="av"><img src="img/avatar-${a}.png"><span>${a[0].toUpperCase() + a.slice(1)}</span></div>`).join('')}<div class="av-t"><b>Avatars.</b> Bold ink line, no fill on skin, simple hair shapes, set on a pastel tint square (green, blue, red tints from the soft shades). Use for customer profiles, referrals and support threads.</div></div>` },
     { t: 'note', kind: 'verified', text: 'Service scenes add blue nitrile gloves, spray bottles and potted plants — signals of hygiene and care that match the quality promise.' },
   ],
@@ -855,32 +883,27 @@ P({
       { t: 'h', text: 'Proposed photography direction' },
       { t: 'kv', items: [
         ['Light', 'Bright, soft daylight; no harsh flash, no dark moody shadows'],
-        ['Background', 'Plain walls in white, ivory or a plate colour; uncluttered'],
+        ['Background', 'Plain walls in white or light grey, or a plate colour; uncluttered'],
         ['Composition', 'One subject, centred or rule-of-thirds, generous negative space for type'],
-        ['Perspective', 'Eye level for people; top-down for folded stacks and baskets on Ivory or Paper'],
-        ['People', 'Real staff in navy aprons and white tees, mid-task, natural smiles'],
+        ['Perspective', 'Eye level for people; top-down for folded stacks and baskets on white or light grey'],
+        ['People', 'Real staff in navy aprons and white tees, mid-task, natural smiles; written consent, no stock poses'],
         ['Grading', 'Warm whites, true navy, slightly lifted shadows; no filters'],
       ] },
-      { t: 'note', kind: 'proposed', text: 'All photography guidance is a recommendation for future shoots.' },
+      { t: 'note', kind: 'proposed', text: 'All photography guidance is a recommendation for future shoots. The four briefs on the right follow this direction.' },
     ] },
-    { t: 'fig', id: 'photo-fig', h: 132, html: `<div class="mood">
-      <div class="mood__i mood--ok"><img src="img/table-wood.jpg"><span>✓ Calm material, top-down</span></div>
-      <div class="mood__i mood--ok"><img src="img/basket.png" style="object-fit:cover;background:#EAE6DB"><span>✓ Folded order, top-down</span></div>
-      <div class="mood__i mood--ok"><img src="img/plate5.jpg"><span>✓ Reference: the plate composition</span></div>
-      <div class="mood__i mood--ok"><img src="img/cloth-weave.jpg"><span>✓ Texture as a stage</span></div>
-      <div class="mood__i mood--no"><img src="img/plate4.jpg" style="filter:saturate(2.6) contrast(1.5) hue-rotate(70deg)"><span>✕ Over-processed colour grading</span></div>
-      <div class="mood__i mood--no"><img src="img/cloth-crumple.jpg" style="filter:brightness(.45) contrast(1.4)"><span>✕ Dark, moody, crumpled</span></div></div>` },
+    { t: 'fig', id: 'photo-fig', h: 132, ph: PH.photo, html: phGrid(PH.photo, 2) },
   ],
 });
 
 /* 08 — Digital */
-P({ id: 'd8', layout: 'divider', num: '08', section: 'Digital', title: 'Digital design system', plate: 'plate4.jpg', bg: '#FEC503', fg: '#0A1C3E',
+P({ id: 'd8', layout: 'divider', num: '08', section: 'Digital', title: 'Digital design system', plate: 'div-08.jpg', bg: '#FDC402', fg: '#0A1C3E',
   items: ['Website', 'Mobile app', 'Admin portal', 'Components', 'Spacing, grid and radius', 'Accessibility'] });
 
+const browserFrame = (f, url) => `<div class="brw"><div class="brw__bar"><i></i><i></i><i></i><span>${url}</span></div><img src="img/${f}"></div>`;
 P({
   id: 'website', section: 'Digital', layout: 'top', kicker: 'Website', title: 'The marketing website',
   body: [
-    { t: 'fig', id: 'web-fig', h: 104, caption: 'Live website, captured 10 Nov 2026: hero, brand bands, the app section, offers and footer.', html: `<div class="wgrid"><div class="wg wg--big"><img src="img/shot-web-hero.jpg"></div><div class="wg"><img src="img/shot-web-01.jpg"></div><div class="wg"><img src="img/shot-web-04.jpg"></div><div class="wg"><img src="img/shot-web-13.jpg"></div><div class="wg"><img src="img/shot-web-14.jpg"></div></div>` },
+    { t: 'fig', id: 'web-fig', h: 66, caption: 'Live website, captured 10 Nov 2026: hero, story and offers, each shown whole.', html: `<div class="brws">${[['shot-web-hero.jpg', 'washingbasket.in'], ['shot-web-04.jpg', 'washingbasket.in/#story'], ['shot-web-13.jpg', 'washingbasket.in/#offers']].map(([f, u]) => browserFrame(f, u)).join('')}</div>` },
     { t: 'cols', items: [
       [{ t: 'p', text: '**Navigation.** A floating pill nav (Home, Story, The app, How it works) with the lockup left and a dark “Get the app” pill right.' }],
       [{ t: 'p', text: '**Hero.** Two-column: three-line headline left, an illustration card stack (Collect, Care, Return) right on the ivory canvas.' }],
@@ -890,10 +913,11 @@ P({
   ],
 });
 
+const phoneFrame = (f) => `<div class="phone"><div class="phone__btn phone__btn--a"></div><div class="phone__btn phone__btn--b"></div><div class="phone__btn phone__btn--c"></div><div class="phone__scr"><div class="phone__sb"><b>9:41</b><i class="phone__isl"></i><span class="phone__ic"><i></i><i></i><i></i><i></i><em></em></span></div><img src="img/${f}"><div class="phone__home"></div></div></div>`;
 P({
   id: 'mobile', section: 'Digital', layout: 'top', kicker: 'Mobile application', title: 'The customer app',
   body: [
-    { t: 'fig', id: 'mob-fig', h: 112, caption: 'Sign-in, Home, Services, Track, Wallet and Offers screens from the app.', html: `<div class="phones">${['shot-mob-4.jpg', 'screen-home.jpg', 'screen-items.jpg', 'screen-track.jpg', 'screen-wallet.jpg', 'screen-offers.jpg'].map((f) => `<div class="phone"><img src="img/${f}"></div>`).join('')}</div>` },
+    { t: 'fig', id: 'mob-fig', h: 104, caption: 'New order, order details with the drop-off QR, progress, wallet and offers, captured from the app.', html: `<div class="phones">${['screen-items.jpg', 'screen-qr.jpg', 'screen-track.jpg', 'screen-wallet.jpg', 'screen-offers.jpg'].map(phoneFrame).join('')}</div>` },
     { t: 'cols', items: [
       [{ t: 'p', text: '**Bottom navigation.** Five round icon buttons on a floating bar; the active item fills Ink. A centred “+” books a new order.' }],
       [{ t: 'p', text: '**Cards.** White, 26 px radius, soft elevation; dark Ink stat cards and Action Orange wallet card for emphasis.' }],
@@ -906,7 +930,7 @@ P({
 P({
   id: 'admin', section: 'Digital', layout: 'top', kicker: 'Admin portal', title: 'The operations portal',
   body: [
-    { t: 'fig', id: 'admin-fig', h: 110, caption: 'Admin portal: sign-in, dashboard, orders, offers, service areas and mobile help-desk view.', html: `<div class="agrid"><div class="ag ag--big"><img src="img/shot-admin-overview.jpg"></div><div class="ag"><img src="img/shot-admin-login.jpg"></div><div class="ag"><img src="img/shot-admin-orders.jpg"></div><div class="ag"><img src="img/shot-admin-offers.jpg"></div><div class="ag"><img src="img/shot-admin-service-areas.jpg"></div></div>` },
+    { t: 'fig', id: 'admin-fig', h: 66, caption: 'Admin portal: overview dashboard, orders and offers, each shown whole.', html: `<div class="brws">${[['shot-admin-overview.jpg', 'admin · Overview'], ['shot-admin-orders.jpg', 'admin · Orders'], ['shot-admin-offers.jpg', 'admin · Offers']].map(([f, u]) => browserFrame(f, u)).join('')}</div>` },
     { t: 'cols', items: [
       [{ t: 'p', text: '**Same brand, denser.** Identical colour and type tokens, imported straight from the app theme. Radii drop to 14/12/10 px; tables replace cards.' }],
       [{ t: 'p', text: '**Stat cards.** The signature row: an Ink card, an Action Orange card and white cards, each with an icon button and one big number.' }],
@@ -1008,59 +1032,21 @@ P({
 });
 
 /* 10 — Applications */
-P({ id: 'd10', layout: 'divider', num: '10', section: 'Applications', title: 'Brand applications', plate: 'plate6.jpg', bg: '#FECF04', fg: '#0A1C3E',
-  items: ['Business card and staff ID', 'Uniform and laundry bag', 'Order tag and slip', 'Social posts and stories', 'Email and app banners'] });
+P({ id: 'd10', layout: 'divider', num: '10', section: 'Applications', title: 'Brand applications', plate: 'div-10.jpg', bg: '#FEC801', fg: '#0A1C3E',
+  items: ['Laundry bag', 'Return tote'] });
 
-const bizFront = `<div class="bc bc--f">${lockup(15)}<div class="bc__n"><b>Name Surname</b><span>Operations Lead</span></div><div class="bc__c">+91 80 4718 2020<br>care@washingbasket.example<br>Model Town, Jalandhar</div></div>`;
-const bizBack = `<div class="bc bc--b">${logo({ h: 70, c: { navy: '#FFFFFF', knock: '#012A5C' } })}<div class="bc__t">Collected. Cleaned. Returned.</div></div>`;
-const staffId = `<div class="sid"><div class="sid__top">${logo({ h: 26 })}<span class="wm" style="font-size:11px"><b>W</b>ashing<b>B</b>asket</span></div><div class="sid__ph"><img src="img/avatar-rahul.png"></div><b>Rahul M.</b><span>Pickup Partner</span><div class="sid__loc">NIT Jalandhar counter</div><div class="sid__bar"></div><div class="sid__band"></div></div>`;
-const apron = `<svg viewBox="0 0 200 240" width="170" height="204"><path d="M30 40 Q100 -10 170 40 L200 90 L170 110 L165 240 L35 240 L30 110 L0 90Z" fill="#FFFFFF" stroke="#E3E6EB" stroke-width="2"/><path d="M60 10 Q100 0 140 10 L150 60 Q178 70 182 100 L176 230 Q100 242 24 230 L18 100 Q22 70 50 60Z" fill="#14213D"/><path d="M60 10 Q100 0 140 10" stroke="#0A1C3E" stroke-width="6" fill="none"/><path d="M50 60 Q20 50 5 70" stroke="#14213D" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M150 60 Q180 50 195 70" stroke="#14213D" stroke-width="8" fill="none" stroke-linecap="round"/><rect x="60" y="150" width="80" height="44" rx="8" fill="#0F1C38"/>${''}</svg>`;
 P({
-  id: 'app1', section: 'Applications', layout: 'top', kicker: 'Identity applications', title: 'Cards, ID and uniform',
+  id: 'app2b', section: 'Applications', layout: 'top', kicker: 'Product renders', title: 'Laundry bag and return tote',
   body: [
-    { t: 'fig', id: 'app1-fig', h: 110, html: `<div class="apps1"><div class="ap"><div class="bcs">${bizFront}${bizBack}</div><span>Business card · 85 × 55 mm · Ivory front, Deep Navy back</span></div><div class="ap">${staffId}<span>Staff ID · 54 × 86 mm</span></div><div class="ap"><div class="apron2">${apron}<div class="apron2__logo">${logo({ h: 30, c: mono('#FFFFFF', '#14213D') })}</div></div><span>Uniform reference: navy apron, white tee; white mark on chest</span></div></div>` },
+    { t: 'fig', id: 'sheets-fig', h: 96, html: `<div class="sheets"><figure class="sheet"><img src="img/sheet-bag.jpg"><figcaption>Laundry bag · cotton canvas, navy base and drawstring</figcaption></figure><figure class="sheet"><img src="img/sheet-tote.jpg"><figcaption>Return tote · textured Action Orange paper, rope handles</figcaption></figure></div>` },
     { t: 'cols', items: [
-      [{ t: 'p', text: '**Business card.** Horizontal lockup top-left on Ivory; Inter for details; back in Deep Navy with the reversed mark and the brand line.' }],
-      [{ t: 'p', text: '**Staff ID.** White card, lockup top, avatar or photo, name in Plus Jakarta Sans, role in Inter, the brand bands as a footer stripe.' }],
-      [{ t: 'p', text: '**Uniform.** The navy apron over a white tee already defines staff in every illustration. Add a white single-colour mark on the chest, 60–70 mm wide.' }],
-      [{ t: 'note', kind: 'proposed', text: 'All applications on these pages are concept mockups. No printed materials exist yet.' }],
+      [{ t: 'p', text: '**Laundry bag.** Natural cotton canvas (240 GSM) with a Deep Navy base panel and navy drawstring with knotted ends. Full-colour lockup on the front, a small navy woven label with the mark on the side seam, reinforced stitching at the base.' }],
+      [{ t: 'p', text: '**Return tote.** Textured paper in Action Orange with braided orange rope handles set in metal eyelets and a reinforced, gusseted base. The lockup prints in white, centred on the front; the back stays plain.' }],
+      [{ t: 'note', kind: 'proposed', text: 'Renders made for this book. Confirm fabric weight, paper stock, ink and suppliers before ordering.' }],
     ] },
   ],
 });
 
-P({
-  id: 'app2', section: 'Applications', layout: 'top', kicker: 'Operations applications', title: 'Bags, tags and slips',
-  body: [
-    { t: 'fig', id: 'app2-fig', h: 112, html: `<div class="apps2">
-      <div class="ap"><div class="bag"><div class="bag__knot"></div><div class="bag__body"><div class="bag__lk">${logo({ h: 64 })}</div><div class="bag__t">Laundry, handled.</div></div></div><span>Laundry bag · white cotton, full-colour mark</span></div>
-      <div class="ap"><div class="tagc"><div class="tagc__hole"></div><div class="tagc__h">${logo({ h: 22, c: mono('#FFFFFF', '#013E86') })} WB-1011</div><div class="tagc__b"><div><span>PIECES</span>4</div><div><span>SERVICE</span>WASH &amp; IRON</div><div><span>RETURN</span>10 NOV</div></div><div class="tagc__bc"></div></div><span>Order tag · Courier Prime</span></div>
-      <div class="ap"><div class="box"><div class="box__band"><i style="background:#FE8701"></i><i style="background:#D30D24"></i><i style="background:#013E86"></i></div>${lockup(13)}<div class="box__t">Freshly cleaned for you</div></div><span>Return pack / sleeve</span></div>
-      <div class="ap"><div class="shopper">${logo({ h: 72 })}<div class="wm" style="font-size:15px;color:#fff;margin-top:8px"><b>W</b>ashing<b>B</b>asket</div></div><span>Tote / shopping bag · Action Orange</span></div></div>` },
-    { t: 'cols', items: [
-      [{ t: 'p', text: '**Laundry bag.** Echoes the white drawstring bag in the Collect plate. The bag is the customer’s “basket” on the move.' }],
-      [{ t: 'p', text: '**Order tag.** Navy header with order number, Courier Prime fields for pieces, service and return date, and a barcode/QR area that matches the counter scanner.' }],
-      [{ t: 'p', text: '**Return pack & tote.** The brand bands as a closing seal; on Action Orange use the mark inside a white tile or in white.' }, { t: 'note', kind: 'proposed', text: 'Concepts; confirm materials and print methods with suppliers.' }],
-    ] },
-  ],
-});
-
-P({
-  id: 'app3', section: 'Applications', layout: 'top', kicker: 'Marketing applications', title: 'Social, email and banners',
-  body: [
-    { t: 'fig', id: 'app3-fig', h: 120, html: `<div class="apps3">
-      <div class="ap"><div class="post" style="background:#FD4C14"><img src="img/plate1.jpg"><div class="post__t">Hand over<br>your basket.</div><div class="post__lk">${logo({ h: 22, c: mono('#FFFFFF', '#FD4C14') })}</div></div><span>Instagram post · 1080 × 1080</span></div>
-      <div class="ap"><div class="story"><div class="story__top">${logo({ h: 20 })}<span class="wm" style="font-size:9px"><b>W</b>ashing<b>B</b>asket</span></div><div class="story__tk"><b>20%</b><span>OFF</span><em>FIRSTWASH</em></div><div class="story__t">Your first three pickups, 20% off.</div><div class="u-btn u-btn--ink" style="height:26px;font-size:9px;border-radius:7px">Book now</div></div><span>Story · 1080 × 1920</span></div>
-      <div class="ap"><div class="mail"><div class="mail__h">${lockup(10)}</div><div class="mail__img"><img src="img/ill-delivered.jpg"></div><div class="mail__b"><b>Your laundry is on its way back.</b><span>Order WB-1011 · 4 pieces · Out for delivery</span><div class="u-btn u-btn--orange" style="height:22px;font-size:8px;border-radius:6px;color:#0A1C3E">Track order</div></div><div class="mail__f">Collected. Cleaned. Returned.</div></div><span>Transactional email</span></div>
-      <div class="ap ap--wide"><div class="banner"><div class="banner__t"><b>Seven services,<br>one basket.</b><span>From ₹45/kg · LPU · NIT Jalandhar · Model Town</span><div class="u-btn u-btn--ink" style="height:24px;font-size:9px;border-radius:7px;width:90px">See prices</div></div><img src="img/svc-dry-clean.jpg"></div><span>Website / app banner · 1200 × 400</span></div></div>` },
-    { t: 'cols', items: [
-      [{ t: 'p', text: '**Social.** A plate illustration, a two-line Plus Jakarta Sans headline with a full stop, the white mark small in a corner. One message per post.' }],
-      [{ t: 'p', text: '**Offers.** Use the ticket motif and the real offer code; Ink text on yellow or Action Orange.' }],
-      [{ t: 'p', text: '**Email.** White body, lockup header, a status vignette, one Action Orange button, brand line in the footer.' }, { t: 'note', kind: 'proposed', text: 'Concept layouts using real offer codes and copy from the app.' }],
-    ] },
-  ],
-});
-
-/* 11 — Voice */
 P({ id: 'd11', layout: 'marker', num: '11', section: 'Voice', title: 'Communication & voice', plate: 'svc-dry-clean.jpg', bg: '#032D75', fg: '#FFFFFF',
   items: ['Tone of voice', 'Writing principles', 'Vocabulary', 'Messaging by moment', 'Headlines and CTAs'] });
 
@@ -1127,7 +1113,7 @@ P({
   body: [
     chk('Logo', ['Supplied artwork, not redrawn', 'Correct version for the background', 'Clear space x on all sides', 'Above minimum size', 'Not stretched, rotated or recoloured', '“Washing Basket” two words in text']),
     chk('Colour', ['Only palette colours from this book', 'Logo Orange only in the mark', 'Text contrast ≥ 4.5:1', 'Ink, not white, on orange/yellow', 'Status colour paired with words']),
-    chk('Typography', ['Plus Jakarta Sans / Inter / Courier Prime only', 'Sentence case', 'Tight tracking on display', 'Tabular figures for amounts', 'No font substitution']),
+    chk('Typography', ['Inter / Courier Prime only', 'Sentence case', 'Wordmark from artwork, never typed', 'Tabular figures for amounts', 'No font substitution']),
     chk('Illustration & imagery', ['From an existing family', 'Navy apron, white tee on partners', 'Correct plate colour per step', 'Alt text written', 'No stock photos or 3D clip-art']),
     chk('Digital UI', ['Tokens from mobile/src/theme', '52 px controls, 12 px radius', 'One primary action per screen', 'Focus states visible', 'Reduced motion respected']),
     chk('Marketing', ['Facts and prices match the app', 'Real offer codes and validity', 'No invented claims or testimonials', 'One message per piece', 'Contact details are live (not .example)']),
@@ -1175,7 +1161,7 @@ P({
       { t: 'h', text: 'Colour tokens (CSS)' },
       { t: 'code', text: `--navy: #013E86;      --navy-deep: #012A5C;\n--logo-orange: #FE8701; --red: #D30D24;\n--orange: #FFA742;    --orange-pressed: #E58E2E;\n--ink: #0A1C3E;       --ink-soft: #5B6475;\n--ink-muted: #667085; --line: #E3E6EB;\n--ivory: #FBF9F4;     --paper: #F5F1E8;\n--field: #F4F2EB;     --subtle: #F4F5F7;\n--success: #12AD2B;   --warning: #B97800;\n--danger: #C8102E;    --navy-tint: #EEF3FB;\n--blue: #54B6F8;      --green: #62D487;\n--gold: #FED843;      --soft-red: #F87C87;` },
       { t: 'h', text: 'Type & shape tokens' },
-      { t: 'code', text: `--display: 'Plus Jakarta Sans';\n--text: 'Inter';  --mono: 'Courier Prime';\n--control-h: 52px; --r-button: 12px;\n--r-field: 12px;   --r-sheet: 24px;\n--r-card: 26px;    --r-tile: 20px;\n--space: 4 8 12 16 20 24 32;\n--ease: cubic-bezier(0.16, 1, 0.3, 1);` },
+      { t: 'code', text: `--display: 'Inter';\n--text: 'Inter';  --mono: 'Courier Prime';\n--control-h: 52px; --r-button: 12px;\n--r-field: 12px;   --r-sheet: 24px;\n--r-card: 26px;    --r-tile: 20px;\n--space: 4 8 12 16 20 24 32;\n--ease: cubic-bezier(0.16, 1, 0.3, 1);` },
     ] },
     { t: 'stack', items: [
       { t: 'h', text: 'Source of truth' },
@@ -1192,7 +1178,7 @@ P({
         ['Hero loop / films', 'website/public/media · hero-loop · brand-film'],
         ['Fonts', '@expo-google-fonts/* · @fontsource/*'],
       ] },
-      { t: 'p', text: '**Font licences.** Plus Jakarta Sans, Inter, Nunito and Courier Prime are licensed under the SIL Open Font License 1.1 and are free for commercial use.' },
+      { t: 'p', text: '**Font licences.** Inter and Courier Prime are licensed under the SIL Open Font License 1.1 and are free for commercial use.' },
     ] },
   ],
 });

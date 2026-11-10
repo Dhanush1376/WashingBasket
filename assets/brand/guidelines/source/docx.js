@@ -16,21 +16,16 @@ const pages = all.filter((p) => p.layout !== 'marker');
 pages.forEach((p, i) => (p.no = i + 1));
 
 // fonts (Word family names from each TTF's name table)
-const JAK = 'Plus Jakarta Sans', JAKX = 'Plus Jakarta Sans ExtraBold', INTER = 'Inter', INTERSB = 'Inter SemiBold', MONO = 'Courier Prime';
+const INTER = 'Inter', INTERSB = 'Inter SemiBold', MONO = 'Courier Prime';
 const rf = (n) => fs.readFileSync(path.join(F, n));
 const fonts = [
   { name: INTER, data: rf('Inter_400Regular.ttf'), bold: rf('Inter_700Bold.ttf') },
   { name: INTERSB, data: rf('Inter_600SemiBold.ttf') },
-  { name: JAK, data: rf('PlusJakartaSans_400Regular.ttf'), bold: rf('PlusJakartaSans_700Bold.ttf') },
-  { name: JAKX, data: rf('PlusJakartaSans_800ExtraBold.ttf') },
   { name: MONO, data: rf('CourierPrime_400Regular.ttf'), bold: rf('CourierPrime_700Bold.ttf') },
   { name: 'Inter Medium', data: rf('Inter_500Medium.ttf') },
-  { name: 'Plus Jakarta Sans Medium', data: rf('PlusJakartaSans_500Medium.ttf') },
-  { name: 'Plus Jakarta Sans SemiBold', data: rf('PlusJakartaSans_600SemiBold.ttf') },
 ];
 // map a CSS family + weight to a Word font name and bold flag
 function face(fam, w) {
-  if (fam.startsWith('Plus')) return w >= 800 ? [JAKX, false] : w >= 700 ? [JAK, true] : w >= 600 ? ['Plus Jakarta Sans SemiBold', false] : w >= 500 ? ['Plus Jakarta Sans Medium', false] : [JAK, false];
   if (fam.startsWith('Courier')) return [MONO, w >= 700];
   return w >= 700 ? [INTER, true] : w >= 600 ? [INTERSB, false] : w >= 500 ? ['Inter Medium', false] : [INTER, false];
 }
@@ -138,6 +133,7 @@ function block(b, W) {
     case 'list': return b.items.map((i) => new Paragraph({ numbering: { reference: 'dots', level: 0 }, spacing: { after: 50, line: 280 }, children: runs(i, { size: 17 }) }));
     case 'table': return [table(b.head, b.rows, b.widths, W), spacer()];
     case 'fig': {
+      if (b.ph) { const list = Array.isArray(b.ph) ? b.ph : [b.ph]; return [phTable(list, W, Math.min(2, list.length)), spacer(160)]; }
       if (NATIVE[b.id]) return [...NATIVE[b.id](W), ...(b.caption ? [P([new TextRun({ text: b.caption, size: 14, color: MUTE, font: INTER })], { after: 160 })] : [])];
       const file = path.join(FIG, b.id + '.jpg');
       const out = [image(file, W, Math.min(118, b.h * 0.95))];
@@ -146,19 +142,19 @@ function block(b, W) {
     }
     case 'note': return [note(b.kind, b.text)];
     case 'kv': return [table(['Item', 'Detail'], b.items, [30, 70], W), spacer()];
-    case 'quote': return [new Paragraph({ border: { left: { style: BorderStyle.SINGLE, size: 24, color: 'FFA742', space: 10 } }, indent: { left: 200 }, spacing: { after: 200, line: 320 }, children: [new TextRun({ text: b.text.replace(/\*\*/g, ''), font: JAK, bold: true, size: b.small ? 22 : 30, color: INK })] })];
+    case 'quote': return [new Paragraph({ border: { left: { style: BorderStyle.SINGLE, size: 24, color: 'FFA742', space: 10 } }, indent: { left: 200 }, spacing: { after: 200, line: 320 }, children: [new TextRun({ text: b.text.replace(/\*\*/g, ''), font: INTER, bold: true, size: b.small ? 22 : 30, color: INK })] })];
     case 'code': return b.text.split('\n').map((l, i, a) => new Paragraph({ shading: { type: ShadingType.CLEAR, fill: INK, color: 'auto' }, spacing: { after: i === a.length - 1 ? 160 : 0, line: 260 }, children: [new TextRun({ text: l || ' ', font: MONO, size: 16, color: 'E8EDF7' })] }));
     case 'cols': { const g = gridW(W, b.items.length); return [grid(b.items.map((c) => blocks(c, g)), W), spacer()]; }
     case 'stack': case 'span': return blocks(b.items, W);
-    case 'grid3': { const g = gridW(W, 3); return [grid(b.items.map((i) => [P([tagRun(i.tag)]), P([new TextRun({ text: i.title, font: JAKX, size: 24, color: INK })], { after: 60 }), P(runs(i.text, { size: 16 }))]), W), spacer()]; }
+    case 'grid3': { const g = gridW(W, 3); return [grid(b.items.map((i) => [P([tagRun(i.tag)]), P([new TextRun({ text: i.title, font: INTER, bold: true, size: 24, color: INK })], { after: 60 }), P(runs(i.text, { size: 16 }))]), W), spacer()]; }
     case 'finding': return [
-      new Paragraph({ keepNext: true, spacing: { before: 120, after: 40 }, children: [new TextRun({ text: b.n + '  ', font: JAKX, size: 26, color: 'C8102E' }), new TextRun({ text: b.title, font: JAK, bold: true, size: 20, color: INK })] }),
+      new Paragraph({ keepNext: true, spacing: { before: 120, after: 40 }, children: [new TextRun({ text: b.n + '  ', font: INTER, bold: true, size: 26, color: 'C8102E' }), new TextRun({ text: b.title, font: INTER, bold: true, size: 20, color: INK })] }),
       P(runs(b.text, { size: 16 }), { after: 40 }),
       P([new TextRun({ text: 'Resolve: ', font: INTERSB, size: 16, color: '0D7A21' }), ...runs(b.fix, { size: 16 })], { after: 120 }),
     ];
-    case 'pillar': return [P([new TextRun({ text: b.label.toUpperCase(), font: INTERSB, size: 14, color: LOR, characterSpacing: 40 })], { after: 60 }), P([new TextRun({ text: b.title, font: JAKX, size: 30, color: INK })], { after: 80, line: 300 }), P(runs(b.text)), P([tagRun(b.tag)], { after: 200 })];
-    case 'values': { const g = gridW(W, 5); return [grid(b.items.map(([n, d, e], i) => [P([new TextRun({ text: '0' + (i + 1), font: JAKX, size: 18, color: LOR })], { after: 20 }), P([new TextRun({ text: n, font: JAKX, size: 24, color: INK })], { after: 40 }), P(runs(d, { size: 15 }), { after: 40 }), P([new TextRun({ text: 'Evidence: ' + e, size: 12, color: MUTE, font: INTER })])]), W, 200), spacer(200)]; }
-    case 'check': return [P([new TextRun({ text: b.title, font: JAKX, size: 22, color: INK })], { after: 60 }), ...b.items.map((i) => P([new D.CheckBox({ checkedState: { value: '2612', font: 'MS Gothic' }, uncheckedState: { value: '2610', font: 'MS Gothic' } }), new TextRun({ text: '  ', size: 16 }), ...runs(i, { size: 16 })], { after: 40 })), spacer(200)];
+    case 'pillar': return [P([new TextRun({ text: b.label.toUpperCase(), font: INTERSB, size: 14, color: LOR, characterSpacing: 40 })], { after: 60 }), P([new TextRun({ text: b.title, font: INTER, bold: true, size: 30, color: INK })], { after: 80, line: 300 }), P(runs(b.text)), P([tagRun(b.tag)], { after: 200 })];
+    case 'values': { const g = gridW(W, 5); return [grid(b.items.map(([n, d, e], i) => [P([new TextRun({ text: '0' + (i + 1), font: INTER, bold: true, size: 18, color: LOR })], { after: 20 }), P([new TextRun({ text: n, font: INTER, bold: true, size: 24, color: INK })], { after: 40 }), P(runs(d, { size: 15 }), { after: 40 }), P([new TextRun({ text: 'Evidence: ' + e, size: 12, color: MUTE, font: INTER })])]), W, 200), spacer(200)]; }
+    case 'check': return [P([new TextRun({ text: b.title, font: INTER, bold: true, size: 22, color: INK })], { after: 60 }), ...b.items.map((i) => P([new D.CheckBox({ checkedState: { value: '2612', font: 'MS Gothic' }, uncheckedState: { value: '2610', font: 'MS Gothic' } }), new TextRun({ text: '  ', size: 16 }), ...runs(i, { size: 16 })], { after: 40 })), spacer(200)];
     default: throw new Error('docx block ' + b.t);
   }
 }
@@ -176,6 +172,7 @@ function pageBody(p) {
       return out;
     case 'divider':
       out.push(heading(`${p.num}   ${p.title}`, HeadingLevel.HEADING_1, { pb: true }));
+      if (p.ph) { out.push(dividerTable(p)); return out; }
       out.push(image(path.join(FIG, `page-${p.no}.jpg`), CW, 120, AlignmentType.LEFT));
       out.push(P([new TextRun({ text: 'In this section: ', font: INTERSB, size: 17, color: INK }), new TextRun({ text: p.items.join('  ·  '), size: 17, color: SOFT })]));
       return out;
@@ -187,7 +184,7 @@ function pageBody(p) {
     case 'manifesto':
       out.push(kicker(p.kicker, true));
       out.push(heading('Manifesto', HeadingLevel.HEADING_2));
-      p.lines.forEach((l, i) => out.push(new Paragraph({ spacing: { after: 40, line: 340 }, children: [new TextRun({ text: l, font: i === p.lines.length - 1 ? JAKX : JAK, bold: i !== p.lines.length - 1, size: i === p.lines.length - 1 ? 40 : 30, color: i === p.lines.length - 1 ? LOR : INK })] })));
+      p.lines.forEach((l, i) => out.push(new Paragraph({ spacing: { after: 40, line: 340 }, children: [new TextRun({ text: l, font: INTER, bold: true, size: i === p.lines.length - 1 ? 40 : 30, color: i === p.lines.length - 1 ? LOR : INK })] })));
       out.push(spacer(200));
       out.push(note('proposed', p.note));
       return out;
@@ -260,17 +257,17 @@ const vals = (hex, col) => [
   line([tr('RGB  ', { size: 12, color: col, font: INTERSB }), tr(hex2rgb(hex).join(' · '), { size: 13, color: col })]),
   line([tr('CMYK  ', { size: 12, color: col, font: INTERSB }), tr(cmyk(hex).join(' · '), { size: 13, color: col })]),
 ];
-const swName = (t, col, size = 20) => line([tr(t, { font: JAKX, size, color: col })], { after: 60 });
+const swName = (t, col, size = 20) => line([tr(t, { font: INTER, bold: true, size, color: col })], { after: 60 });
 
 const NATIVE = {
   'core-fig': (W) => [colourTable([{ height: 38, cells: ['navy', 'logoOrange', 'red', 'ink', 'orange', 'navyDeep'].map((k) => { const c = C[k], col = onC(c.hex); return { fill: c.hex, children: [swName(c.name, col), line([tr(' ', { size: 60 })], { line: 900 }), ...vals(c.hex, col)] }; }) }], W), spacer(160)],
   'shades-fig': (W) => [colourTable([
     { height: 28, cells: SHADES.map(([n, h]) => ({ fill: h, children: [swName(n, onC(h), 18), line([tr(' ')], { line: 500 }), line([tr(h, { size: 13, color: onC(h) })]), line([tr('RGB ' + hex2rgb(h).join(' · '), { size: 12, color: onC(h) })])] })) },
-    { height: 12, cells: SHADES.map(([, , tn, th]) => ({ fill: th, children: [line([tr(tn, { font: JAK, bold: true, size: 15 })]), line([tr(th, { size: 13 })])] })) },
+    { height: 12, cells: SHADES.map(([, , tn, th]) => ({ fill: th, children: [line([tr(tn, { font: INTER, bold: true, size: 15 })]), line([tr(th, { size: 13 })])] })) },
   ], W), spacer(160)],
   'neutrals-fig': (W) => {
     const rows = [];
-    for (let i = 0; i < NEUTRALS.length; i += 6) rows.push({ height: 20, cells: NEUTRALS.slice(i, i + 6).map(([n, h, u]) => ({ fill: h, valign: VerticalAlign.BOTTOM, children: [line([tr(n, { font: JAK, bold: true, size: 15, color: onC(h) })]), line([tr(h, { size: 13, color: onC(h) })]), line([tr(u, { size: 11, color: onC(h) === 'FFFFFF' ? 'DDE3EE' : MUTE })])] })) });
+    for (let i = 0; i < NEUTRALS.length; i += 6) rows.push({ height: 20, cells: NEUTRALS.slice(i, i + 6).map(([n, h, u]) => ({ fill: h, valign: VerticalAlign.BOTTOM, children: [line([tr(n, { font: INTER, bold: true, size: 15, color: onC(h) })]), line([tr(h, { size: 13, color: onC(h) })]), line([tr(u, { size: 11, color: onC(h) === 'FFFFFF' ? 'DDE3EE' : MUTE })])] })) });
     return [colourTable(rows, W), spacer(160)];
   },
   'semantic-fig': (W) => [colourTable([
@@ -278,20 +275,20 @@ const NATIVE = {
     { height: 12, cells: SEMANTIC.map(([n, h, t]) => ({ fill: t, children: [line([tr('● ', { size: 12, color: h6(h) }), tr(n === 'Success' ? 'Delivered' : n === 'Warning' ? 'Payment pending' : n === 'Danger' ? 'Cancelled' : 'Drop-off ready', { size: 14, color: h6(h), font: INTERSB })]), line([tr('Tint ' + t, { size: 12, color: MUTE })])] })) },
   ], W / 2 > 6000 ? W : W), spacer(160)],
   'contrast-fig': (W) => {
-    const cell = ([f, b, n]) => { const r = contrast(f, b), g = grade(r); return { fill: b, children: [line([tr('Aa', { font: JAKX, size: 34, color: h6(f) })], { after: 60, line: 360 }), line([tr(n, { size: 12, color: h6(f), font: INTERSB })]), line([new TextRun({ text: ` ${r.toFixed(1)}:1 · ${g} `, font: INTERSB, size: 12, color: g === 'Fail' ? 'FFFFFF' : g === 'AA Large' ? 'B97800' : '0D7A21', shading: { type: ShadingType.CLEAR, fill: g === 'Fail' ? 'C8102E' : 'FFFFFF', color: 'auto' } })], { before: 40 })] }; };
+    const cell = ([f, b, n]) => { const r = contrast(f, b), g = grade(r); return { fill: b, children: [line([tr('Aa', { font: INTER, bold: true, size: 34, color: h6(f) })], { after: 60, line: 360 }), line([tr(n, { size: 12, color: h6(f), font: INTERSB })]), line([new TextRun({ text: ` ${r.toFixed(1)}:1 · ${g} `, font: INTERSB, size: 12, color: g === 'Fail' ? 'FFFFFF' : g === 'AA Large' ? 'B97800' : '0D7A21', shading: { type: ShadingType.CLEAR, fill: g === 'Fail' ? 'C8102E' : 'FFFFFF', color: 'auto' } })], { before: 40 })] }; };
     return [colourTable([{ height: 26, cells: pairs.slice(0, 8).map(cell) }, { height: 26, cells: pairs.slice(8).map(cell) }], W), spacer(160)];
   },
   'prop-fig': (W) => {
     const parts = [[62, '#FBF9F4', 'Neutrals', 'White · Ivory · Paper'], [16, '#0A1C3E', 'Ink & Navy', ''], [12, '#FFA742', 'Action Orange', ''], [6, '#54B6F8', 'Shades', ''], [4, '#D30D24', '', '']];
     const cols = parts.map(([p]) => Math.round((p / 100) * W));
     return [new Table({ width: { size: cols.reduce((a, b) => a + b, 0), type: WidthType.DXA }, columnWidths: cols, layout: TableLayoutType.FIXED, borders: { ...noBorders, top: { style: BorderStyle.SINGLE, size: 4, color: LINE }, bottom: { style: BorderStyle.SINGLE, size: 4, color: LINE }, left: { style: BorderStyle.SINGLE, size: 4, color: LINE }, right: { style: BorderStyle.SINGLE, size: 4, color: LINE } },
-      rows: [new TableRow({ height: { value: 1500, rule: D.HeightRule.ATLEAST }, children: parts.map(([p, h, n, s], i) => new TableCell({ width: { size: cols[i], type: WidthType.DXA }, shading: { type: ShadingType.CLEAR, fill: h6(h), color: 'auto' }, margins: { top: 100, left: 100, right: 60 }, children: [line([tr(p + '%', { font: JAKX, size: 26, color: onC(h) })]), line([tr(n, { size: 12, color: onC(h) })]), line([tr(s, { size: 11, color: onC(h) })])] })) })] }),
+      rows: [new TableRow({ height: { value: 1500, rule: D.HeightRule.ATLEAST }, children: parts.map(([p, h, n, s], i) => new TableCell({ width: { size: cols[i], type: WidthType.DXA }, shading: { type: ShadingType.CLEAR, fill: h6(h), color: 'auto' }, margins: { top: 100, left: 100, right: 60 }, children: [line([tr(p + '%', { font: INTER, bold: true, size: 26, color: onC(h) })]), line([tr(n, { size: 12, color: onC(h) })]), line([tr(s, { size: 11, color: onC(h) })])] })) })] }),
       spacer(120),
       table(['Combination', 'Status', 'Colours'], [['App', 'Verified', 'White · Ink · Action Orange'], ['Website', 'Verified', 'Ivory · Ink · Navy · Action Orange'], ['Brand bands', 'Verified', 'Logo Orange · Cloth Red · Basket Navy'], ['Two oranges side by side', 'Avoid', 'Logo Orange next to Action Orange'], ['Red with green', 'Avoid', 'Cloth Red next to Success green'], ['Navy text on ink', 'Avoid', 'Basket Navy on Ink']], [34, 16, 50], W), spacer()];
   },
-  'jakarta-fig': (W) => specimen('Plus Jakarta Sans', 800),
-  'inter-fig': (W) => specimen('Inter', 600),
-  'jakarta-w': (W) => weightLines('Plus Jakarta Sans', [[500, 'Medium'], [600, 'SemiBold'], [700, 'Bold'], [800, 'ExtraBold']]),
+  'jakarta-fig': (W) => specimen('Inter', 700),
+  'inter-fig': (W) => specimen('Inter', 400),
+  'jakarta-w': (W) => weightLines('Inter', [[500, 'Medium'], [600, 'SemiBold'], [700, 'Bold']]),
   'inter-w': (W) => weightLines('Inter', [[400, 'Regular'], [500, 'Medium'], [600, 'SemiBold'], [700, 'Bold']]),
   'scale-fig': (W) => scale.map(([n, f, w, s, lh, ls, ex]) => { const [fn, bold] = face(f, w); return new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: LINE, space: 4 } }, spacing: { after: 100, line: 264 }, children: [tr(n.toUpperCase() + '   ', { size: 11, color: MUTE, font: INTERSB, cs: 20 }), new TextRun({ text: ex, font: fn, bold, size: Math.round(Math.min(s, 40) * 0.75 * 2), color: INK })] }); }),
   'slip-fig': (W) => {
@@ -299,7 +296,7 @@ const NATIVE = {
     const kids = [line([tr('WASHING BASKET', { font: MONO, bold: true, size: 26, cs: 40 })], { align: AlignmentType.CENTER }), line([tr('LAUNDRY SLIP · MODEL TOWN', { font: MONO, size: 14, cs: 20 })], { align: AlignmentType.CENTER, after: 120 })];
     rowsTxt.forEach((r) => kids.push(r ? new Paragraph({ spacing: { after: 40 }, tabStops: [{ type: D.TabStopType.RIGHT, position: 4600 }], children: [tr(r[0], { font: MONO, size: 17, bold: r[0] === 'TOTAL' }), tr('\t' + r[1], { font: MONO, size: 17, bold: r[0] === 'TOTAL' })] }) : new Paragraph({ border: { bottom: { style: BorderStyle.DASHED, size: 6, color: '1D2433' } }, spacing: { after: 80 }, children: [] })));
     kids.push(line([tr('COUNTED IN FRONT OF YOU · THANK YOU', { font: MONO, size: 13, cs: 20 })], { align: AlignmentType.CENTER, before: 160 }));
-    return [new Table({ width: { size: 5000, type: WidthType.DXA }, columnWidths: [5000], borders: noBorders, rows: [new TableRow({ children: [new TableCell({ width: { size: 5000, type: WidthType.DXA }, shading: { type: ShadingType.CLEAR, fill: 'FFFDF7', color: 'auto' }, borders: { top: { style: BorderStyle.SINGLE, size: 4, color: 'E3DCCB' }, bottom: { style: BorderStyle.SINGLE, size: 4, color: 'E3DCCB' }, left: { style: BorderStyle.SINGLE, size: 4, color: 'E3DCCB' }, right: { style: BorderStyle.SINGLE, size: 4, color: 'E3DCCB' } }, margins: { top: 200, bottom: 200, left: 200, right: 200 }, children: kids })] })] }), spacer(160)];
+    return [new Table({ width: { size: 5000, type: WidthType.DXA }, columnWidths: [5000], borders: noBorders, rows: [new TableRow({ children: [new TableCell({ width: { size: 5000, type: WidthType.DXA }, shading: { type: ShadingType.CLEAR, fill: 'FFFFFF', color: 'auto' }, borders: { top: { style: BorderStyle.SINGLE, size: 4, color: 'E3DCCB' }, bottom: { style: BorderStyle.SINGLE, size: 4, color: 'E3DCCB' }, left: { style: BorderStyle.SINGLE, size: 4, color: 'E3DCCB' }, right: { style: BorderStyle.SINGLE, size: 4, color: 'E3DCCB' } }, margins: { top: 200, bottom: 200, left: 200, right: 200 }, children: kids })] })] }), spacer(160)];
   },
   'tl-fig': (W) => [table(['Layer', 'Starts at', 'Colour', 'Position on the 4.4 s timeline'], TL.map(([n, t, c]) => [n, `${t} ms`, c, '▮'.repeat(Math.max(1, Math.round((t / 4400) * 40))) ]), [18, 14, 14, 54], W), spacer()],
 };
@@ -313,20 +310,60 @@ function weightLines(fam, ws) {
   return ws.map(([w, n]) => { const [fn, bold] = face(fam, w); return new Paragraph({ spacing: { after: 80 }, children: [tr(`${n} ${w}`.padEnd(16, ' ') + '   ', { size: 12, color: MUTE }), new TextRun({ text: 'Collected. Cleaned. Returned.', font: fn, bold, size: 28, color: INK })] }); }).concat([spacer(120)]);
 }
 
+
+/* image placeholder: an editable dashed box carrying the brief; replace it with the finished image */
+const DASH = (c) => ({ style: BorderStyle.DASHED, size: 8, color: c });
+function phCell(o, w, bg) {
+  const fill = (bg || '#F3F5F8').replace('#', '');
+  const fg = isDark('#' + fill) ? 'FFFFFF' : INK;
+  const b = DASH(isDark('#' + fill) ? 'FFFFFF' : '8A94A6');
+  return new TableCell({ width: { size: w, type: WidthType.DXA }, shading: { type: ShadingType.CLEAR, fill, color: 'auto' }, borders: { top: b, bottom: b, left: b, right: b }, margins: { top: 220, bottom: 220, left: 240, right: 240 }, verticalAlign: VerticalAlign.TOP, children: [
+    line([tr('IMAGE TO GENERATE', { font: INTERSB, size: 13, color: fg, cs: 30 })], { after: 80 }),
+    line([tr(o.title, { bold: true, size: 22, color: fg })], { after: 80 }),
+    new Paragraph({ spacing: { after: 120, line: 276 }, children: [tr(o.prompt, { size: 16, color: fg })] }),
+    line([tr('File  ', { bold: true, size: 13, color: fg }), tr(o.file, { size: 13, color: fg })]),
+    line([tr('Size  ', { bold: true, size: 13, color: fg }), tr(o.size, { size: 13, color: fg })]),
+  ] });
+}
+function phTable(list, W, cols = list.length, bg) {
+  const gap = 160, cw = Math.floor((W - gap * (cols - 1)) / cols);
+  const rows = [];
+  for (let i = 0; i < list.length; i += cols) {
+    const cells = [];
+    list.slice(i, i + cols).forEach((o, j) => { if (j) cells.push(new TableCell({ width: { size: gap, type: WidthType.DXA }, borders: noBorders, children: [new Paragraph('')] })); cells.push(phCell(o, cw, bg)); });
+    rows.push(new TableRow({ cantSplit: true, children: cells }));
+    if (i + cols < list.length) rows.push(new TableRow({ height: { value: gap, rule: D.HeightRule.EXACT }, children: cells.map((c, k) => new TableCell({ borders: noBorders, children: [new Paragraph('')] })) }));
+  }
+  const widths = []; for (let j = 0; j < cols; j++) { if (j) widths.push(gap); widths.push(cw); }
+  return new Table({ width: { size: widths.reduce((a, b) => a + b, 0), type: WidthType.DXA }, columnWidths: widths, layout: TableLayoutType.FIXED, borders: noBorders, rows });
+}
+/* divider whose artwork is still to be made: coloured panel + placeholder, both editable */
+function dividerTable(p) {
+  const fill = p.bg.replace('#', ''), fg = isDark(p.bg) ? 'FFFFFF' : INK;
+  const lw = Math.round(CW * 0.5), rw = CW - lw;
+  const left = new TableCell({ width: { size: lw, type: WidthType.DXA }, shading: { type: ShadingType.CLEAR, fill, color: 'auto' }, borders: noBorders, margins: { top: 360, bottom: 360, left: 420, right: 300 }, children: [
+    line([tr(p.num, { bold: true, size: 150, color: fg })], { after: 400, line: 240 }),
+    line([tr(p.title, { bold: true, size: 48, color: fg })], { after: 200, line: 240 }),
+    ...p.items.map((i) => new Paragraph({ border: { top: { style: BorderStyle.SINGLE, size: 4, color: fg, space: 2 } }, spacing: { after: 40 }, children: [tr(i, { size: 16, color: fg })] })),
+  ] });
+  const right = new TableCell({ width: { size: rw, type: WidthType.DXA }, shading: { type: ShadingType.CLEAR, fill, color: 'auto' }, borders: noBorders, margins: { top: 300, bottom: 300, left: 200, right: 300 }, children: [phTable([p.ph], rw - 500, 1, p.bg), new Paragraph('')] });
+  return new Table({ width: { size: CW, type: WidthType.DXA }, columnWidths: [lw, rw], layout: TableLayoutType.FIXED, borders: noBorders, rows: [new TableRow({ height: { value: 8200, rule: D.HeightRule.ATLEAST }, cantSplit: true, children: [left, right] })] });
+}
+
 const children = pages.flatMap(pageBody);
 
-const hdrLogo = imgSize(path.join(__dirname, 'img', 'favicon.png'));
+const hdrLogo = imgSize(path.join(FIG, 'lockup.png'));
 const header = new Header({ children: [new Paragraph({
   border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: LINE, space: 6 } },
-  children: [new ImageRun({ type: 'png', data: hdrLogo.b, transformation: { width: 14, height: 14 } }), new TextRun({ text: '  Washing', font: JAK, bold: true, size: 15, color: INK }), new TextRun({ text: 'Basket', font: JAK, bold: true, size: 15, color: INK }),
+  children: [new ImageRun({ type: 'png', data: hdrLogo.b, transformation: { width: Math.round((16 * hdrLogo.w) / hdrLogo.h), height: 16 } }),
     new TextRun({ children: [new PositionalTab({ alignment: PositionalTabAlignment.RIGHT, relativeTo: PositionalTabRelativeTo.MARGIN, leader: PositionalTabLeader.NONE }), 'BRAND IDENTITY GUIDELINES'], font: INTERSB, size: 12, color: MUTE, characterSpacing: 30 })],
 })] });
 const footer = new Footer({ children: [new Paragraph({ children: [
   new TextRun({ text: `Washing Basket · Brand Identity & Visual Design Guidelines · v${META.version}`, size: 13, color: MUTE, font: INTER }),
-  new TextRun({ children: [new PositionalTab({ alignment: PositionalTabAlignment.RIGHT, relativeTo: PositionalTabRelativeTo.MARGIN, leader: PositionalTabLeader.NONE }), PageNumber.CURRENT], font: JAKX, size: 20, color: INK }),
+  new TextRun({ children: [new PositionalTab({ alignment: PositionalTabAlignment.RIGHT, relativeTo: PositionalTabRelativeTo.MARGIN, leader: PositionalTabLeader.NONE }), PageNumber.CURRENT], font: INTER, bold: true, size: 20, color: INK }),
 ] })] });
 
-const hs = (font, size, before, after, color = INK) => ({ run: { font, size, color }, paragraph: { spacing: { before, after }, keepNext: true, keepLines: true } });
+const hs = (font, size, before, after, color = INK) => ({ run: { font, size, color, bold: true }, paragraph: { spacing: { before, after }, keepNext: true, keepLines: true } });
 const doc = new Document({
   creator: META.owner, title: `Washing Basket — ${META.title}`, description: 'Official brand identity reference', subject: 'Brand guidelines',
   fonts,
@@ -334,11 +371,11 @@ const doc = new Document({
   styles: {
     default: { document: { run: { font: INTER, size: 18, color: BODY } } },
     paragraphStyles: [
-      { id: 'Title', name: 'Title', basedOn: 'Normal', next: 'Normal', run: { font: JAKX, size: 56, color: INK }, paragraph: { spacing: { before: 200, after: 120 } } },
-      { id: 'Heading1', name: 'Heading 1', basedOn: 'Normal', next: 'Normal', quickFormat: true, ...hs(JAKX, 48, 0, 200), paragraph: { spacing: { before: 0, after: 200 }, keepNext: true, outlineLevel: 0 } },
-      { id: 'Heading2', name: 'Heading 2', basedOn: 'Normal', next: 'Normal', quickFormat: true, ...hs(JAKX, 40, 0, 160), paragraph: { spacing: { before: 0, after: 160 }, keepNext: true, outlineLevel: 1 } },
-      { id: 'Heading3', name: 'Heading 3', basedOn: 'Normal', next: 'Normal', quickFormat: true, run: { font: JAK, bold: true, size: 20, color: INK }, paragraph: { spacing: { before: 160, after: 80 }, keepNext: true, outlineLevel: 2 } },
-      { id: 'TOC1', name: 'toc 1', basedOn: 'Normal', next: 'Normal', run: { font: JAK, bold: true, size: 20, color: INK }, paragraph: { spacing: { before: 120, after: 40 } } },
+      { id: 'Title', name: 'Title', basedOn: 'Normal', next: 'Normal', run: { font: INTER, bold: true, size: 56, color: INK }, paragraph: { spacing: { before: 200, after: 120 } } },
+      { id: 'Heading1', name: 'Heading 1', basedOn: 'Normal', next: 'Normal', quickFormat: true, ...hs(INTER, 44, 0, 200), paragraph: { spacing: { before: 0, after: 200 }, keepNext: true, outlineLevel: 0 } },
+      { id: 'Heading2', name: 'Heading 2', basedOn: 'Normal', next: 'Normal', quickFormat: true, ...hs(INTER, 36, 0, 160), paragraph: { spacing: { before: 0, after: 160 }, keepNext: true, outlineLevel: 1 } },
+      { id: 'Heading3', name: 'Heading 3', basedOn: 'Normal', next: 'Normal', quickFormat: true, run: { font: INTER, bold: true, size: 20, color: INK }, paragraph: { spacing: { before: 160, after: 80 }, keepNext: true, outlineLevel: 2 } },
+      { id: 'TOC1', name: 'toc 1', basedOn: 'Normal', next: 'Normal', run: { font: INTER, bold: true, size: 20, color: INK }, paragraph: { spacing: { before: 120, after: 40 } } },
       { id: 'TOC2', name: 'toc 2', basedOn: 'Normal', next: 'Normal', run: { font: INTER, size: 16, color: SOFT }, paragraph: { spacing: { before: 0, after: 20 }, indent: { left: 360 } } },
     ],
   },

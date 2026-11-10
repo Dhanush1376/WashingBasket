@@ -1,6 +1,6 @@
 import zipfile, re, sys
 src, dst = sys.argv[1], sys.argv[2]
-KEEP = {'Inter','Inter SemiBold','Inter Medium','Plus Jakarta Sans','Plus Jakarta Sans ExtraBold','Plus Jakarta Sans Medium','Plus Jakarta Sans SemiBold','Courier Prime'}
+KEEP = {'Inter','Inter SemiBold','Inter Medium','Courier Prime'}
 zin = zipfile.ZipFile(src)
 ft = zin.read('word/fontTable.xml').decode('utf8')
 rels = zin.read('word/_rels/fontTable.xml.rels').decode('utf8')

@@ -1233,9 +1233,19 @@
 .iron__steam {
   position: absolute;
   left: -8%;
-  top: 28%;
+  top: 39.8%;
   width: 30%;
-  height: 44%;
+  height: 20.4%;
+}
+/* the shirt sleeve of the hand holding it, on from the cuff at the image's edge and off the screen */
+.iron__sleeve {
+  position: absolute;
+  left: 40.65%;
+  width: 37.78%;
+  bottom: calc(100% - 1px);
+  height: 480%;
+  background: no-repeat center / 100% 100%;
+  pointer-events: none;
 }
 .iron__steam i {
   position: absolute;

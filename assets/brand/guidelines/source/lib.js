@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const geoSrc = fs.readFileSync(require('path').resolve(__dirname, '../../../../website/src/logoGeometry.ts'), 'utf8');
+const geoSrc = fs.readFileSync(process.env.LOGO_GEOMETRY || path.resolve(__dirname, '../../../../website/src/logoGeometry.ts'), 'utf8');
 const PARTS = {};
 for (const m of geoSrc.matchAll(/(\w+): \{\s*box: \{ x: (\d+), y: (\d+), w: (\d+), h: (\d+) \},\s*d: '([^']+)'/g)) {
   PARTS[m[1]] = { box: { x: +m[2], y: +m[3], w: +m[4], h: +m[5] }, d: m[6] };
@@ -25,13 +25,16 @@ function logo({ h = 100, w, c = {}, extra = '', cls = '', style = '' } = {}) {
 }
 const mono = (col, knock) => ({ orange: col, red: col, navy: col, knock });
 
+// The wordmark is the website's own setting (site.css .brand-title: caps 500 at 1.25em, rest 600 at 0.72em),
+// outlined to paths by wordmark.py so it never depends on an installed font.
+const WM = JSON.parse(fs.readFileSync(path.join(__dirname, 'wordmark.json'), 'utf8'));
+const WM_TOP = -1.091, WM_H = 1.251; // symmetric about the cap-height centre, so it centres on the mark
 function wordmark(size = 24, color = '#0A1C3E') {
-  return `<span class="wm" style="font-size:${size}px;color:${color}"><b>W</b>ashing<b>B</b>asket</span>`;
+  return `<svg class="wm" width="${(WM.w * size).toFixed(1)}" height="${(WM_H * size).toFixed(1)}" viewBox="0 ${WM_TOP} ${WM.w} ${WM_H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="WashingBasket"><path d="${WM.d}" fill="${color}"/></svg>`;
 }
-/** Horizontal lockup, proportions from CinematicLogoLockup.tsx: mark 82 / gap 12 / font 24 (caps ×1.22). */
+/** Horizontal lockup as the product shows it: mark height = 2.28 × size, gap 0.47 × size, caps centred on the mark. */
 function lockup(font = 24, { color = '#0A1C3E', c, knock } = {}) {
-  const mw = (82 / 24) * font;
-  return `<span class="lockup" style="gap:${(12 / 24) * font}px">${logo({ w: mw, c: c || (knock ? { knock } : {}) })}${wordmark(font, color)}</span>`;
+  return `<span class="lockup" style="gap:${(0.47 * font).toFixed(1)}px">${logo({ h: 2.28 * font, c: c || (knock ? { knock } : {}) })}${wordmark(font, color)}</span>`;
 }
 
 // colour maths
@@ -58,4 +61,12 @@ const isDark = (h) => lum(h) < 0.33;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const img = (name) => `img/${name}`;
 
-module.exports = { PARTS, VB, BRAND, logo, mono, wordmark, lockup, hex2rgb, cmyk, contrast, grade, isDark, esc, img };
+/** Image placeholder: where no existing asset fits exactly, the page carries the brief for the image to be made.
+ *  o = { file, title, prompt, size, bg } */
+function ph(o) {
+  const dark = o.bg && isDark(o.bg);
+  return `<div class="ph ${dark ? 'ph--d' : ''}" style="${o.bg ? `background:${o.bg};` : ''}"><div class="ph__k"><span class="ph__ic"></span>Image to generate</div><div class="ph__t">${esc(o.title)}</div><p class="ph__p">${esc(o.prompt)}</p><div class="ph__s"><b>File</b> ${esc(o.file)}<br><b>Size</b> ${esc(o.size)}</div></div>`;
+}
+const phGrid = (list, cols = list.length) => `<div class="phg" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">${list.map(ph).join('')}</div>`;
+
+module.exports = { ph, phGrid, PARTS, VB, BRAND, logo, mono, wordmark, lockup, hex2rgb, cmyk, contrast, grade, isDark, esc, img };

@@ -1,0 +1,11 @@
+{
+  "name": "washing-basket-promo-film",
+  "private": true,
+  "version": "1.0.0",
+  "description": "60-second 9:16 motion-graphics brand film, built from real app captures",
+  "type": "commonjs",
+  "dependencies": {
+    "puppeteer-core": "^25.16.0",
+    "gsap": "^3.15.0"
+  }
+}

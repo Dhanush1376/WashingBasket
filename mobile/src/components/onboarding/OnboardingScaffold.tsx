@@ -3,7 +3,6 @@ import {
   Image,
   ImageSourcePropType,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -75,7 +74,7 @@ export function OnboardingScaffold({ title, subtitle, step, onBack, children, ov
           {art.extendLine ? <LineToEdge line={art.extendLine} artW={artW} artH={artW / art.aspect} screenW={winW} /> : null}
         </Animated.View>
       ) : null}
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={styles.flex} behavior="padding">
         <ScrollView
           contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24 }]}
           keyboardShouldPersistTaps="handled"

@@ -1,7 +1,7 @@
 import React, { forwardRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, TextInput, TextInputInstance, View } from 'react-native';
 
-import { Country, formatNational, maxDigits } from '../../data/countries';
+import { Country, formatNational, maxDigits, readNational } from '../../data/countries';
 import { colors, CONTROL_HEIGHT, fonts, radius } from '../../theme';
 import { CountryFlag } from '../ui/CountryFlag';
 import { FIELD_BORDER, FloatingLabel } from '../ui/FloatingLabel';
@@ -72,7 +72,7 @@ export const PhoneInput = forwardRef<TextInputInstance, Props>(function PhoneInp
           Platform.OS === 'web' && ({ outlineStyle: 'none', outline: 'none' } as any),
         ]}
         value={formatNational(value, country)}
-        onChangeText={(t) => onChangeDigits(t.replace(/\D/g, '').replace(/^0+/, '').slice(0, maxDigits(country)))}
+        onChangeText={(t) => onChangeDigits(readNational(t, value, country))}
         // the label stands in for the placeholder; the sample number shows once focused
         placeholder={focused ? formatNational('9876543210'.slice(0, maxDigits(country)), country) : undefined}
         placeholderTextColor="#9CA3AF"

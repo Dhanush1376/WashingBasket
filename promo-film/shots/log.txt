@@ -1,0 +1,449 @@
+fixture applied to bundle
+shot s01-login
+shot s02-phone
+tap Continue 195 687
+shot s03-otp
+shot s04-otp-filled
+shot s05-verified
+
+===== after verify
+Your details
+We'll use these for order updates.
+Receipts and order updates are sent here.
+Continue
+Not you? Use another number
+shot s06-next
+shot s07-details
+tap Continue 195 759
+
+===== after details
+Your PIN code
+Check that Washing Basket serves your area.
+We use this to show your nearest Washing Basket location.
+Check availability
+Edit your details
+shot s08-pincode
+tapAria Check availability 195 759
+shot s09-pincode-ok
+
+===== after pincode
+Hello,
+Aarav!
+Slots open today
+Tue, 10 Nov
+Orders
+0
+Active orders
+Nothing in progress
+Drop-off
+Campus counter
+Drop off & collect anytime
+Wallet
+₹0
+Balance
+Free pickup
+48h turnaround
+Quality assured
+Book a pickup
+Fresh clothes,
+at your door
+Book now
+Recent orders
+No orders yet
+Your orders will appear here after your first pickup.
+Our services
+Price list
+Only Wash
+from ₹45 / kg
+Wash & Iron
+from ₹55 / kg
+Shoes, Bags & Soft Toys
+from ₹70 / pair
+Stain Treatment
+from ₹70 / piece
+Colour Dye
+from ₹150 / piece
+Dry Clean
+from ₹100 / piece
+Blanket
+from ₹150 / piece
+Available offers
+View all
+LIMITED OFFER
+1 / 4
+DISCOUNT
+20%
+OFF
+Nº 01
+LIMITED OFFER
+FLAT 20% OFF
+TILL 31 DEC
+FIRSTWASH
+VIEW
+REDEEM
+DISCOUNT
+FREE
+DELIVERY
+Nº 02
+BEST VALUE
+FREE DOORSTEP DELIVERY
+TILL 31 DEC
+FREEDEL
+VIEW
+REDEEM
+DISCOUNT
+15%
+OFF
+Nº 03
+POPULAR DEAL
+15% OFF DRY CLEANING
+TILL 30 NOV
+CLEAN15
+VIEW
+REDEEM
+DISCOUNT
+10%
+OFF
+Nº 04
+COMING SOON
+WINTER BEDDING CARE
+FROM 1 DEC
+WINTER10
+VIEW
+SOON
+★ COMING ★
+SOON
+1 DEC
+FIRSTWASH
+Use code
+Price list
+7 services, no hidden charges
+Only wash
+from ₹45 /kg
+Wash & iron
+from ₹55 /kg
+Shoes, bags & soft toys
+from ₹70 /pair
+Refer & earn
+Details
+REFER & EARN
+Give ₹100, get ₹200
+Earn instant wallet cash for every friend who joins
+YOUR CODE
+Tap to copy
+WBAARV24
+Share
+3
+Invited
+2
+Joined
+₹200
+Earned
+Home
+HSR Layout, Sector 2
+Skip
+shot s10-after-signup
+
+===== after signup
+Hello,
+Aarav!
+Slots open today
+Tue, 10 Nov
+Orders
+0
+Active orders
+Nothing in progress
+Drop-off
+Campus counter
+Drop off & collect anytime
+Wallet
+₹0
+Balance
+Free pickup
+48h turnaround
+Quality assured
+Book a pickup
+Fresh clothes,
+at your door
+Book now
+Recent orders
+No orders yet
+Your orders will appear here after your first pickup.
+Our services
+Price list
+Only Wash
+from ₹45 / kg
+Wash & Iron
+from ₹55 / kg
+Shoes, Bags & Soft Toys
+from ₹70 / pair
+Stain Treatment
+from ₹70 / piece
+Colour Dye
+from ₹150 / piece
+Dry Clean
+from ₹100 / piece
+Blanket
+from ₹150 / piece
+Available offers
+View all
+BEST VALUE
+2 / 4
+DISCOUNT
+20%
+OFF
+Nº 01
+LIMITED OFFER
+FLAT 20% OFF
+TILL 31 DEC
+FIRSTWASH
+VIEW
+REDEEM
+DISCOUNT
+FREE
+DELIVERY
+Nº 02
+BEST VALUE
+FREE DOORSTEP DELIVERY
+TILL 31 DEC
+FREEDEL
+VIEW
+REDEEM
+DISCOUNT
+15%
+OFF
+Nº 03
+POPULAR DEAL
+15% OFF DRY CLEANING
+TILL 30 NOV
+CLEAN15
+VIEW
+REDEEM
+DISCOUNT
+10%
+OFF
+Nº 04
+COMING SOON
+WINTER BEDDING CARE
+FROM 1 DEC
+WINTER10
+VIEW
+SOON
+★ COMING ★
+SOON
+1 DEC
+FREEDEL
+Use code
+Price list
+7 services, no hidden charges
+Only wash
+from ₹45 /kg
+Wash & iron
+from ₹55 /kg
+Shoes, bags & soft toys
+from ₹70 /pair
+Refer & earn
+Details
+REFER & EARN
+Give ₹100, get ₹200
+Earn instant wallet cash for every friend who joins
+YOUR CODE
+Tap to copy
+WBAARV24
+Share
+3
+Invited
+2
+Joined
+₹200
+Earned
+Home
+HSR Layout, Sector 2
+shot h01-home
+[["Drop-off at campus counter","Drop-off\nCampus coun",16,321],["Wallet balance ₹0","Wallet\n₹0\nBalance",201,321],["Book a Pickup. Fresh clothes, just a pickup away.","Book a pickup\nFresh ",16,517],["Only Wash, from ₹45 per kg","Only Wash\nfrom ₹45 /",16,1081],["Wash & Iron, from ₹55 per kg","Wash & Iron\nfrom ₹55",184,1081],["Shoes, Bags & Soft Toys, from ₹70 per pair","Shoes, Bags & Soft T",352,1081],["Stain Treatment, from ₹70 per piece","Stain Treatment\nfrom",520,1081],["Colour Dye, from ₹150 per piece","Colour Dye\nfrom ₹150",688,1081],["Dry Clean, from ₹100 per piece","Dry Clean\nfrom ₹100 ",856,1081],["Blanket, from ₹150 per piece","Blanket\nfrom ₹150 / ",1024,1081],["Flat 20% off. On your first 3 laundry pickups. Code FIRSTWASH.","DISCOUNT\n20%\nOFF\nNº ",80,1377],["Redeem Flat 20% off","REDEEM",296,1534],["Free doorstep delivery. No delivery fee on any order of ₹499 or more. Code FREEDEL.","DISCOUNT\nFREE\nDELIVE",33,1418],["Redeem Free doorstep delivery","REDEEM",275,1557],["15% off dry cleaning. Valid on dry cleaning orders this month. Code CLEAN15.","DISCOUNT\n15%\nOFF\nNº ",48,1404],["Redeem 15% off dry cleaning","REDEEM",282,1550],["Winter bedding care. 10% off blankets, quilts and woollens. Code WINTER10.","DISCOUNT\n10%\nOFF\nNº ",64,1390],["Show offer 1 of 4","",168,1592],["Show offer 2 of 4","",180,1592],["Show offer 3 of 4","",204,1592],["Show offer 4 of 4","",216,1592],["Use Free doorstep delivery","Use code",246,1608],["Open the full price list","Price list\n7 service",16,1679],["Refer and earn. Give ₹100, get ₹200","REFER & EARN\nGive ₹1",16,1907],["Copy referral code WBAARV24","YOUR CODE\nTap to cop",50,2028],["Share referral code","Share",257,2026],["Washing Basket Home","",16,12],["Home, HSR Layout, Sector 2. Change","Home\nHSR Layout, Sec",82,9],["Notifications","",286,12],["Open menu","",334,12],["Home","",64,780],["Wallet","",118,780],["New order","",172,780],["Orders","",226,780],["Profile","",280,780]]
+tapAria Wallet 141 803
+shot w01-wallet
+tap Top Up 182 738
+shot w02-topup-sheet
+ARIAS ["Slots open today, Tue, 10 Nov","Drop-off at campus counter","Wallet balance ₹0","Free pickup, 48 hour turnaround, quality assured","Book a Pickup. Fresh clothes, just a pickup away.","Washing Basket Home","Washing Basket","Home, HSR Layout, Sector 2. Change","Notifications","Open menu","Washing Basket Home","Washing Basket","Notifications","Open menu","Refer and earn, your code WBAARV24","₹0","Show all transactions","Dismiss transactions","Show more or fewer transactions","Top Up","Home","Wallet","New order","Orders","Profile","Washing Basket","Close menu","Home","New order","My Orders","Wallet","Offers","Refer & Earn","Price List","Support","Log out","Close","₹100","₹500","₹1,000","₹2,000","Add amount in rupees","₹100","Top Up ₹100"]
+tapAria ₹2,000 326 566
+shot w03-topup-2000
+ARIAS ["₹500","₹1,000","₹2,000","Add amount in rupees","₹2,100","Top Up ₹2,000"]
+tapAria Top Up ₹2,000 195 796
+shot w04-topup-progress-0
+shot w04-topup-progress-1
+shot w04-topup-progress-2
+shot w04-topup-progress-3
+shot w04-topup-progress-4
+shot w04-topup-progress-5
+shot w05-topup-done
+shot w06-wallet-after
+tapAria New order 195 803
+shot b01-book
+ARIAS ["Slots open today, Tue, 10 Nov","Drop-off at campus counter","Wallet balance ₹2,100","Free pickup, 48 hour turnaround, quality assured","Book a Pickup. Fresh clothes, just a pickup away.","Home, HSR Layout, Sector 2. Change","Refer and earn, your code WBAARV24","₹2,100","Show all transactions","Dismiss transactions","Show more or fewer transactions","5% top-up bonus, received ₹100, Today, 5:27 AM","Top-up (demo, no charge), received ₹2,000, Today, 5:27 AM","Top Up","Step 1, Items","Step 2, Pickup","Step 3, Review","Normal wash, ₹45 per kg. Choose clothes","Ezee, ₹55 per kg. Choose clothes","Whites wash, ₹60 per kg. Choose clothes","Normal wash, ₹55 per kg. Choose clothes","Ezee wash, ₹65 per kg. Choose clothes","Whites wash, ₹70 per kg. Choose clothes","Machine wash, ₹70 per pair. Choose clothes","Continue","New order","New order"]
+tapAria Normal wash, ₹55 per kg. Choose clothes 195 565
+shot b02-picker
+tapAria Add Shirt 319 401
+tapAria Add one Shirt 345 401
+tapAria Add one Shirt 345 401
+tapAria Add one Shirt 345 401
+tapAria Add T-shirt 319 506
+tapAria Add one T-shirt 345 506
+tapAria Add one T-shirt 345 506
+tapAria Bottomwear 202 346
+tapAria Add Jeans 319 454
+tapAria Add one Jeans 345 454
+shot b03-picker-filled
+tapAria Done, 9 clothes added 326 808
+shot b04-items-done
+tap Continue 292 735
+shot b05-pickup
+shot b06-address
+shot b07-days
+tapAria Wednesday, 11 November 117 312
+shot b08-day-picked
+shot b09-slots
+tapAria Morning, 8:00 – 10:00 AM 104 422
+shot b10-slot-picked
+tap Continue 292 700
+shot b11-review
+tap Continue 292 700
+shot o00-after-submit
+shot o01-after-submit
+shot o02-after-submit
+shot o03-after-submit
+shot o05-order
+tapAria to unlock QR code 284 546
+shot p01-pay-sheet
+tapAria FIRSTWASH, Flat 20% off. Tap to apply 174 339
+shot p02-coupon-0
+shot p02-coupon-1
+shot p02-coupon-2
+shot p03-coupon-applied
+shot p04-wallet-method
+ARIAS ["Support","Log out","Close","Close drawer","Remove applied coupon","FIRSTWASH, Flat 20% off. Applied","Redeem Flat 20% off","FREEDEL, Free doorstep delivery. Tap to apply","Redeem Free doorstep delivery","CLEAN15, 15% off dry cleaning. Tap to apply","Redeem 15% off dry cleaning","Pay ₹181"]
+tap & Unlock QR 207 759
+shot p05-paying-0
+shot p05-paying-1
+shot p05-paying-2
+shot p05-paying-3
+shot p05-paying-4
+shot p05-paying-5
+shot p05-paying-6
+shot p05-paying-7
+shot p06-paid
+tapAria Close slip 350 160
+shot q01-qr-unlocked
+QRCODE EVG7Q-UUT4W
+shot q02-progress
+shot h02-home-active
+tapAria Open menu 354 32
+tap Log out 93 523
+tap Log out 195 740
+
+===== after logout
+Welcome to Washing Basket
+Enter your mobile number to continue.
++91
+We'll text you a 6-digit code to confirm it's you.
+Continue
+or
+Google
+Apple
+By continuing, you agree to our Terms and Privacy Policy.
+Skip
+shot t00-staff-phone
+tap Continue 195 687
+tapAria Check availability 195 759
+shot t01-staff-home
+tapAria Type code 278 291
+tapAria Type code 278 291
+shot t02-type-sheet
+INPUTS []
+ARIAS ["Profile","Washing Basket","Close menu","Home","Wallet","Scan","Notifications","Support","Profile","Log out","Close","Open order details page","Confirm count: 5 pieces","Reject order","Accept order"]
+ERROR TimeoutError: Waiting for selector `input[aria-label="QR code or order number"]` failed
+    at CSSQueryHandler.waitFor (file:///D:/PROJECTS/WashingBasket/promo-film/node_modules/puppeteer-core/lib/puppeteer/common/QueryHandler.js:211:46)
+    at async CdpFrame.waitForSelector (file:///D:/PROJECTS/WashingBasket/promo-film/node_modules/puppeteer-core/lib/puppeteer/api/Frame.js:546:21)
+    at async CdpPage.waitForSelector (file:///D:/PROJECTS/WashingBasket/promo-film/node_modules/puppeteer-core/lib/puppeteer/api/Page.js:1482:20)
+    at async typeInto (D:\PROJECTS\WashingBasket\promo-film\capture\flow.js:65:3)
+    at async D:\PROJECTS\WashingBasket\promo-film\capture\flow.js:267:5
+shot zz-error
+
+===== error
+Hello,
+Gurdeep!
+Pickups & deliveries
+Day shift · 9:00 AM
+Scan to accept
+Drop-off, pickup and delivery codes
+Open camera
+Type code
+Salary
+₹15,669
+Paid this month
+My Scans
+4
+4 scans recorded
+48h SLA
+Verified pieces
+Digital audit
+Notifications
+View all
+New pickup WB-1015
+3 pieces · ₹181 paid · 1m ago
+New pickup WB-1007
+13 pieces · ₹675 paid · 4 Nov
+New pickup WB-1004
+5 pieces · ₹399 paid · 2 Nov
+Model Town
+Pickup & delivery agent · Jalandhar, Punjab
+Scan
+Scan customer QR
+Drop-off, pickup and delivery codes
+Scan next
+Type code
+My scans
+4
+WB-1014 · Aarav Mehta
+Drop-off at counter · 5 pcs · Awaiting acceptance
+13m ago
+WB-1011 · Priya Patel
+Drop-off at counter · 4 pcs · Awaiting acceptance
+36m ago
+WB-1008 · Rohan Verma
+Drop-off at counter · 6 pcs · Awaiting acceptance
+1h ago
+WB-1003 · Sneha Reddy
+Home pickup · 7 pcs · Awaiting acceptance
+2h ago
+END OF SCANS
+Valid drop-off QR
+WB-1014 · Aarav Mehta
+Paid ₹295
+Office drop-off
+5 pieces
+Customer
+Aarav Mehta
+Requested
+Sun, 8 Nov · 7:00 AM
+Status
+Awaiting acceptance
+Order Details Page
+View full timeline, tracking, and details
+Items
+5 pieces
+Formal Shirt
+Wash & iron · 3 × ₹55
+× 3
+Cotton Trousers
+Wash & iron · 2 × ₹65
+× 2
+Subtotal
+₹295
+Service charge
+Free
+Total paid
+₹295
+I counted 5 pieces and they match the order.
+Reject
+Accept

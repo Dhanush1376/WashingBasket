@@ -22,6 +22,7 @@ import { LoadingOverlay } from './src/components/app/LoadingOverlay';
 import { NetworkLoader } from './src/components/app/NetworkLoader';
 import { IntroSplashScreen } from './src/components/splash/IntroSplashScreen';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { SheetPortalHost } from './src/components/ui/SheetPortal';
 import { PaymentCelebrationHost } from './src/components/app/PaymentCelebration';
 import { LogoPreviewScreen } from './src/screens/LogoPreviewScreen';
 import { preloadAppAssets } from './src/services/preloadAssets';
@@ -129,6 +130,8 @@ export default function App() {
       ) : (
         <SessionProvider>
           <RootNavigator />
+          {/* Android drawers, drawn in the app's own window so they can follow the keyboard (see SheetPortal) */}
+          <SheetPortalHost />
           {/* "Payment successful" toast and celebration pop-up, over every screen */}
           <PaymentCelebrationHost />
           {/* the logo loader, over everything, when a page is slow to load, connection drops, or refresh is underway */}

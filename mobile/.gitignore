@@ -46,3 +46,8 @@ Thumbs.db
 # generated native folders
 /ios
 /android
+
+# releases & builds
+release/
+*.apk
+*.aab

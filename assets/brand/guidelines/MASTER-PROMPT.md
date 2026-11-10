@@ -18,7 +18,10 @@ Reusable brief. Fill in the **Brand inputs** section, then give the whole file t
 3. **Never invent official colours or fonts.** Official values are only the ones found in code or assets. Tints, contrast pairings and print conversions are derived from those values and marked as derived. Print values (CMYK/Pantone) are marked *to be proofed*.
 4. **Label everything** *Verified* (found in the codebase), *Proposed* (recommended, not yet adopted), *Rule* (do or don't) or *Finding* (an inconsistency from the audit, with a fix).
 5. **Keep the brand's personality**, and write in the brand's own voice.
-6. **No filler.** Each page earns its place with a real figure, rule or decision. Target 35–70 A4-landscape pages.
+6. **Images must fit exactly or not appear.** Never crop artwork through a person or object. Show illustrations whole, and screenshots whole inside a real device or browser frame. When no existing asset fits, insert a placeholder that carries the full generation brief (subject, style, background colour, framing, file name, pixel size).
+7. **Typography follows the owner's decision**, even where the code differs. Record the gap as a finding. Treat the wordmark as outlined artwork, never as retyped text.
+8. **Generous spacing.** Body line-height of at least 1.6, headings at least 1.15, no negative tracking tighter than −0.02 em.
+9. **No filler.** Each page earns its place with a real figure, rule or decision. Target 35–70 A4-landscape pages.
 
 ## Contents (in this order)
 Cover · Document info / version · Contents · How to use this book · Identity audit (inventory and findings), then:

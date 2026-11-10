@@ -1,7 +1,7 @@
 import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import { useRoute } from '@react-navigation/native';
 import React, { useContext } from 'react';
-import { KeyboardAvoidingView, Platform, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { KeyboardAvoidingView, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -91,7 +91,7 @@ export function AppScreen({
   return (
     <View style={[styles.root, background ? { backgroundColor: background } : null, { paddingTop: scroll ? 0 : topPad }]}>
       {scroll ? null : header}
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={styles.flex} behavior="padding">
         {body}
         {footer ? (
           <View style={[styles.footer, { paddingBottom: safeBottom + space.md + (isTabScreen ? TAB_BAR_SPACE : 0) }]}>{footer}</View>

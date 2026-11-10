@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "docx": "^9.15.3",
+    "jszip": "^3.10.1",
     "puppeteer-core": "^25.16.0"
   }
 }

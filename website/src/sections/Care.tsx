@@ -32,6 +32,7 @@ import basketImg from '../assets/basket.webp';
 import basketRimImg from '../assets/basket-rim.webp';
 import woodImg from '../assets/table-wood.webp';
 import ironImg from '../assets/cloth-iron.webp';
+import sleeveImg from '../assets/cloth-sleeve.webp';
 import ironShadowImg from '../assets/cloth-iron-shadow.webp';
 import washed from '../assets/cloth-washed.webp';
 import weave from '../assets/cloth-weave.webp';
@@ -46,12 +47,16 @@ const FOLD = { frames: 49, cols: 7, fw: 720, fh: 520, sw: 600, sh: 400 };
 /** Phones load the sheet at 0.6 of full size (care-fabric/stage.py writes both). */
 const FOLD_SMALL = 0.6;
 /** The iron image: its width over its height. */
-const IRON_RATIO = 1080 / 468;
+const IRON_RATIO = 1080 / 1008;
 /** Where its cord leaves the boot, out from the iron's middle toward its heel (of its width; care-fabric/iron3d.py). */
 const CORD_AT = 0.9657 - 0.5;
 /** The iron in slices (care-fabric/iron3d.py): where it stands above each of these heights, in the image's
  *  own width units (it is 1.2 of them wide), drawn one under another in the shadow sheet. */
-const IRON_SLICES = [0.02, 0.14, 0.26, 0.36, 0.45];
+const IRON_SLICES = [0.02, 0.14, 0.26, 0.36, 0.45, 0.52, 0.58, 0.65, 0.72];
+// the shirt sleeve of the hand holding it, on from the cuff where the image ends: its middle and width there
+// (of the image's width), how much wider it grows, how long it is (of the image's height), and how high the cuff
+// is over the cloth and how fast the arm rises from it, in the image's units (see care-fabric/sleeve3d.py)
+const SLEEVE = { x: 0.5954, w: 0.2222 * 1.12, grow: 1.7 / 1.12, len: 4.8, z: 0.75, rise: 0.27 };
 const IRON_FRAME = 1.2;
 /** The light comes from the upper left, as high as it is far: shadows fall down and to the right, as long as
  *  what casts them is high. */
@@ -112,6 +117,11 @@ export function Care() {
     shU.width = 2;
     shU.height = 2;
     const sctx = shU.getContext('2d')!;
+    // (the raised parts, swept apart from the body so their shadow can be softer)
+    const shU2 = document.createElement('canvas');
+    shU2.width = 2;
+    shU2.height = 2;
+    const sctx2 = shU2.getContext('2d')!;
     const fctx = foldCv.getContext('2d')!;
     const small = window.matchMedia('(pointer: coarse), (max-width: 899px)').matches;
     const foldIm = load(small ? foldSpriteSmall : foldSprite);
@@ -141,7 +151,8 @@ export function Care() {
     const onRestored = () => {
       gl = createClothGL(glCv, { weave, crumple, washed, dirt }, pressCv, showGL, u);
       gl?.resize(SW, SH);
-      gl?.setActive(vis.isActive);
+      glOn = vis.isActive && cloth.time() < handed;
+      gl?.setActive(glOn);
     };
     glCv.addEventListener('webglcontextlost', onLost);
     glCv.addEventListener('webglcontextrestored', onRestored);
@@ -155,7 +166,7 @@ export function Care() {
     let verts: { x: number; y: number; r: number }[] = [];
     // the view drawn back (`dx`, `dy`, `k`), where the piece lies then (`sx`, `sy`), the basket beside it on the
     // table (`bx`, `by`) and how far the view pans across to it (`pan`)
-    const geo = { dx: 0, dy: 0, k: 1, cx: 0, cy: 0, sx: 0, sy: 0, bx: 0, by: 0, pan: 0, tw: 1, flat: 0 };
+    const geo = { dx: 0, dy: 0, k: 1, cx: 0, cy: 0, sx: 0, sy: 0, bx: 0, by: 0, pan: 0, tw: 1, flat: 0, q: 1 };
     // the folded piece, as the fold leaves it: where it lies in a sprite cell (a quarter of the cloth, in the
     // lower right), so it can be brought to the middle as it folds
     const folded = { x: 0.75, y: 0.7, w: 0.42, h: 0.39 };
@@ -264,6 +275,8 @@ export function Care() {
       };
       sctx.setTransform(1, 0, 0, 1, 0, 0);
       sctx.clearRect(0, 0, shU.width, shU.height);
+      sctx2.setTransform(1, 0, 0, 1, 0, 0);
+      sctx2.clearRect(0, 0, shU2.width, shU2.height);
       IRON_SLICES.forEach((z, i) => {
         // (the soleplate's slice from the cloth up; each from its height to the next one's, a step every pixel or so)
         const z0 = i === 0 ? 0 : z;
@@ -271,7 +284,7 @@ export function Care() {
         const steps = Math.max(1, Math.ceil(((z1 - z0) * unit * SUN.k * k) / 1.2));
         for (let j = 0; j <= steps; j++) {
           const d = (z0 + ((z1 - z0) * j) / steps + raise) * unit * SUN.k;
-          slice(sctx, i, SUN.x * d, SUN.y * d, k);
+          slice(i < 2 ? sctx : sctx2, i, SUN.x * d, SUN.y * d, k);
         }
       });
       const off = 20000;
@@ -279,11 +292,52 @@ export function Care() {
       cctx.setTransform(1, 0, 0, 1, 0, 0);
       cctx.shadowOffsetX = off;
       cctx.shadowOffsetY = 0;
-      // the cast shadow, soft
-      cctx.shadowColor = `rgba(62, 32, 14, ${0.3 - raise * 0.35})`;
-      cctx.shadowBlur = iw * (0.028 + raise * 0.12) * cordK;
+      // the cast shadow: of the handle, the hand and the wrist, high over the cloth, so wide and soft; then of the
+      // body, low on its soleplate, closer and crisper (and so darkest just out from the iron, where both fall)
+      cctx.shadowColor = `rgba(62, 32, 14, ${0.25 - raise * 0.3})`;
+      cctx.shadowBlur = iw * (0.05 + raise * 0.12) * cordK;
+      cctx.drawImage(shU2, -off, 0, cordCv.width, cordCv.height);
+      cctx.shadowColor = `rgba(62, 32, 14, ${0.24 - raise * 0.3})`;
+      cctx.shadowBlur = iw * (0.016 + raise * 0.12) * cordK;
       cctx.drawImage(shU, -off, 0, cordCv.width, cordCv.height);
       cctx.restore();
+      // the sleeve's, from the cuff on up the arm: further off, wider and fainter the higher the arm rises
+      {
+        const a = (at.r * Math.PI) / 180;
+        const ca = Math.cos(a);
+        const sa = Math.sin(a);
+        const lx = (SLEEVE.x - 0.5) * iw;
+        const ly = -ih / 2;
+        const nx0 = at.x + lx * ca - ly * sa;
+        const ny0 = at.y + lx * sa + ly * ca;
+        const dx = sa;
+        const dy = -ca;
+        const len = SLEEVE.len * ih;
+        const w0 = SLEEVE.w * iw;
+        const P = (t: number, side: number): [number, number] => {
+          const w = w0 * (1 + (SLEEVE.grow - 1) * t) * 0.5 * side;
+          const z = (SLEEVE.z + (SLEEVE.rise * len * t) / unit + raise) * unit * SUN.k;
+          return [nx0 + dx * len * t - dy * w + SUN.x * z, ny0 + dy * len * t + dx * w + SUN.y * z];
+        };
+        cctx.save();
+        cctx.setTransform(cordK, 0, 0, cordK, 0, 0);
+        cctx.shadowOffsetX = off * cordK;
+        cctx.shadowOffsetY = 0;
+        cctx.fillStyle = '#000';
+        const N = 4;
+        for (let j = 0; j < N; j++) {
+          const t0 = Math.max(0, j / N - 0.02);
+          const t1 = (j + 1) / N;
+          cctx.shadowColor = `rgba(62, 32, 14, ${(0.22 - j * 0.035) * (1 - raise)})`;
+          cctx.shadowBlur = iw * (0.06 + j * 0.05) * cordK;
+          const pts = [P(t0, -1), P(t1, -1), P(t1, 1), P(t0, 1)];
+          cctx.beginPath();
+          pts.forEach(([px, py], m) => (m ? cctx.lineTo(px - off, py) : cctx.moveTo(px - off, py)));
+          cctx.closePath();
+          cctx.fill();
+        }
+        cctx.restore();
+      }
       // where it rests: tight and dark, just out from the soleplate's edge
       if (raise < 0.05) {
         cctx.save();
@@ -460,6 +514,8 @@ export function Care() {
       // (at half the cord canvas's size: it is blurred anyway)
       shU.width = Math.max(2, Math.round(cordCv.width / 2));
       shU.height = Math.max(2, Math.round(cordCv.height / 2));
+      shU2.width = shU.width;
+      shU2.height = shU.height;
       // the whole piece, when the view draws back: 3 : 2, in the middle of the stage, between the corners
       const c = copy.getBoundingClientRect();
       const n = now.getBoundingClientRect();
@@ -496,6 +552,12 @@ export function Care() {
       geo.pan = Math.max(0, geo.bx + bw * 0.5 + Math.max(20, SW * 0.04) - SW);
       const TW = (SW + 2 * Math.abs(geo.dx) + 2 * geo.pan) / s + 8;
       const TH = (SH + 2 * Math.abs(geo.dy)) / s + 8;
+      // the table and what lies over it are built at a fraction q of that size and scaled up by 1 / q: at a phone's
+      // close-up scale they would be thousands of pixels across (over ten thousand device pixels), more than its
+      // browser can keep as one layer, and it would redraw them in tiles as they move, flickering. Kept within
+      // about 2600 device pixels, which is still finer than they are ever seen once the view has drawn back
+      const q = Math.min(1, 2600 / (Math.max(TW, TH) * Math.min(window.devicePixelRatio || 1, 3)));
+      geo.q = q;
       // the piece's stitched hem, drawn over the cloth so it meets the fold's first frame exactly (in the table's
       // frame, which moves with the piece)
       const ox = TW / 2 - ww / 2;
@@ -514,36 +576,37 @@ export function Care() {
       edgeRect.setAttribute('width', String(ww));
       edgeRect.setAttribute('height', String(wh));
       edgeRect.setAttribute('stroke-width', String(ww / 150));
-      gsap.set(table, { width: TW, height: TH, left: SW / 2 - TW / 2, top: SH / 2 - TH / 2, backgroundSize: `${WOOD / s}px ${WOOD / s}px` });
-      gsap.set(over, { width: TW, height: TH, left: SW / 2 - TW / 2, top: SH / 2 - TH / 2 });
+      gsap.set(table, { width: TW * q, height: TH * q, left: SW / 2 - (TW * q) / 2, top: SH / 2 - (TH * q) / 2, backgroundSize: `${(WOOD / s) * q}px ${(WOOD / s) * q}px` });
+      gsap.set(over, { width: TW * q, height: TH * q, left: SW / 2 - (TW * q) / 2, top: SH / 2 - (TH * q) / 2 });
       // the rest of the piece, beyond what the live cloth covers (the stage): by then it is washed and pressed flat,
       // plain cotton, so it is the cloth's own weave at the same size and lined up with it thread for thread
       const tile = 256 / Math.max(0.5, glCv.width / SW || 1);
       gsap.set(ext, {
-        width: ww,
-        height: wh,
-        left: ox,
-        top: oy,
-        backgroundSize: `${tile}px ${tile}px`,
-        backgroundPosition: `${(ww - SW) / 2}px ${(wh - SH) / 2}px`,
+        width: ww * q,
+        height: wh * q,
+        left: ox * q,
+        top: oy * q,
+        backgroundSize: `${tile * q}px ${tile * q}px`,
+        backgroundPosition: `${((ww - SW) / 2) * q}px ${((wh - SH) / 2) * q}px`,
       });
       // (seen from far enough back the threads blend to the cloth's even colour, as the live cloth's do: the drawn
       // weave would shimmer instead, so it gives way to that colour the further back the view goes)
-      gsap.set(flat, { width: ww, height: wh, left: ox, top: oy });
+      gsap.set(flat, { width: ww * q, height: wh * q, left: ox * q, top: oy * q });
       geo.flat = 0.96 * Math.pow(Math.max(0, Math.min(1, (0.85 - s) / 0.6)), 0.8);
+      const sq = s / q;
       gsap.set(lay, {
-        width: ww,
-        height: wh,
-        left: TW / 2 - ww / 2,
-        top: TH / 2 - wh / 2,
-        boxShadow: `${2 / s}px ${6 / s}px ${16 / s}px rgba(80, 48, 22, 0.3), 0 ${1 / s}px ${2 / s}px rgba(80, 48, 22, 0.25)`,
+        width: ww * q,
+        height: wh * q,
+        left: ox * q,
+        top: oy * q,
+        boxShadow: `${2 / sq}px ${6 / sq}px ${16 / sq}px rgba(80, 48, 22, 0.3), 0 ${1 / sq}px ${2 / sq}px rgba(80, 48, 22, 0.25)`,
       });
       gsap.set(basket, {
         rotation: BASKET.tilt,
-        width: bw / s,
-        height: bh / s,
-        left: TW / 2 + (geo.bx - SW / 2 - geo.dx) / s - bw / s / 2,
-        top: TH / 2 + (geo.by - SH / 2 - geo.dy) / s - bh / s / 2,
+        width: bw / sq,
+        height: bh / sq,
+        left: ((TW / 2 + (geo.bx - SW / 2 - geo.dx) / s) * q) - bw / sq / 2,
+        top: ((TH / 2 + (geo.by - SH / 2 - geo.dy) / s) * q) - bh / sq / 2,
       });
       // (its rim, over the piece once it has dropped in: where the basket is once the view has panned)
       gsap.set(rim, { rotation: BASKET.tilt, width: bw, height: bh, left: geo.bx - geo.pan - bw / 2, top: geo.by - bh / 2 });
@@ -619,8 +682,8 @@ export function Care() {
       .fromTo([table, over], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, L(4))
       .fromTo(
         [table, over],
-        { x: 0, y: 0, scale: ZOOM },
-        { x: () => geo.dx, y: () => geo.dy, scale: () => geo.k * ZOOM, duration: r5 * 0.24, ease: 'power2.inOut', immediateRender: false },
+        { x: 0, y: 0, scale: () => ZOOM / geo.q },
+        { x: () => geo.dx, y: () => geo.dy, scale: () => (geo.k * ZOOM) / geo.q, duration: r5 * 0.24, ease: 'power2.inOut', immediateRender: false },
         L(4),
       )
       .to(
@@ -716,8 +779,19 @@ export function Care() {
     stage.addEventListener('pointerdown', onDown, { passive: true });
 
     // draw only while the section is on screen
-    const vis = ScrollTrigger.create({ trigger: root, start: 'top bottom', end: 'bottom top', onToggle: (self) => gl?.setActive(self.isActive) });
-    gl?.setActive(vis.isActive);
+    // (and not once the live cloth has been handed over to the fold, in the return: it is hidden from then on, and
+    // drawing it on every scrolled frame through the rest of the section only slows a phone down)
+    const handed = L(4) + r5 * 0.285;
+    let glOn = false;
+    const glActive = () => {
+      const on = vis.isActive && cloth.time() < handed;
+      if (on !== glOn) {
+        glOn = on;
+        gl?.setActive(on);
+      }
+    };
+    const vis = ScrollTrigger.create({ trigger: root, start: 'top bottom', end: 'bottom top', onToggle: glActive });
+    glActive();
     dripLater();
 
     // ---- the journey follows the scroll: as far along as the page is, as fast or as slow as it is scrolled,
@@ -740,7 +814,10 @@ export function Care() {
         root.style.setProperty('--fill', String(f));
       }
     };
-    cloth.eventCallback('onUpdate', follow);
+    cloth.eventCallback('onUpdate', () => {
+      follow();
+      glActive();
+    });
     const st = ScrollTrigger.create({
       trigger: root,
       start: 'top top',
@@ -793,6 +870,7 @@ export function Care() {
           <canvas className="cloth__cord" />
           <div className="iron">
             <div className="iron__face">
+              <i className="iron__sleeve" style={{ backgroundImage: `url(${sleeveImg})` }} />
               <img src={ironImg} alt="" />
               <span className="iron__steam">
                 <i />

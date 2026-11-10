@@ -1,5 +1,8 @@
 import { registerRootComponent } from 'expo';
 
+// first, before any screen: text renders at the designed size on every phone (see the file)
+import './src/lib/fixedText';
+
 import App from './App';
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);

@@ -24,7 +24,7 @@ OUT = os.path.join(ROOT, "..", "website", "src", "assets")
 
 # the frame, in model units: the iron runs from its tip at x = 0 to its heel at x = 1; the boot runs on to 1.14
 X0, X1 = -0.02, 1.18
-Y0, Y1 = -0.26, 0.26
+Y0, Y1 = -0.42, 0.42  # (room for the hand over the handle)
 FINAL_W = 1080
 SS = 2
 WPX = FINAL_W * SS
@@ -139,19 +139,170 @@ boot_m = (x > 0.95) & (x < 1.14) & (np.abs(y) < br)
 h_boot = 0.07 + br * np.sqrt(np.clip(1 - (y / br) ** 2, 0, 1))
 h = np.where(boot_m & ~sole_m, h_boot, np.where(boot_m & sole_m, np.maximum(h, h_boot), h))
 
-alpha = (sole_m | boot_m).astype(np.float32)
+
+# ---- the hand that holds it: a right hand, as you hold an iron standing at the board with it pointing away
+# from you. (In this frame the tip is to the left; on the page it points up, so +x here is down the screen and
+# -y is to its right.) The forearm comes up from behind the heel, a little from the right; the wrist is over
+# the back of the handle, the palm over the grip; the index finger lies along the top of the handle toward the
+# steam buttons; the other three curl round its right side, the little finger least; the thumb lies along the
+# left side of the grip. Built, like the iron, as a height field: each bone a tapered rounded tube, run
+# together where they meet as flesh does
+def tube(ax, ay, az, bx, by, bz, ra, rb):
+    vx, vy = bx - ax, by - ay
+    t_ = np.clip(((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy), 0, 1)
+    d_ = np.hypot(x - (ax + vx * t_), y - (ay + vy * t_))
+    r_ = ra + (rb - ra) * t_
+    z_ = az + (bz - az) * t_
+    hz = np.where(d_ < r_, z_ + r_ * np.sqrt(np.clip(1 - (d_ / r_) ** 2, 0, None)), -1.0)
+    return hz.astype(np.float32), t_, d_, r_
+
+
+def smax(a, b, k):
+    m_ = np.clip(0.5 + 0.5 * (b - a) / k, 0, 1)
+    return a * (1 - m_) + b * m_ + k * m_ * (1 - m_)
+
+
+def folds(cx_, cy_, ax_, rx_, ry_, period, k_, seed):
+    """Fine folds of skin across a joint (across the bone's axis `ax_`), in an ellipse round it."""
+    ux_, uy_ = ax_
+    a_ = (x - cx_) * ux_ + (y - cy_) * uy_       # along the bone
+    b_ = -(x - cx_) * uy_ + (y - cy_) * ux_      # across it
+    e_ = np.exp(-((a_ / rx_) ** 2 + (b_ / ry_) ** 2))
+    w_ = np.sin(b_ / 0.009 + seed) * 0.0011 + np.sin(b_ / 0.004 + seed * 2) * 0.0004
+    return e_ * (0.5 + 0.5 * np.cos((a_ + w_) / period * 2 * np.pi + seed)) ** 10 * k_ * (0.6 + 0.4 * np.cos(b_ / 0.013 + seed))
+
+
+HH = np.full_like(h, -1.0)
+knuckle = np.zeros_like(h)
+crease = np.zeros_like(h)
+redtip = np.zeros_like(h)
+nails = []  # (distal tube's t, its lateral offset, its radius, mask of the tube)
+#   joints: MCP, PIP, DIP, tip  (x, y, z, radius)
+FING = [
+    [(0.645, 0.004, 0.556, 0.034), (0.540, 0.000, 0.538, 0.030), (0.472, -0.002, 0.522, 0.027), (0.433, -0.003, 0.514, 0.023)],
+    # (curled: down from the bent middle joint and back in under it, so from above only the knuckles show)
+    [(0.636, -0.066, 0.550, 0.035), (0.560, -0.070, 0.500, 0.031), (0.556, -0.068, 0.420, 0.027), (0.584, -0.064, 0.372, 0.024)],
+    [(0.646, -0.128, 0.536, 0.033), (0.576, -0.134, 0.482, 0.029), (0.573, -0.132, 0.402, 0.025), (0.600, -0.128, 0.362, 0.022)],
+    [(0.664, -0.182, 0.516, 0.028), (0.606, -0.190, 0.466, 0.024), (0.604, -0.188, 0.402, 0.021), (0.626, -0.184, 0.372, 0.019)],
+]
+CARP = [(0.905, -0.040), (0.910, -0.072), (0.905, -0.102), (0.895, -0.130)]
+for n_, (J, (cxp, cyp)) in enumerate(zip(FING, CARP)):
+    (mx_, my_, mz_, mr_) = J[0]
+    # the bone of the back of the hand: a faint ridge, a tendon over it
+    mb, *_ = tube(cxp, cyp, 0.556, mx_, my_, mz_ - 0.002, 0.028, 0.028)
+    HH = smax(HH, mb, 0.018)
+    # the knuckle
+    kb, *_ = tube(mx_ + 0.004, my_ - 0.004, mz_ + 0.004, mx_ + 0.004, my_ + 0.004, mz_ + 0.004, 0.028, 0.028)
+    HH = smax(HH, kb, 0.016)
+    for j in range(3):
+        (ax_, ay_, az_, ar_), (bx_, by_, bz_, br_) = J[j], J[j + 1]
+        tb, tt, td, tr = tube(ax_, ay_, az_, bx_, by_, bz_, ar_, br_ * (1.0 if j < 2 else 0.9))
+        HH = smax(HH, tb, 0.010 if j == 0 else 0.006)
+        ul = np.hypot(bx_ - ax_, by_ - ay_)
+        axis = ((bx_ - ax_) / ul, (by_ - ay_) / ul)
+        if j > 0:
+            # the joint at the start of this bone: darker skin, folded across
+            knuckle = np.maximum(knuckle, (0.9 if j == 1 else 0.6) * np.exp(-(np.hypot(x - ax_, y - ay_) / (ar_ * 0.85)) ** 2))
+            crease = np.maximum(crease, folds(ax_, ay_, axis, ar_ * 0.45, ar_ * 0.75, 0.0062 if j == 1 else 0.005, 0.85, n_ * 3.1 + j))
+        if j == 2:
+            redtip = np.maximum(redtip, (tb > 0) * np.clip(tt, 0, 1))
+            lat = -(x - ax_) * axis[1] + (y - ay_) * axis[0]
+            nails.append((tt, lat, tr, tb > 0, n_ == 0))
+    knuckle = np.maximum(knuckle, np.exp(-(np.hypot(x - mx_, y - my_) / 0.026) ** 2))
+    crease = np.maximum(crease, folds(mx_ - 0.006, my_, (1.0, 0.0), 0.016, mr_ * 0.75, 0.007, 0.5, n_ * 1.7))
+# the back of the hand: a broad, gently arched plate, highest along the middle, the bones just showing
+pts = np.array([[0.668, 0.036], [0.662, -0.110], [0.684, -0.196], [0.740, -0.212], [0.840, -0.196], [0.935, -0.160], [0.940, -0.040], [0.930, 0.020]])
+dmask = np.zeros_like(h, dtype=np.uint8)
+cv2.fillPoly(dmask, [np.round(((pts - [X0, Y0]) / UPP)).astype(np.int32)], 1)
+dome = np.clip((blur(dmask, 0.055) - 0.5) * 2, 0, 1) ** 0.5
+plane = 0.566 + (x - 0.66) / 0.27 * 0.016 + 0.010 * np.cos(np.clip((y + 0.080) / 0.14, -1, 1) * np.pi / 2)
+HH = smax(HH, np.where(dome > 0, plane - 0.042 + 0.042 * dome, -1.0), 0.02)
+# the thumb: the mound at its root, then its two bones along the left side of the grip
+th0, *_ = tube(0.885, -0.010, 0.550, 0.780, 0.062, 0.508, 0.066, 0.046)
+HH = smax(HH, th0, 0.03)
+th1, *_ = tube(0.780, 0.062, 0.506, 0.708, 0.088, 0.478, 0.038, 0.034)
+HH = smax(HH, th1, 0.012)
+th2, tt2, dt2, rt2 = tube(0.708, 0.088, 0.478, 0.660, 0.097, 0.464, 0.033, 0.027)
+HH = smax(HH, th2, 0.008)
+web, *_ = tube(0.800, 0.020, 0.545, 0.700, 0.040, 0.520, 0.032, 0.026)
+HH = smax(HH, web, 0.02)
+knuckle = np.maximum(knuckle, 0.7 * np.exp(-(np.hypot(x - 0.708, y - 0.088) / 0.026) ** 2))
+crease = np.maximum(crease, folds(0.708, 0.088, (-0.98, 0.19), 0.014, 0.026, 0.0055, 0.8, 7.0))
+redtip = np.maximum(redtip, (th2 > 0) * np.clip(tt2, 0, 1))
+lat2 = -(x - 0.708) * 0.19 + (y - 0.088) * -0.98
+nails.append((tt2, lat2, rt2, th2 > 0, True))
+# the wrist, and the forearm going back from it, rising
+wr, *_ = tube(0.900, -0.082, 0.525, 1.50, -0.140, 0.700, 0.090, 0.115)
+HH = smax(HH, wr, 0.045)
+# a few veins over the back of the hand
+vein = np.zeros_like(h)
+for path in ([(0.93, -0.06), (0.85, -0.05), (0.78, -0.035), (0.73, -0.02)],
+             [(0.93, -0.12), (0.84, -0.13), (0.77, -0.15), (0.72, -0.16)],
+             [(0.85, -0.05), (0.80, -0.08), (0.75, -0.10)]):
+    vm = np.zeros_like(h, dtype=np.uint8)
+    cv2.polylines(vm, [np.round(((np.array(path) - [X0, Y0]) / UPP)).astype(np.int32)], False, 1, int(0.009 / UPP))
+    vein = np.maximum(vein, blur(vm, 0.004))
+HH = HH + 0.0016 * vein * (HH > 0)
+rng = np.random.default_rng(23)
+pore = cv2.GaussianBlur(rng.random(h.shape).astype(np.float32), (0, 0), 0.9) - 0.5
+pore2 = cv2.GaussianBlur(rng.random(h.shape).astype(np.float32), (0, 0), 2.5) - 0.5
+HH = HH + (HH > 0) * (0.0005 * pore + 0.0006 * pore2 - 0.0008 * crease)
+# the nails: set into the back of the last bone, their sides tucked under the skin
+nail_m = np.zeros_like(h, dtype=bool)
+nail_t = np.zeros_like(h)
+for tt_, lat_, tr_, on_, vis in nails:
+    if not vis:
+        continue
+    w_ = tr_ * 0.62 * np.sqrt(np.clip(1 - ((tt_ - 0.38) / 0.66) ** 8, 0, 1))
+    m_ = on_ & (tt_ > 0.36) & (np.abs(lat_) < w_)
+    m_ = cv2.GaussianBlur(m_.astype(np.float32), (0, 0), 1.2) > 0.5
+    nail_m |= m_
+    nail_t = np.where(m_, tt_, nail_t)
+# fine hair on the forearm and the back of the wrist, lying along the arm
+hair = np.zeros_like(h, dtype=np.uint8)
+hr = np.random.default_rng(31)
+for _ in range(420):
+    hy_ = hr.uniform(-0.20, 0.01)
+    hx_ = hr.uniform(0.86, 1.10)
+    ln = hr.uniform(0.010, 0.020)
+    an = hr.normal(0, 0.25) + (hy_ + 0.09) * 2.0
+    p0 = (int((hx_ - X0) / UPP), int((hy_ - Y0) / UPP))
+    p1 = (int((hx_ + np.cos(an) * ln - X0) / UPP), int((hy_ + np.sin(an) * ln - Y0) / UPP))
+    cv2.line(hair, p0, p1, 1, 1, cv2.LINE_AA)
+hair = cv2.GaussianBlur(hair.astype(np.float32), (0, 0), 0.6) * smooth(0.86, 0.95, x) * 0.5
+# the cuff of a cotton shirt round the wrist, the sleeve going on from it, back off the bottom of the screen
+CUFF_X = 0.985
+cf, tcf, dcf, rcf = tube(CUFF_X, -0.084, 0.540, 1.50, -0.140, 0.700, 0.130, 0.142)
+edge = CUFF_X + 0.012 * np.sqrt(np.clip(1 - (dcf / rcf) ** 2, 0, 1))
+cuff_m = (cf > 0) & (x > edge)
+weave = 0.5 + 0.25 * np.sin(x / 0.0032 * 2 * np.pi) + 0.25 * np.sin(y / 0.0032 * 2 * np.pi)
+cfh = cf + 0.0025 * np.exp(-((x - edge - 0.008) / 0.004) ** 2) + 0.0004 * weave \
+    + 0.003 * np.sin((y + 0.08) / 0.05 * 2 * np.pi + x * 9) * np.clip((x - edge) / 0.1, 0, 1)
+HH = np.where(cuff_m, np.maximum(HH, cfh), HH)
+hand_m = HH > h
+cuff_m = cuff_m & hand_m
+skin_m = hand_m & ~cuff_m
+h_iron = h.copy()
+h = np.where(hand_m, HH, h)
+
+alpha = (sole_m | boot_m | hand_m).astype(np.float32)
 # (the end of the boot faded into the cord, which carries on from there)
-alpha *= 1 - smooth(1.125, 1.14, x) * boot_m
+alpha *= 1 - smooth(1.125, 1.14, x) * (boot_m & ~hand_m)
 
 # a faint orange-peel texture in the moulded plastic, so its reflections are not machine-perfect
 op = cv2.GaussianBlur(np.random.default_rng(11).random((HPX, WPX)).astype(np.float32), (0, 0), 6.0)
-h = h + (op - 0.5) * 0.0005 * body_m
+h = h + (op - 0.5) * 0.0005 * body_m * ~hand_m
 
 # ---- lighting: a product photograph. (Lit for the way it is used on the page, turned a quarter clockwise with
 # its tip up: the key light then comes from the upper left of the screen, as the shadows there fall. In the
 # image's own frame that is toward the tip and toward the image's bottom.) A dark studio with two crisp softboxes, so the glossy plastic shows
 # sharp-edged window reflections on a deep ground, rather than soft even shading
 gy, gx = np.gradient(cv2.GaussianBlur(h, (0, 0), 1.6), UPP)
+# (the iron's surface on its own where the hand lies over it, so the hand's edge does not bend the plastic's
+# reflections round it)
+gyi, gxi = np.gradient(cv2.GaussianBlur(np.where(hand_m, h_iron, h), (0, 0), 1.6), UPP)
+gx = np.where(hand_m, gx, gxi)
+gy = np.where(hand_m, gy, gyi)
 n = np.dstack([-gx, -gy, np.ones_like(h)])
 n /= np.linalg.norm(n, axis=2, keepdims=True)
 nx, ny, nz = n[..., 0], n[..., 1], n[..., 2]
@@ -241,14 +392,48 @@ col = np.where(handle_m[..., None] & (rise > 0.5)[..., None], np.where(grip_m[..
 col = np.where(button_m[..., None], btn, col)
 col = np.where((boot_m & ~sole_m)[..., None], bootc, col)
 
+
+# ---- skin: warm brown, with the light passing a little way into it, so its shadowed side and thin edges glow
+# red rather than going grey; a broad soft sheen and a finer oily one on the knuckles; darker and redder over
+# the knuckles and in the folds, the fingers warmer toward their tips, the veins faintly blue-green
+ndl_raw = nx * L[0] + ny * L[1] + nz * L[2]
+wrap = np.clip((ndl_raw + 0.25) / 1.25, 0, 1) ** 1.2
+mott = cv2.GaussianBlur(np.random.default_rng(5).random(h.shape).astype(np.float32), (0, 0), 0.03 / UPP) - 0.5
+mott2 = cv2.GaussianBlur(np.random.default_rng(6).random(h.shape).astype(np.float32), (0, 0), 0.008 / UPP) - 0.5
+alb = np.array([0.47, 0.315, 0.235]) * (1 + 0.45 * mott + 0.25 * mott2)[..., None]
+alb = alb * (1 - 0.18 * knuckle)[..., None] * np.array([1.0, 0.90, 0.86]) ** knuckle[..., None]
+alb = alb * np.array([1.0, 0.93, 0.90]) ** (redtip ** 2)[..., None]
+alb = alb * (1 - 0.3 * crease)[..., None] * (1 - 0.32 * hair)[..., None]
+alb = alb * (1 - 0.06 * vein[..., None] * np.array([1.0, 0.7, 0.4]))
+sk_sh = shadow
+sss = np.array([0.30, 0.09, 0.04]) * (np.exp(-((ndl_raw - 0.12) / 0.16) ** 2))[..., None] * 0.22
+edge_glow = np.array([0.28, 0.07, 0.03]) * ((1 - nz) ** 2)[..., None] * (0.4 + 0.6 * sk_sh)
+skin = alb * (0.34 * (0.5 + 0.5 * nz[..., None]) * sky + 0.95 * wrap[..., None] * sk_sh) \
+    + (sss * (0.5 + 0.5 * sk_sh) + edge_glow * 0.5) * alb / 0.4
+skin += 0.06 * (ndh ** 16)[..., None] * sk_sh * np.array([1.0, 0.92, 0.85]) * (0.8 + 0.4 * mott2[..., None])
+skin += 0.10 * (ndh ** 80)[..., None] * sk_sh * (0.35 + 0.65 * knuckle)[..., None]
+skin += fres * E * 0.05
+# the nails: pale and glossy over the pink beneath, a whiter half-moon at the root, the free edge paler
+nailc = np.array([0.66, 0.48, 0.41]) * (0.5 * sky + 0.75 * wrap[..., None] * shadow)
+nailc *= np.where((nail_t < 0.46)[..., None], 1.12, 1.0)
+nailc = np.where((nail_t > 0.93)[..., None], nailc * 1.15 + 0.05, nailc)
+nailc += 0.25 * (ndh ** 140)[..., None] * shadow + fres * E * 0.35
+# the cuff: soft chambray cotton, matte, a faint sheen
+cloth_c = np.array([0.56, 0.64, 0.75]) * (0.5 * sky + 0.62 * wrap[..., None] * shadow) * (0.95 + 0.05 * weave[..., None])
+cloth_c += 0.03 * (ndh ** 6)[..., None] * shadow
+col = np.where(skin_m[..., None], skin, col)
+col = np.where((nail_m & skin_m)[..., None], nailc, col)
+col = np.where(cuff_m[..., None], cloth_c, col)
+
 # the raised handle's soft shadow on the shell below it, away from the light
 hs = (handle_m & (rise > 0.3)).astype(np.float32) * rise
 hs = cv2.warpAffine(hs, np.float32([[1, 0, 0.045 / UPP], [0, 1, -0.03 / UPP]]), (WPX, HPX))
-hs = blur(hs, 0.018) * (1 - handle_m) * body_m
+hs = blur(hs, 0.018) * (1 - handle_m) * body_m * ~hand_m
 col *= (1 - 0.55 * hs)[..., None]
 
 # the power light at the heel: a small orange glow under clear plastic
 led = np.exp(-(((x - 0.955) / 0.008) ** 2 + ((y - 0.115) / 0.008) ** 2))
+led = led * ~hand_m
 col = col * (1 - led[..., None] * 0.9) + led[..., None] * np.array([1.0, 0.5, 0.1]) * 1.3
 col += np.exp(-(((x - 0.955) / 0.025) ** 2 + ((y - 0.115) / 0.025) ** 2))[..., None] * np.array([1.0, 0.45, 0.08]) * 0.08 * body_m[..., None]
 
@@ -270,7 +455,7 @@ col = cv2.remap(col.astype(np.float32), mx, my, cv2.INTER_LINEAR, borderValue=0)
 # its form in slices, for the shadow the page casts live (so it falls the same way however the iron is turned):
 # where it stands above each height, at half size, one under another. The page offsets each slice by its height
 # away from the light and joins them
-SLICES = (0.02, 0.14, 0.26, 0.36, 0.45)
+SLICES = (0.02, 0.14, 0.26, 0.36, 0.45, 0.52, 0.58, 0.65, 0.72)
 lay = []
 for thr in SLICES:
     m_ = ((h > thr) & (alpha > 0.5)).astype(np.float32)

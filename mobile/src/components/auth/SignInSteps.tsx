@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInputInstance, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { Country, DEFAULT_COUNTRY, formatNational, maxDigits, validateNational } from '../../data/countries';
+import { Country, DEFAULT_COUNTRY, formatNational, maxDigits, readNational, validateNational } from '../../data/countries';
 import { useShake } from '../../hooks/useShake';
 import { haptic } from '../../lib/haptics';
 import { AuthError, authService, type OtpChallenge, type Session, type SocialProvider } from '../../services/auth';
@@ -133,7 +133,7 @@ export function PhoneStep({ onCode, onSocial }: { onCode: (c: Challenge) => void
             ref={inputRef}
             value={formatNational(digits, country)}
             onChangeText={(t) => {
-              setDigits(t.replace(/\D/g, '').replace(/^0+/, '').slice(0, maxDigits(country)));
+              setDigits((d) => readNational(t, d, country));
               if (error) setError(null);
             }}
             onFocus={() => setPickerOpen(false)}
@@ -385,7 +385,7 @@ export function DetailsStep({
     setSaving(true);
     setFailure(null);
     try {
-      const saved = await profileService.saveProfile(token, { fullName, email });
+      const saved = await profileService.saveProfile(token, { fullName: fullName.trim().replace(/\s+/g, ' '), email: email.trim() });
       haptic.success();
       await onSaved(saved);
     } catch {
@@ -420,7 +420,9 @@ export function DetailsStep({
           ref={emailRef}
           icon="mail"
           value={email}
-          onChangeText={setEmail}
+          // an email never has spaces; Android keyboards add one after a suggestion or a pasted address
+          onChangeText={(t) => setEmail(t.replace(/\s/g, ''))}
+          spellCheck={false}
           placeholder="Email address"
           invalid={touched && !!eErr}
           keyboardType="email-address"

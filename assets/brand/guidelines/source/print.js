@@ -14,7 +14,7 @@ fs.mkdirSync(OUT + '/prev', { recursive: true });
   await p.emulateMediaType('print');
   await p.goto('file:///' + path.join(__dirname, 'book.html').replace(/\\/g, '/'), { waitUntil: 'load', timeout: 120000 });
   await p.evaluate(() => document.fonts.ready);
-  const fontsOk = await p.evaluate(() => ['800 12px "Plus Jakarta Sans"', '400 12px Inter', '700 12px "Courier Prime"'].map((f) => document.fonts.check(f)));
+  const fontsOk = await p.evaluate(() => ['700 12px Inter', '400 12px Inter', '700 12px "Courier Prime"'].map((f) => document.fonts.check(f)));
   console.log('fonts', fontsOk);
 
   const issues = await p.evaluate(() => {
@@ -69,6 +69,9 @@ fs.mkdirSync(OUT + '/prev', { recursive: true });
       const idx = await s.evaluate((e) => [...document.querySelectorAll('.page')].indexOf(e) + 1);
       await s.screenshot({ path: `${OUT}/figs/page-${idx}.jpg`, type: 'jpeg', quality: 90 });
     }
+    // header lockup for the Word edition (outlined wordmark, transparent)
+    const lk = await p.$('.page.std .run .lockup');
+    await lk.screenshot({ path: `${OUT}/figs/lockup.png`, omitBackground: true });
     console.log('figs', figs.length, 'specials', specials.length);
   }
   if (args.includes('--pdf')) {

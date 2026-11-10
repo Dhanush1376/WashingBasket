@@ -1,7 +1,7 @@
 // Renders pages.js to book.html (A4 landscape, one div per page).
 const fs = require('fs');
 const { META } = require('./pages');
-const { logo, lockup, wordmark, esc, mono } = require('./lib');
+const { logo, lockup, wordmark, esc, mono, ph } = require('./lib');
 
 const md = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 const TAGS = { verified: 'Verified', proposed: 'Proposed', rule: 'Rule', finding: 'Finding' };
@@ -46,7 +46,7 @@ function block(b) {
   }
 }
 
-const run = (p) => `<div class="run"><span>${lockup(9)}</span><span class="run__s">${p.sectionStart ? `<b class="secno">${p.sectionStart.num}</b> ` : ''}${esc(p.section || '')}</span></div>`;
+const run = (p) => `<div class="run"><span>${lockup(11)}</span><span class="run__s">${p.sectionStart ? `<b class="secno">${p.sectionStart.num}</b> ` : ''}${esc(p.section || '')}</span></div>`;
 const foot = (p, dark) => `<div class="foot ${dark ? 'foot--d' : ''}"><span>${esc(META.brand)} · Brand Identity Guidelines · v${META.version}</span><span class="foot__n">${String(p.no).padStart(2, '0')}</span></div>`;
 
 function page(p) {
@@ -55,7 +55,7 @@ function page(p) {
       return `<section class="page cover"><div class="cover__l"><div class="cover__lk">${lockup(26)}</div><div><div class="cover__k">Brand Identity &amp; Visual Design Guidelines</div><h1 class="cover__t">Collected.<br>Cleaned.<br>Returned.</h1><div class="cover__m">Version ${META.version} · ${META.date}</div></div></div><div class="cover__r"><div class="cover__bands"><i style="background:#FE8701"></i><i style="background:#D30D24"></i><i style="background:#013E86"></i></div><div class="cover__mark">${logo({ h: 330 })}</div></div></section>`;
     case 'divider':
       return `<section class="page div" style="background:${p.bg};color:${p.fg}"><div class="div__l"><div class="div__num">${p.num}</div><h2 class="div__t">${esc(p.title)}</h2><ul class="div__list">${p.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul></div><div class="div__r">${
-        p.plate ? `<img src="img/${p.plate}">` : p.logoDivider ? `<div class="div__mark">${logo({ h: 360, c: { navy: '#FFFFFF', knock: '#013E86' } })}</div>` : `<div class="div__aa"><span style="font-family:'Plus Jakarta Sans';font-weight:800">Aa</span><span style="font-family:Inter;font-weight:500">Aa</span></div>`
+        p.ph ? `<div class="div__ph">${ph({ ...p.ph, bg: p.bg })}</div>` : p.plate ? `<img src="img/${p.plate}">` : p.logoDivider ? `<div class="div__mark">${logo({ h: 360, c: { navy: '#FFFFFF', knock: '#013E86' } })}</div>` : `<div class="div__aa"><span style="font-family:Inter;font-weight:700">Aa</span><span style="font-family:Inter;font-weight:500">Aa</span></div>`
       }</div>${foot(p, isDarkHex(p.bg))}</section>`;
     case 'toc':
       return `<section class="page std">${run(p)}<div class="toc"><div class="toc__h"><div class="kick">${esc(p.kicker)}</div><h2 class="title">Contents</h2><p class="lead">Front matter: about this edition (2), how to use this book (4), identity audit (5–6).</p></div><div class="toc__g">${sections.map((s) => `<div class="toc__s"><div class="toc__n">${s.num}</div><div><div class="toc__t"><span>${esc(s.title)}</span><b>${s.no}</b></div><ul>${s.subs.map((x) => `<li><span>${esc(x.t)}</span><em>${x.no}</em></li>`).join('')}</ul></div></div>`).join('')}<div class="toc__s"><div class="toc__n">A</div><div><div class="toc__t"><span>Appendix · tokens and assets</span><b>${pages.find((x) => x.id === 'appendix').no}</b></div></div></div></div></div>${foot(p)}</section>`;
