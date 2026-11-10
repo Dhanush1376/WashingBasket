@@ -37,7 +37,7 @@ def env(n, a, r):
     return e
 
 # ───────────── voice-over (edge-tts, en-IN Neerja; see vo.py) ─────────────
-VO_AT = [0.6, 2.5, 6.2, 12.0, 17.2, 21.6, 28.6, 38.4, 46.2, 52.4, 55.75]
+VO_AT = [0.6, 2.5, 6.2, 12.0, 17.2, 21.6, 28.6, 38.4, 46.9, 52.4, 55.75]
 vo = np.zeros(N)
 for k, at in enumerate(VO_AT):
     with wave.open(f'vo/{k:02d}.wav') as w:

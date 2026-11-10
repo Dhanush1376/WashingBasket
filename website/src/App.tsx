@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 }
 
-import { gsap, prefersReducedMotion, ScrollTrigger, startSmoothScroll } from './motion';
+import { gsap, prefersReducedMotion, ScrollTrigger, startSmoothScroll, whenFree } from './motion';
 import { Brand } from './sections/Brand';
 import { Download, Footer, Offers } from './sections/Closing';
 import { Care } from './sections/Care';
@@ -49,26 +49,35 @@ import { AppShowcase, Booking } from './sections/Product';
 function useReveals() {
   useEffect(() => {
     if (prefersReducedMotion()) return;
-    const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>('.title').forEach((t) => {
-        gsap.from(t.querySelectorAll('.line__in'), {
-          yPercent: 108,
-          duration: 1.15,
-          stagger: 0.08,
-          ease: 'expo.out',
-          scrollTrigger: { trigger: t, start: 'top 88%', once: true },
+    // (set up a little after opening, with the scenes below the fold, so the intro plays without waiting on it)
+    let ctx: gsap.Context | null = null;
+    let gone = false;
+    whenFree(() => {
+      if (gone) return;
+      ctx = gsap.context(() => {
+        gsap.utils.toArray<HTMLElement>('.title').forEach((t) => {
+          gsap.from(t.querySelectorAll('.line__in'), {
+            yPercent: 108,
+            duration: 1.15,
+            stagger: 0.08,
+            ease: 'expo.out',
+            scrollTrigger: { trigger: t, start: 'top 88%', once: true },
+          });
         });
+        ScrollTrigger.batch('[data-reveal]', {
+          start: 'top 90%',
+          once: true,
+          onEnter: (els) => gsap.fromTo(els, { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 1, stagger: 0.07, ease: 'power3.out', overwrite: true }),
+        });
+        gsap.set('[data-reveal]', { opacity: 0 });
+        // anything already on screen at load is revealed by the batch's first check
+        ScrollTrigger.refresh();
       });
-      ScrollTrigger.batch('[data-reveal]', {
-        start: 'top 90%',
-        once: true,
-        onEnter: (els) => gsap.fromTo(els, { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 1, stagger: 0.07, ease: 'power3.out', overwrite: true }),
-      });
-      gsap.set('[data-reveal]', { opacity: 0 });
-      // anything already on screen at load is revealed by the batch's first check
-      ScrollTrigger.refresh();
     });
-    return () => ctx.revert();
+    return () => {
+      gone = true;
+      ctx?.revert();
+    };
   }, []);
 }
 
@@ -76,9 +85,9 @@ export function App() {
   useEffect(() => startSmoothScroll(), []);
   useReveals();
 
-  // measure again once fonts and pictures have settled
+  // measure again once fonts and pictures have settled (not in the middle of the intro: once it has gone)
   useEffect(() => {
-    const refresh = () => ScrollTrigger.refresh();
+    const refresh = () => whenFree(() => ScrollTrigger.refresh());
     document.fonts?.ready.then(refresh);
     window.addEventListener('load', refresh);
     return () => window.removeEventListener('load', refresh);

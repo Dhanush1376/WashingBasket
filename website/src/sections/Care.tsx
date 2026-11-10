@@ -32,7 +32,6 @@ import basketImg from '../assets/basket.webp';
 import basketRimImg from '../assets/basket-rim.webp';
 import woodImg from '../assets/table-wood.webp';
 import ironImg from '../assets/cloth-iron.webp';
-import sleeveImg from '../assets/cloth-sleeve.webp';
 import ironShadowImg from '../assets/cloth-iron-shadow.webp';
 import washed from '../assets/cloth-washed.webp';
 import weave from '../assets/cloth-weave.webp';
@@ -47,16 +46,12 @@ const FOLD = { frames: 49, cols: 7, fw: 720, fh: 520, sw: 600, sh: 400 };
 /** Phones load the sheet at 0.6 of full size (care-fabric/stage.py writes both). */
 const FOLD_SMALL = 0.6;
 /** The iron image: its width over its height. */
-const IRON_RATIO = 1080 / 1008;
+const IRON_RATIO = 1080 / 468;
 /** Where its cord leaves the boot, out from the iron's middle toward its heel (of its width; care-fabric/iron3d.py). */
 const CORD_AT = 0.9657 - 0.5;
 /** The iron in slices (care-fabric/iron3d.py): where it stands above each of these heights, in the image's
  *  own width units (it is 1.2 of them wide), drawn one under another in the shadow sheet. */
-const IRON_SLICES = [0.02, 0.14, 0.26, 0.36, 0.45, 0.52, 0.58, 0.65, 0.72];
-// the shirt sleeve of the hand holding it, on from the cuff where the image ends: its middle and width there
-// (of the image's width), how much wider it grows, how long it is (of the image's height), and how high the cuff
-// is over the cloth and how fast the arm rises from it, in the image's units (see care-fabric/sleeve3d.py)
-const SLEEVE = { x: 0.5954, w: 0.2222 * 1.12, grow: 1.7 / 1.12, len: 4.8, z: 0.75, rise: 0.27 };
+const IRON_SLICES = [0.02, 0.14, 0.26, 0.36, 0.45];
 const IRON_FRAME = 1.2;
 /** The light comes from the upper left, as high as it is far: shadows fall down and to the right, as long as
  *  what casts them is high. */
@@ -292,7 +287,7 @@ export function Care() {
       cctx.setTransform(1, 0, 0, 1, 0, 0);
       cctx.shadowOffsetX = off;
       cctx.shadowOffsetY = 0;
-      // the cast shadow: of the handle, the hand and the wrist, high over the cloth, so wide and soft; then of the
+      // the cast shadow: of the handle, high over the cloth, so wide and soft; then of the
       // body, low on its soleplate, closer and crisper (and so darkest just out from the iron, where both fall)
       cctx.shadowColor = `rgba(62, 32, 14, ${0.25 - raise * 0.3})`;
       cctx.shadowBlur = iw * (0.05 + raise * 0.12) * cordK;
@@ -301,43 +296,6 @@ export function Care() {
       cctx.shadowBlur = iw * (0.016 + raise * 0.12) * cordK;
       cctx.drawImage(shU, -off, 0, cordCv.width, cordCv.height);
       cctx.restore();
-      // the sleeve's, from the cuff on up the arm: further off, wider and fainter the higher the arm rises
-      {
-        const a = (at.r * Math.PI) / 180;
-        const ca = Math.cos(a);
-        const sa = Math.sin(a);
-        const lx = (SLEEVE.x - 0.5) * iw;
-        const ly = -ih / 2;
-        const nx0 = at.x + lx * ca - ly * sa;
-        const ny0 = at.y + lx * sa + ly * ca;
-        const dx = sa;
-        const dy = -ca;
-        const len = SLEEVE.len * ih;
-        const w0 = SLEEVE.w * iw;
-        const P = (t: number, side: number): [number, number] => {
-          const w = w0 * (1 + (SLEEVE.grow - 1) * t) * 0.5 * side;
-          const z = (SLEEVE.z + (SLEEVE.rise * len * t) / unit + raise) * unit * SUN.k;
-          return [nx0 + dx * len * t - dy * w + SUN.x * z, ny0 + dy * len * t + dx * w + SUN.y * z];
-        };
-        cctx.save();
-        cctx.setTransform(cordK, 0, 0, cordK, 0, 0);
-        cctx.shadowOffsetX = off * cordK;
-        cctx.shadowOffsetY = 0;
-        cctx.fillStyle = '#000';
-        const N = 4;
-        for (let j = 0; j < N; j++) {
-          const t0 = Math.max(0, j / N - 0.02);
-          const t1 = (j + 1) / N;
-          cctx.shadowColor = `rgba(62, 32, 14, ${(0.22 - j * 0.035) * (1 - raise)})`;
-          cctx.shadowBlur = iw * (0.06 + j * 0.05) * cordK;
-          const pts = [P(t0, -1), P(t1, -1), P(t1, 1), P(t0, 1)];
-          cctx.beginPath();
-          pts.forEach(([px, py], m) => (m ? cctx.lineTo(px - off, py) : cctx.moveTo(px - off, py)));
-          cctx.closePath();
-          cctx.fill();
-        }
-        cctx.restore();
-      }
       // where it rests: tight and dark, just out from the soleplate's edge
       if (raise < 0.05) {
         cctx.save();
@@ -870,7 +828,6 @@ export function Care() {
           <canvas className="cloth__cord" />
           <div className="iron">
             <div className="iron__face">
-              <i className="iron__sleeve" style={{ backgroundImage: `url(${sleeveImg})` }} />
               <img src={ironImg} alt="" />
               <span className="iron__steam">
                 <i />

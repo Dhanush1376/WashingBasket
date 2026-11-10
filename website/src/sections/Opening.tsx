@@ -89,7 +89,7 @@ export function Hero() {
       .from(q('.hero__title .line__in'), { yPercent: 110, duration: 1.2, stagger: 0.08 }, 0.35)
       .from(q('.hero__card'), { y: 50, opacity: 0, duration: 1.1, stagger: 0.07 }, 0.75)
       .from(q('.hero__text'), { y: 16, opacity: 0, duration: 1, stagger: 0.04 }, 0.95);
-  });
+  }, { eager: true });
 
   // a card takes the film to its part
   const pick = (i: number) => {

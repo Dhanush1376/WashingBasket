@@ -24,7 +24,10 @@ OUT = os.path.join(ROOT, "..", "website", "src", "assets")
 
 # the frame, in model units: the iron runs from its tip at x = 0 to its heel at x = 1; the boot runs on to 1.14
 X0, X1 = -0.02, 1.18
-Y0, Y1 = -0.42, 0.42  # (room for the hand over the handle)
+# the iron on its own, with no hand on it (HAND = True puts a hand on the handle, with its shirt cuff: the frame
+# then has room for it, and the shadow sheet slices on up through it)
+HAND = False
+Y0, Y1 = (-0.42, 0.42) if HAND else (-0.26, 0.26)
 FINAL_W = 1080
 SS = 2
 WPX = FINAL_W * SS
@@ -279,7 +282,7 @@ weave = 0.5 + 0.25 * np.sin(x / 0.0032 * 2 * np.pi) + 0.25 * np.sin(y / 0.0032 *
 cfh = cf + 0.0025 * np.exp(-((x - edge - 0.008) / 0.004) ** 2) + 0.0004 * weave \
     + 0.003 * np.sin((y + 0.08) / 0.05 * 2 * np.pi + x * 9) * np.clip((x - edge) / 0.1, 0, 1)
 HH = np.where(cuff_m, np.maximum(HH, cfh), HH)
-hand_m = HH > h
+hand_m = (HH > h) & HAND
 cuff_m = cuff_m & hand_m
 skin_m = hand_m & ~cuff_m
 h_iron = h.copy()
@@ -455,7 +458,7 @@ col = cv2.remap(col.astype(np.float32), mx, my, cv2.INTER_LINEAR, borderValue=0)
 # its form in slices, for the shadow the page casts live (so it falls the same way however the iron is turned):
 # where it stands above each height, at half size, one under another. The page offsets each slice by its height
 # away from the light and joins them
-SLICES = (0.02, 0.14, 0.26, 0.36, 0.45, 0.52, 0.58, 0.65, 0.72)
+SLICES = (0.02, 0.14, 0.26, 0.36, 0.45, 0.52, 0.58, 0.65, 0.72) if HAND else (0.02, 0.14, 0.26, 0.36, 0.45)
 lay = []
 for thr in SLICES:
     m_ = ((h > thr) & (alpha > 0.5)).astype(np.float32)

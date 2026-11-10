@@ -21,7 +21,7 @@
   // ── 1. Problem: a packed week, then the laundry pile ──
   const cal = el('div', 'abs', stage, 'width:1080px;height:1920px');
   const calBlocks = [];
-  const COLS = ['#013E86', '#54B6F8', '#FE8701', '#FFA742', '#0A1C3E', '#D30D24', '#9DB8D9'];
+  const COLS = ['#0B1F44', '#54B6F8', '#FE8701', '#FFA742', '#0A1C3E', '#D30D24', '#9DB8D9'];
   let rnd = 7; const rand = () => ((rnd = (rnd * 16807) % 2147483647) / 2147483647);
   ['M', 'T', 'W', 'T', 'F', 'S', 'S'].forEach((d, i) => {
     el('div', '', cal, `position:absolute;left:${130 + i * 120}px;top:1010px;width:100px;text-align:center;font-weight:600;font-size:30px;color:#8A8F9C`, d);
@@ -36,12 +36,12 @@
   cue(1.95, 'whoosh', 0.8);
 
   const pile = el('div', 'abs', stage, 'width:1080px;height:1920px');
-  const CLOTH = ['#013E86', '#FFA742', '#54B6F8', '#FFFFFF', '#D30D24', '#0A1C3E', '#FE8701', '#C9D9EE', '#2B5FA8', '#FFFFFF', '#FFA742'];
+  const CLOTH = ['#0B1F44', '#FFA742', '#54B6F8', '#FFFFFF', '#D30D24', '#0A1C3E', '#FE8701', '#C9D9EE', '#2B5FA8', '#FFFFFF', '#FFA742'];
   const cloths = []; let stackY = 1650;
   CLOTH.forEach((c, i) => {
     const w = 330 + rand() * 120, h = 64 + rand() * 14; stackY -= h - 4;
-    const e = el('div', 'cloth', pile, `width:${w}px;height:${h}px;background:${c};${c === '#FFFFFF' ? 'box-shadow:inset 0 0 0 3px #DDD6CA;' : ''}`);
-    const ci = { e, w, h, x: 540 - w / 2 + (rand() - 0.5) * 70, y: stackY, r: (rand() - 0.5) * 9, t: 2.35 + i * 0.19 };
+    const e = el('div', 'cloth', pile, `width:${w}px;height:${h}px;background:linear-gradient(180deg,rgba(255,255,255,.22) 0 26%,rgba(255,255,255,0) 26%),linear-gradient(90deg,rgba(0,0,0,.13) 0 1.6%,rgba(0,0,0,0) 1.6% 17%,rgba(0,0,0,.12) 17% 18.2%,rgba(0,0,0,0) 18.2% 81.8%,rgba(0,0,0,.12) 81.8% 83%,rgba(0,0,0,0) 83% 98.4%,rgba(0,0,0,.13) 98.4%),${c};box-shadow:inset 0 -9px 0 rgba(0,0,0,.14)${c === '#FFFFFF' ? ',inset 0 0 0 3px #D5DAE3' : ''},0 6px 10px rgba(10,28,62,.10)`);
+    const ci = { e, w, h, x: 540 - w / 2 + (rand() - 0.5) * 40, y: stackY, r: (rand() - 0.5) * 9, t: 2.35 + i * 0.19 };
     cloths.push(ci); cue(ci.t + 0.28, 'thud', 0.8);
   });
   const shirt = el('img', 'illus', pile, 'width:330px'); shirt.src = 'assets/illus/worried-stained-shirt.png';
@@ -58,7 +58,7 @@
     return { g, parts };
   };
   const WM = window.WORDMARK;
-  const mkWm = (h) => el('div', 'abs', stage, `width:${WM.w * h}px;height:${h * 1.3}px`, `<svg width="${(WM.w * h).toFixed(1)}" height="${(h * 1.3).toFixed(1)}" viewBox="0 -1.02 ${WM.w} 1.3"><path d="${WM.d}" fill="#013E86"/></svg>`);
+  const mkWm = (h) => el('div', 'abs', stage, `width:${WM.w * h}px;height:${h * 1.3}px`, `<svg width="${(WM.w * h).toFixed(1)}" height="${(h * 1.3).toFixed(1)}" viewBox="0 -1.02 ${WM.w} 1.3"><path d="${WM.d}" fill="#0B1F44"/></svg>`);
   const logoA = mkLogo(), wmA = mkWm(76), logoB = mkLogo(), wmB = mkWm(76);
   const PC = { x: (241 + 1010) / 2, y: (217 + 998) / 2 };
   // Mirrors the app's AnimatedLogo intro (INTRO_TIMELINE, ms): basket glides in from the right with a tilt (50),
@@ -105,7 +105,7 @@
     [16.95, 'h01-home'], [21.35, 'w01-wallet'], [23.3, 'w03-topup-2000'], [26.35, 'w05-topup-done'],
     [28.25, 'b04-items-done'], [30.5, 'b07-days'], [31.55, 'b08-day-picked'], [32.35, 'b09-slots'], [33.25, 'b10-slot-picked'], [34.55, 'b11-review'],
     [37.75, 'o05-order'], [38.85, 'p01-pay-sheet'], [40.65, 'p03-coupon-applied'], [43.15, 'p05-paying-2'], [43.6, 'p05-paying-3'], [44.05, 'p05-paying-4'], [44.35, 'p05-paying-5'], [44.65, 'p05-paying-6'], [44.95, 'p05-paying-7'],
-    [46.2, 'o05-order'], [48.0, 'q01-qr-unlocked'], [52.05, 'r-ready-progress'],
+    [46.95, 'o05-order'], [48.15, 'q01-qr-unlocked'], [52.05, 'r-ready-progress'],
   ].map(([t, n]) => { const im = el('img', '', screen); im.src = SCR(n); return { t, im }; });
   el('div', '', screen).id = 'island';
   const tapEl = el('div', '', screen); tapEl.id = 'tap';
@@ -141,11 +141,11 @@
     { k: 'pickup', t0: 34.8, t1: 37.65, imgs: [['b11-review', 0]], to: [540, 820, 1000], rot: -1 },
     { k: 'bill', t0: 35.4, t1: 37.65, imgs: [['b11-review', 0]], to: [540, 1180, 960], rot: 1 },
     { k: 'coupon', t0: 39.05, t1: 42.5, imgs: [['p01-pay-sheet', 0], ['p03-coupon-applied', 40.65]], to: [540, 830, 1000], rot: -2, punch: 40.65, stamp: true },
-    { k: 'pbill', t0: 41.0, t1: 42.5, imgs: [['p01-pay-sheet', 0], ['p03-coupon-applied', 41.6]], to: [540, 1370, 960], rot: 1 },
+    { k: 'pbill', t0: 41.0, t1: 42.5, imgs: [['p01-pay-sheet', 0], ['p03-coupon-applied', 41.6]], to: [540, 1460, 960], rot: 1 },
     { k: 'paybtn', t0: 42.4, t1: 43.35, imgs: [['p03-coupon-applied', 0]], to: [540, 1100, 960], rot: 0, punch: 42.95 },
-    { k: 'slip', t0: 43.75, t1: 45.25, imgs: [['p05-paying-3', 0], ['p05-paying-4', 44.05], ['p05-paying-5', 44.35], ['p05-paying-6', 44.65], ['p05-paying-7', 44.95]], to: [540, 1090, 640], rot: 0 },
-    { k: 'qr', t0: 46.45, t1: 51.95, imgs: [['o05-order', 0], ['q01-qr-unlocked', 48.0]], to: [540, 1060, 880], rot: 0,
-      wiggle: [47.1, 47.65], flash: 47.95, scan: { t0: 48.5, t1: 50.6, rect: [0.27, 0.32, 0.73, 0.58], beep: 50.3 } },
+    { k: 'slip', t0: 45.0, t1: 46.0, imgs: [['p05-paying-7', 0]], to: [540, 1090, 660], rot: 0 },
+    { k: 'qr', t0: 47.0, t1: 51.95, imgs: [['o05-order', 0], ['q01-qr-unlocked', 48.15]], to: [540, 1060, 880], rot: 0,
+      wiggle: [47.4, 47.9], flash: 48.1, scan: { t0: 48.5, t1: 50.6, rect: [0.27, 0.32, 0.73, 0.58], beep: 50.3 } },
     { k: 'prog', t0: 52.45, t1: 55.45, imgs: [['r-ready-progress', 0]], to: [540, 980, 940], rot: 0,
       pops: [0.046, 0.114, 0.183, 0.252, 0.324].map((c, i) => ({ rect: [0.04, c - 0.034, 0.96, c + 0.034], color: '#fff', t: 52.85 + 0.45 * i, fade: 0.28, k: 'step' })) },
   ];
@@ -206,7 +206,7 @@
       c.e.style.opacity = op;
       c.e.style.transform = `translate(${x}px,${y}px) rotate(${r}deg) scale(${s})`;
       const sh = p * (1 - q);
-      c.e.style.boxShadow = `0 ${36 * sh}px ${70 * sh}px rgba(52,40,22,${0.24 * sh}), 0 ${8 * sh}px ${18 * sh}px rgba(52,40,22,${0.12 * sh})`;
+      c.e.style.boxShadow = `0 ${36 * sh}px ${70 * sh}px rgba(10,28,62,${0.24 * sh}), 0 ${8 * sh}px ${18 * sh}px rgba(10,28,62,${0.12 * sh})`;
       c.ims.forEach((m, i) => { m.im.style.opacity = i === 0 ? 1 : seg(t, m.t, m.t + 0.22); });
       if (c.wipe) {
         const w2 = c.wipe, r2 = w2.rect, k = Math.floor(seg(t, w2.a, w2.b) * w2.steps) / w2.steps;
@@ -231,7 +231,7 @@
   }
 
   // ── 5. Film graphics ──
-  const panel = el('div', 'abs', stage, 'width:900px;height:620px;border-radius:44px;background:#fff;box-shadow:0 40px 90px rgba(52,40,22,.18)');
+  const panel = el('div', 'abs', stage, 'width:900px;height:620px;border-radius:44px;background:#fff;box-shadow:0 40px 90px rgba(10,28,62,.18)');
   const counter = el('div', 'abs', stage, ''); counter.id = 'counter';
   counter.innerHTML = '<div class="lab" id="cLab">Demo top-up</div><div class="num" id="cNum">₹0</div><div class="rule">5% extra on top-ups of ₹2,000 or more</div>';
   const bonus = el('div', 'chip abs', stage, 'background:#FE8701;color:#fff;box-shadow:0 16px 32px rgba(254,135,1,.3)', '+ ₹100 bonus');
@@ -243,7 +243,7 @@
   const check = el('div', 'check abs', burst, '', '<svg width="300" height="300" viewBox="0 0 300 300"><path d="M88 156 L132 198 L214 110" fill="none" stroke="#fff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="220" stroke-dashoffset="220"/></svg>');
   const ckp = check.querySelector('path');
   const paid = el('div', 'abs', burst, 'width:1080px;text-align:center;font-weight:700;font-size:64px;letter-spacing:-0.03em;color:#0A1C3E', 'Payment successful<div style="font-weight:600;font-size:38px;color:#16A34A;margin-top:12px;letter-spacing:-0.01em">₹181 paid from wallet</div>');
-  cue(45.25, 'success', 1.4); cue(45.25, 'impact', 1); for (let i = 0; i < 12; i++) cue(43.8 + i * 0.11, 'type', 0.45); // receipt printing
+  cue(46.0, 'success', 1.4); cue(46.0, 'impact', 1); for (let i = 0; i < 12; i++) cue(43.8 + i * 0.11, 'type', 0.45); // receipt printing
 
   const ill = ['washing-and-drying', 'ironing-and-packing', 'out-for-delivery'].map((n, i) => { const im = el('img', 'illus', stage, 'width:290px'); im.src = `assets/illus/${n}.png`; return { im, t: 53.3 + 0.45 * i, x: 200 + i * 340 }; });
   const cta = el('div', 'abs', stage, 'width:1080px;text-align:center'); cta.id = 'cta'; cta.innerHTML = '<span>Get started today</span>';
@@ -258,8 +258,8 @@
     { t0: 17.0, t1: 21.3, y: 236, size: 84, lines: [['Your laundry.'], ['One simple dashboard.', 0.15, 'accent']] },
     { t0: 21.4, t1: 28.2, y: 236, size: 92, lines: [['More value.'], ['Every top-up.', 0.15, 'accent']] },
     { t0: 28.3, t1: 37.7, y: 236, size: 92, lines: [['Book your pickup.'], ['Your way.', 0.15, 'accent']] },
-    { t0: 37.8, t1: 46.15, y: 236, size: 92, lines: [['Smart savings.'], ['Simple payments.', 0.15, 'accent']] },
-    { t0: 46.15, t1: 52.1, y: 236, size: 92, lines: [['Your order.'], ['One secure QR.', 0.15, 'accent']] },
+    { t0: 37.8, t1: 46.9, y: 236, size: 92, lines: [['Smart savings.'], ['Simple payments.', 0.15, 'accent']] },
+    { t0: 46.9, t1: 52.1, y: 236, size: 92, lines: [['Your order.'], ['One secure QR.', 0.15, 'accent']] },
     { t0: 52.2, t1: 55.45, y: 236, size: 92, lines: [['Track every step.'], ['Right to your door.', 0.15, 'accent']] },
     { t0: 58.35, t1: 61, y: 980, size: 58, w: 600, lines: [['Laundry, made effortless.', 0, 'accent']] },
   ];
@@ -302,7 +302,7 @@
       c.e.style.opacity = (t > c.t ? 1 : 0) * (1 - seg(sk, 0.8, 1));
     });
     const sp = eBack(seg(t, 3.95, 4.4)), ssk = suck(0);
-    shirt.style.transform = `translate(${lerp(640, 375, ssk)}px,${lerp(700, 1050, ssk)}px) rotate(${10 + Math.sin(t * 5) * 4}deg) scale(${sp * (1 - ssk * 0.9)})`;
+    shirt.style.transform = `translate(${lerp(375, 375, ssk)}px,${lerp(stackY - 250, 1050, ssk)}px) rotate(${-4 + Math.sin(t * 5) * 4}deg) scale(${sp * (1 - ssk * 0.9)})`;
     shirt.style.opacity = sp > 0 ? 1 - seg(ssk, 0.8, 1) : 0;
 
     const lx = eIn(seg(t, 11.25, 11.85));
@@ -335,21 +335,22 @@
       counter.style.transform = `translate(0px,${y + 80}px)`; counter.style.opacity = cin * (1 - cout);
       $('cNum').textContent = inr(2000 * eOut(seg(t, 24.6, 25.35)) + 100 * eOut(seg(t, 25.65, 26.0)));
       $('cLab').textContent = t < 25.65 ? 'Demo top-up' : 'New balance';
-      $('cNum').style.color = t < 25.65 ? '#0A1C3E' : '#013E86';
+      $('cNum').style.color = t < 25.65 ? '#0A1C3E' : '#0B1F44';
       const bp = eBack(seg(t, 25.4, 25.75));
       bonus.style.transform = `translate(370px,${y + 420}px) scale(${bp})`; bonus.style.opacity = bp > 0 ? 1 - cout : 0;
     }
-    const onB2 = t > 45.2 && t < 46.25; show(burst, onB2);
+    const _tb = t - 0.75;
+    const onB2 = _tb > 45.2 && _tb < 46.25; show(burst, onB2);
     if (onB2) {
-      const bo = 1 - seg(t, 45.85, 46.2), cs = eBack(seg(t, 45.25, 45.7));
+      const bo = 1 - seg(_tb, 45.85, 46.2), cs = eBack(seg(_tb, 45.25, 45.7));
       check.style.transform = `translate(390px,1030px) scale(${cs})`; check.style.opacity = bo;
-      const pp = eOut(seg(t, 45.6, 46.1)); paid.style.transform = `translateY(${1400 + (1 - pp) * 50}px)`; paid.style.opacity = pp * bo;
-      ckp.setAttribute('stroke-dashoffset', 220 * (1 - eOut(seg(t, 45.5, 45.9))));
-      waves.forEach((w, i) => { const f = seg(t, 45.35 + i * 0.15, 46.2 + i * 0.1), r = 150 + 330 * eOut(f); w.style.cssText = `left:${540 - r}px;top:${1180 - r}px;width:${2 * r}px;height:${2 * r}px;opacity:${(1 - f) * bo}`; });
+      const pp = eOut(seg(_tb, 45.6, 46.1)); paid.style.transform = `translateY(${1400 + (1 - pp) * 50}px)`; paid.style.opacity = pp * bo;
+      ckp.setAttribute('stroke-dashoffset', 220 * (1 - eOut(seg(_tb, 45.5, 45.9))));
+      waves.forEach((w, i) => { const f = seg(_tb, 45.35 + i * 0.15, 46.2 + i * 0.1), r = 150 + 330 * eOut(f); w.style.cssText = `left:${540 - r}px;top:${1180 - r}px;width:${2 * r}px;height:${2 * r}px;opacity:${(1 - f) * bo}`; });
     }
     ill.forEach((m) => { const p = eBack(seg(t, m.t, m.t + 0.45)), o = seg(t, 55.0, 55.45); show(m.im, t > m.t && t < 55.5); m.im.style.transform = `translate(${m.x - 145}px,${1470 + (1 - p) * 80 - o * 200 + Math.sin(t * 2 + m.x) * 6}px) scale(${p})`; m.im.style.opacity = 1 - o; });
 
-    const extra = Math.max(Math.min(seg(t, 24.4, 24.8), 1 - seg(t, 26.2, 26.6)), Math.min(seg(t, 45.2, 45.5), 1 - seg(t, 45.9, 46.25)));
+    const extra = Math.max(Math.min(seg(t, 24.4, 24.8), 1 - seg(t, 26.2, 26.6)), Math.min(seg(t, 45.95, 46.25), 1 - seg(t, 46.65, 47.0)));
     dim.style.opacity = Math.max(lift * 0.6, extra * 0.9);
   };
   window.ready = Promise.all([document.fonts.ready, ...[...document.images].map((im) => (im.complete ? 1 : new Promise((r) => { im.onload = im.onerror = r; })))]).then(() => { window.render(0); return true; });

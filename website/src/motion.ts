@@ -85,25 +85,78 @@ export type Scene = {
   one: <T extends Element = HTMLElement>(sel: string) => T;
 };
 
+/*
+ * Setting a scene up measures the page and builds its tweens, a few hundred milliseconds of the main thread on a
+ * phone for the larger ones. Done for every section at once on opening, that held the intro on its first frame
+ * for a second or more. So only the scene in view on opening (the hero, `eager`) is set up at once; the rest wait
+ * until the intro has lifted and the hero has come in, and are then set up one at a time, each when the browser
+ * has a moment to spare, and the page measured again once they are all in.
+ */
+const waiting: (() => void)[] = [];
+let pumping = false;
+const later = (f: () => void) => {
+  const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+  if (w.requestIdleCallback) w.requestIdleCallback(f, { timeout: 400 });
+  else window.setTimeout(f, 30);
+};
+const pump = () => {
+  const job = waiting.shift();
+  if (!job) {
+    pumping = false;
+    ScrollTrigger.refresh();
+    return;
+  }
+  job();
+  later(pump);
+};
+let opened = false;
+introDone.then(() => window.setTimeout(() => {
+  opened = true;
+  if (waiting.length && !pumping) {
+    pumping = true;
+    later(pump);
+  }
+}, 900));
+/** Runs a job a little after opening, once the intro has lifted, one job per spare moment (see above). */
+export function whenFree(job: () => void) {
+  waiting.push(job);
+  if (opened && !pumping) {
+    pumping = true;
+    later(pump);
+  }
+}
+
 /**
  * Sets up a scene's motion for whichever layout applies (desktop or phone, motion allowed). The setup may
  * return a cleanup for anything GSAP does not own (listeners, canvases); GSAP's own tweens and triggers
- * are reverted automatically.
+ * are reverted automatically. Scenes below the fold are set up a little after opening (see above); `eager`
+ * sets one up at once.
  */
-export function useScene(ref: RefObject<HTMLElement | null>, setup: (s: Scene) => void | (() => void)) {
+export function useScene(ref: RefObject<HTMLElement | null>, setup: (s: Scene) => void | (() => void), opts?: { eager?: boolean }) {
+  const eager = !!opts?.eager;
   useLayoutEffect(() => {
     const root = ref.current;
     if (!root) return;
     const q = <T extends HTMLElement = HTMLElement>(sel: string) => Array.from(root.querySelectorAll<T>(sel));
     const one = <T extends Element = HTMLElement>(sel: string) => root.querySelector(sel) as T;
-    const ctx = gsap.context(() => {
-      const mm = gsap.matchMedia();
-      mm.add({ desktop: DESKTOP, mobile: MOBILE }, (c) => setup({ root, desktop: !!c.conditions?.desktop, q, one }));
-    }, root);
-    return () => ctx.revert();
+    let ctx: gsap.Context | null = null;
+    let gone = false;
+    const run = () => {
+      if (gone) return;
+      ctx = gsap.context(() => {
+        const mm = gsap.matchMedia();
+        mm.add({ desktop: DESKTOP, mobile: MOBILE }, (c) => setup({ root, desktop: !!c.conditions?.desktop, q, one }));
+      }, root);
+    };
+    if (eager) run();
+    else whenFree(run);
+    return () => {
+      gone = true;
+      ctx?.revert();
+    };
     // setup is defined inline by each scene and only depends on refs
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref]);
+  }, [ref, eager]);
 }
 
 /** Splits a string into masked characters for type reveals. */

@@ -112,7 +112,16 @@ export function Intro() {
       };
       root.addEventListener('pointerdown', skip);
       window.addEventListener('keydown', skip);
+      // and whatever happens, the page is never left behind it: if the animation has not run its course in a few
+      // seconds (a slow phone, or a browser that holds back animation frames, as some apps' built-in browsers and
+      // tabs opened in the background do), it is put away and the page let go
+      const guard = window.setTimeout(() => {
+        if (ended) return;
+        finishIntro();
+        end();
+      }, 6000);
       return () => {
+        window.clearTimeout(guard);
         root.removeEventListener('pointerdown', skip);
         window.removeEventListener('keydown', skip);
       };

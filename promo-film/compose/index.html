@@ -10,7 +10,7 @@
 @font-face { font-family: Inter; font-weight: 500; src: url(assets/fonts/Inter_500Medium.ttf); }
 @font-face { font-family: Inter; font-weight: 600; src: url(assets/fonts/Inter_600SemiBold.ttf); }
 @font-face { font-family: Inter; font-weight: 700; src: url(assets/fonts/Inter_700Bold.ttf); }
-:root { --bg: #EFE9DF; --ink: #0A1C3E; --navy: #013E86; --orange: #FE8701; --soft-orange: #FFA742; --red: #D30D24; --sky: #54B6F8; --green: #16A34A; }
+:root { --bg: #FFFFFF; --ink: #0A1C3E; --navy: #0B1F44; --orange: #FE8701; --soft-orange: #FFA742; --red: #D30D24; --sky: #54B6F8; --green: #16A34A; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); font-family: Inter, sans-serif; color: var(--ink); }
 #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
@@ -28,14 +28,14 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
 #phone { width: 640px; height: 1338px; transform-origin: 0 0; }
 #phone .frame { position: absolute; inset: 0; border-radius: 104px;
   background: linear-gradient(140deg, #F6F4F0 0%, #CFCBC4 22%, #EAE7E1 48%, #BDB8B0 78%, #E9E6E0 100%);
-  box-shadow: 0 70px 110px rgba(60,48,30,.20), 0 24px 40px rgba(60,48,30,.14), inset 0 0 0 1.5px rgba(255,255,255,.7); }
+  box-shadow: 0 70px 110px rgba(10,28,62,.20), 0 24px 40px rgba(10,28,62,.14), inset 0 0 0 1.5px rgba(255,255,255,.7); }
 #phone .bezel { position: absolute; inset: 9px; border-radius: 96px; background: #0B0D12; }
 #screen { position: absolute; left: 20px; top: 20px; width: 600px; height: 1298px; border-radius: 86px; overflow: hidden; background: #fff; }
 #screen img { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
 #island { position: absolute; left: 50%; top: 32px; width: 168px; height: 48px; margin-left: -84px; border-radius: 26px; background: #05070b; z-index: 9; }
-#tap { position: absolute; width: 130px; height: 130px; margin: -65px 0 0 -65px; border-radius: 50%; background: rgba(1,62,134,.18); border: 5px solid rgba(1,62,134,.55); opacity: 0; z-index: 10; }
+#tap { position: absolute; width: 130px; height: 130px; margin: -65px 0 0 -65px; border-radius: 50%; background: rgba(11,31,68,.18); border: 5px solid rgba(11,31,68,.55); opacity: 0; z-index: 10; }
 #dim { position: absolute; inset: 0; background: var(--bg); opacity: 0; z-index: 7; }
-#shadow { width: 700px; height: 120px; border-radius: 50%; background: radial-gradient(closest-side, rgba(60,48,30,.28), rgba(60,48,30,0)); }
+#shadow { width: 700px; height: 120px; border-radius: 50%; background: radial-gradient(closest-side, rgba(10,28,62,.28), rgba(10,28,62,0)); }
 
 /* lifted UI cards */
 .card { position: absolute; left: 0; top: 0; transform-origin: 0 0; overflow: hidden; border-radius: 26px; background: #fff; opacity: 0; will-change: transform, opacity; }
@@ -60,7 +60,7 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
 .cloth::after { content: ''; position: absolute; left: 8%; right: 8%; top: 38%; height: 6px; border-radius: 3px; background: rgba(255,255,255,.35); }
 .illus { position: absolute; }
 .logoPart { position: absolute; }
-#cta span { display: inline-block; padding: 28px 64px; border-radius: 70px; background: var(--navy); color: #fff; font-weight: 700; font-size: 40px; letter-spacing: -.01em; box-shadow: 0 20px 40px rgba(1,62,134,.25); }
+#cta span { display: inline-block; padding: 28px 64px; border-radius: 70px; background: var(--navy); color: #fff; font-weight: 700; font-size: 40px; letter-spacing: -.01em; box-shadow: 0 20px 40px rgba(11,31,68,.25); }
 </style>
 </head>
 <body>
