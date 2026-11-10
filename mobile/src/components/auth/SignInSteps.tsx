@@ -16,7 +16,6 @@ import { SuccessTickBadge } from './SuccessTickBadge';
 import { Button } from '../app/primitives';
 import { AppleIcon, GoogleIcon } from '../ui/icons';
 import { formStyles, FORM, OtpCells, PillField } from '../ui/SheetForm';
-import { CountryDropdown } from './CountryDropdown';
 
 const webCursor = Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -76,11 +75,10 @@ const ANDROID_END = (text: string) => (Platform.OS === 'android' ? { start: text
 /* ───────────── 1. Mobile number ───────────── */
 
 export function PhoneStep({ onCode, onSocial }: { onCode: (c: Challenge) => void; onSocial: (s: Session, label: string) => Promise<void> }) {
-  const [country, setCountry] = useState<Country>(DEFAULT_COUNTRY);
+  const country = DEFAULT_COUNTRY;
   const [digits, setDigits] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [socialBusy, setSocialBusy] = useState<SocialProvider | null>(null);
   const inputRef = useRef<TextInputInstance>(null);
   const { shake, style: shakeStyle } = useShake();
@@ -130,7 +128,7 @@ export function PhoneStep({ onCode, onSocial }: { onCode: (c: Challenge) => void
     <View>
       <StepHead title="Welcome to Washing Basket" subtitle="Enter your mobile number to continue." />
 
-      <Rise delay={80} style={[styles.phoneWrap, pickerOpen && styles.phoneWrapOpen]}>
+      <Rise delay={80} style={styles.phoneWrap}>
         <Animated.View style={shakeStyle}>
           <PillField
             ref={inputRef}
@@ -139,7 +137,6 @@ export function PhoneStep({ onCode, onSocial }: { onCode: (c: Challenge) => void
               setDigits((d) => readNational(t, d, country));
               if (error) setError(null);
             }}
-            onFocus={() => setPickerOpen(false)}
             onSubmitEditing={onContinue}
             placeholder="Mobile number"
             keyboardType="phone-pad"
@@ -149,33 +146,13 @@ export function PhoneStep({ onCode, onSocial }: { onCode: (c: Challenge) => void
             invalid={!!shownError}
             inputStyle={styles.phoneInput}
             leading={
-              <Pressable
-                onPress={() => setPickerOpen((o) => !o)}
-                accessibilityRole="button"
-                accessibilityLabel={`Country code ${country.dialCode}, change`}
-                hitSlop={6}
-                style={[styles.country, webCursor]}
-              >
-                <Text style={styles.countryText}>{country.dialCode}</Text>
-                <Icon name="chevronDown" size={14} color={colors.inkSoft} />
-              </Pressable>
+              <View style={styles.country}>
+                <Text style={styles.countryText}>+91</Text>
+              </View>
             }
             icon="phone"
           />
         </Animated.View>
-        {pickerOpen ? (
-          <CountryDropdown
-            selected={country}
-            onSelect={(c) => {
-              setCountry(c);
-              setDigits((d) => d.slice(0, maxDigits(c)));
-              setError(null);
-              setPickerOpen(false);
-              setTimeout(() => inputRef.current?.focus(), 150);
-            }}
-            onClose={() => setPickerOpen(false)}
-          />
-        ) : null}
         <Text style={[formStyles.helper, shownError && { color: colors.danger }]}>{shownError ?? "We'll text you a 6-digit code to confirm it's you."}</Text>
       </Rise>
 
@@ -608,15 +585,26 @@ const styles = StyleSheet.create({
   phoneWrap: { marginTop: space.lg, position: 'relative', zIndex: 1 },
   phoneWrapOpen: { zIndex: 9999, elevation: 9999 },
   phoneInput: { letterSpacing: 0.4, fontVariant: ['tabular-nums'], backgroundColor: 'transparent' },
-  country: { flexDirection: 'row', alignItems: 'center', gap: 4, height: '100%' },
+  country: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: 4, paddingRight: 2 },
   countryText: { fontFamily: fonts.semibold, fontSize: 16, color: colors.ink },
 
   orRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: space.md },
   orLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.lineStrong },
   orText: { fontFamily: fonts.medium, fontSize: 12, color: colors.inkMuted },
   socialRow: { flexDirection: 'row', gap: space.sm },
-  social: { flex: 1, height: 50, borderRadius: 25, borderWidth: 1, borderColor: FORM.edge, backgroundColor: FORM.field, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  socialText: { fontFamily: fonts.semibold, fontSize: 14.5, color: colors.ink },
+  social: {
+    flex: 1,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1.25,
+    borderColor: FORM.edge,
+    backgroundColor: FORM.field,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  socialText: { fontFamily: fonts.semibold, fontSize: 15, color: colors.ink, letterSpacing: 0.1 },
   legal: { ...type.legal, fontSize: 11.5, lineHeight: 16, textAlign: 'center', marginTop: space.md },
   legalLink: { fontFamily: fonts.medium, color: colors.ink, textDecorationLine: 'underline' },
 

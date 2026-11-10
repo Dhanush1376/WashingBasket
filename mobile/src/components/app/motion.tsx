@@ -1,5 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSpring, withTiming } from 'react-native-reanimated';
 
@@ -25,20 +25,26 @@ export function useFocusReplay() {
 }
 
 /**
- * Fades its children in while lifting them into place. `scale` (e.g. 0.96) also grows them slightly as they land;
- * a new `replay` value plays the entrance again.
+ * Fades its children in while lifting them into place on initial mount.
+ * Keeps scale at 1 to prevent Android elevation shadow clipping and weird ghost boxes.
  */
 export function Rise({ delay = 0, distance = 14, scale, replay = 0, style, children }: WrapProps & { distance?: number; scale?: number; replay?: number }) {
   const reduced = useReducedMotion();
+  const mounted = useRef(false);
   const t = useSharedValue(reduced ? 1 : 0);
+
   useEffect(() => {
     if (reduced) return;
-    t.value = 0;
-    t.value = withDelay(delay, withTiming(1, { duration: 620, easing: EASE_OUT }));
-  }, [t, delay, reduced, replay]);
+    if (!mounted.current) {
+      mounted.current = true;
+      t.value = 0;
+      t.value = withDelay(delay, withTiming(1, { duration: 260, easing: EASE_OUT }));
+    }
+  }, [t, delay, reduced]);
+
   const anim = useAnimatedStyle(() => ({
     opacity: t.value,
-    transform: [{ translateY: (1 - t.value) * distance }, { scale: scale ? scale + (1 - scale) * t.value : 1 }],
+    transform: [{ translateY: (1 - t.value) * distance }],
   }));
   return <Animated.View style={[style, anim]}>{children}</Animated.View>;
 }

@@ -412,7 +412,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         ref={panelRef}
         className="staggered-menu-panel"
         aria-hidden={!open ? true : undefined}
-        {...(!open ? ({ inert: '' } as any) : {})}
+        inert={!open ? true : undefined}
       >
         {/* Panel Internal Header: Logo + Brand Name + Close Button */}
         <div className="sm-panel-top">

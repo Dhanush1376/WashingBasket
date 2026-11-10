@@ -31,7 +31,7 @@ export function StaffTabs() {
         headerShown: false,
         tabBarStyle: { position: 'absolute', backgroundColor: 'transparent', borderTopWidth: 0, elevation: 0 },
         sceneStyle: { backgroundColor: app.canvas },
-        animation: 'fade',
+        animation: 'none',
       }}
       tabBar={(props) => <StaffTabBar {...props} />}
     >

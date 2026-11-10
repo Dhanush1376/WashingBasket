@@ -150,7 +150,7 @@ export function LoginScreen() {
 
   // ---- Lift: the sheet glides up over the film while typing; the film dims and recedes ----
   const topLimit = insets.top + 60; // never cover the Skip button
-  const maxLift = Math.max(0, spaceH + heroTop - topLimit);
+  const maxLift = Math.max(0, winH - topLimit - 140);
   const lift = useSharedValue(0);
   const scrollY = useSharedValue(0);
   const progress = useDerivedValue(() =>
@@ -158,28 +158,18 @@ export function LoginScreen() {
   );
   // Phones: follow the keyboard's real height frame by frame, so the form always sits right on top of it,
   // including when the keyboard changes size between steps.
-  // On iOS the window does not resize so lift translates the sheet up over the keyboard.
-  // On Android the window already resizes via adjustResize, so a large lift causes double-shifting;
-  // keep lift gentle on Android so touch hitboxes stay perfectly aligned with the buttons.
   const kb = useAnimatedKeyboardSafe();
   const bottomInset = insets.bottom;
-  const isAndroid = Platform.OS === 'android';
   useAnimatedReaction(
     () => kb.height.value,
     (h) => {
       if (Platform.OS === 'web') return;
-      if (isAndroid) {
-        // Android window resizes automatically; prevent off-screen over-translation
-        lift.value = 0;
-      } else {
-        lift.value = Math.min(Math.max(0, h - bottomInset), maxLift);
-      }
+      lift.value = Math.min(Math.max(0, h - bottomInset), maxLift);
     },
-    [bottomInset, maxLift, isAndroid],
+    [bottomInset, maxLift],
   );
   const raise = useCallback(
     (to: number, duration = LIFT_MS) => {
-      if (Platform.OS !== 'web') return; // phones follow the keyboard directly (above)
       const target = Math.min(to, maxLift);
       lift.set(reducedMotion ? target : withTiming(target, { duration, easing: EASE }));
     },
@@ -197,7 +187,10 @@ export function LoginScreen() {
       setKeyboardShown(true);
       // the sheet's bottom padding already includes the home-indicator area, which the keyboard
       // covers, so lift by the rest: the form then sits just above the keys with no gap
-      raise(Math.max(0, e.endCoordinates.height - insets.bottom), Math.max(e.duration || 0, LIFT_MS));
+      const kh = e.endCoordinates ? e.endCoordinates.height : 0;
+      if (kh > 0) {
+        raise(Math.max(0, kh - insets.bottom), Math.max(e.duration || 0, LIFT_MS));
+      }
     });
     const hide = Keyboard.addListener(ios ? 'keyboardWillHide' : 'keyboardDidHide', (e: KeyboardEvent) => {
       keyboardUp.current = false;
@@ -214,10 +207,33 @@ export function LoginScreen() {
           if (covered > 0) raise(Math.max(0, covered - insets.bottom), Math.max(e.duration || 0, 250));
         })
       : null;
+
+    // Mobile web viewport resize detection (Chrome & Safari on mobile)
+    let cleanupVp: (() => void) | undefined;
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.visualViewport) {
+      const vp = window.visualViewport;
+      const onVpResize = () => {
+        if (!vp) return;
+        const diff = window.innerHeight - vp.height;
+        if (diff > 100) {
+          keyboardUp.current = true;
+          setKeyboardShown(true);
+          raise(diff);
+        } else {
+          keyboardUp.current = false;
+          setKeyboardShown(false);
+          raise(0);
+        }
+      };
+      vp.addEventListener('resize', onVpResize);
+      cleanupVp = () => vp.removeEventListener('resize', onVpResize);
+    }
+
     return () => {
       show.remove();
       hide.remove();
       frame?.remove();
+      cleanupVp?.();
     };
   }, [raise, insets.bottom]);
 
@@ -265,7 +281,7 @@ export function LoginScreen() {
         contentContainerStyle={[styles.content, { paddingTop: heroTop }]}
         onScroll={onScroll}
         scrollEventThrottle={16}
-        keyboardShouldPersistTaps="always"
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
         bounces={false}

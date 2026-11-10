@@ -16,16 +16,23 @@ const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'ui-
 
 export type TicketTheme = { paper: string; stub: string; ink: string };
 const THEMES: TicketTheme[] = [
-  { paper: '#54B6F8', stub: '#3CA5EE', ink: '#0A1C3E' }, // soft brand blue
-  { paper: '#FFA742', stub: '#F5962A', ink: '#0A1C3E' }, // soft brand orange
-  { paper: '#FED843', stub: '#ECC72E', ink: '#0A1C3E' }, // soft warm gold
-  { paper: '#62D487', stub: '#4DC474', ink: '#0A1C3E' }, // soft fresh green
-  { paper: '#F87C87', stub: '#E86672', ink: '#0A1C3E' }, // soft brand red
-  { paper: '#DE73F0', stub: '#CE5EE0', ink: '#0A1C3E' }, // soft lilac purple
-  { paper: '#FFA07A', stub: '#F08B63', ink: '#0A1C3E' }, // soft coral
+  { paper: '#013E86', stub: '#002A5C', ink: '#FFFFFF' }, // brand navy
+  { paper: '#FFA742', stub: '#E08620', ink: '#FFFFFF' }, // brand orange
+  { paper: '#D30D24', stub: '#A80A1C', ink: '#FFFFFF' }, // brand red
+  { paper: '#FEDB7D', stub: '#F7C35D', ink: '#012A5C' }, // warm yellow
+  { paper: '#0A4E9E', stub: '#063773', ink: '#FFFFFF' }, // royal blue
+  { paper: '#FF6F3C', stub: '#E05322', ink: '#FFFFFF' }, // coral
+  { paper: '#0284C7', stub: '#0369A1', ink: '#FFFFFF' }, // sky blue
+  { paper: '#12AD2B', stub: '#0D8220', ink: '#FFFFFF' }, // brand green
 ];
-const SUN: TicketTheme = { paper: '#FED843', stub: '#ECC72E', ink: '#0A1C3E' }; // soft brand warm gold
-const THEME_BY_CODE: Record<string, TicketTheme> = { FREEDEL: THEMES[0], CLEAN15: SUN, WINTER10: THEMES[2], MONSOON: THEMES[3], FIRSTWASH: THEMES[5] };
+const SUN: TicketTheme = { paper: '#FEC837', stub: '#EFB21C', ink: '#0A1C3E' }; // the brand's warm yellow
+const THEME_BY_CODE: Record<string, TicketTheme> = {
+  FREEDEL: THEMES[0], // #013E86 Navy
+  CLEAN15: SUN,       // #FEC837 Warm Yellow
+  WINTER10: THEMES[2], // #D30D24 Red
+  MONSOON: THEMES[3], // #FEDB7D Yellow
+  FIRSTWASH: THEMES[5], // #FF6F3C Coral
+};
 
 /** The same colour per coupon as on the Offers page. */
 export const ticketTheme = (o: Offer, i: number) => THEME_BY_CODE[o.code ?? ''] ?? THEMES[i % THEMES.length];

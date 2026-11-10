@@ -16,7 +16,7 @@ const webCursor = Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : nu
 export function LogoutConfirm({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
   return (
     <View style={styles.root}>
-      <Animated.View entering={ZoomIn.duration(260).easing(Easing.out(Easing.cubic))} style={styles.ring}>
+      <Animated.View entering={ZoomIn.duration(260)} style={styles.ring}>
         <View style={styles.icon}>
           <Icon name="logout" size={22} color={RED} strokeWidth={2.2} />
         </View>

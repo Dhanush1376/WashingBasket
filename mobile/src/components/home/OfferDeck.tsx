@@ -193,23 +193,27 @@ export function OfferDeck({
         {...(Platform.OS === 'web' ? null : pan.panHandlers)}
       >
         {w > 0
-          ? live.map((o, i) => {
-              const at = offers.indexOf(o);
-              return (
+          ? [...live]
+              .map((o, i) => {
+                const at = offers.indexOf(o);
+                const pos = (i - top + n) % n;
+                return { o, at, pos };
+              })
+              .sort((a, b) => b.pos - a.pos)
+              .map(({ o, at, pos }) => (
                 <DeckCard
                   key={o.id}
                   offer={o}
                   no={at + 1}
                   theme={ticketTheme(o, at)}
-                  pos={(i - top + n) % n}
+                  pos={pos}
                   w={w}
                   h={h}
                   top={FAN_Y * fan + 6}
                   drag={drag}
                   onPress={() => onOpen(o.id)}
                 />
-              );
-            })
+              ))
           : null}
       </View>
 
@@ -257,6 +261,7 @@ function DeckCard({
     const at = p.get();
     const x = front ? drag.get() : 0;
     return {
+      zIndex: Math.round(100 - at * 10),
       opacity: interpolate(at, [VISIBLE - 1, VISIBLE], [1, 0], 'clamp'),
       transform: [
         { translateX: x + at * FAN_X },
@@ -268,7 +273,7 @@ function DeckCard({
   });
 
   return (
-    <Animated.View style={[styles.slot, { top, width: w, height: h, zIndex: 10 - pos }, ticketShadow, anim]} pointerEvents={front ? 'auto' : 'none'}>
+    <Animated.View style={[styles.slot, { top, width: w, height: h, zIndex: 100 - pos * 10 }, ticketShadow, anim]} pointerEvents={front ? 'auto' : 'none'}>
       <Pressable
         onPress={onPress}
         accessibilityRole="button"

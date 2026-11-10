@@ -62,9 +62,9 @@ const BRAND_RED = colors.navy; // the logo navy, as on the profile member card
 const CANVAS = "#EAE6DB"; // the same stone beige as the coupons page
 const CARD = "#FFFFFF"; // card body
 const EDGE = "#ECEAE4"; // hairline edges on the off-white
-const CHIP = "#F4F3EF";
+const CHIP = "#F8FAFC";
 const CHIP_ON = "#FFFFFF";
-const CHIP_EDGE = "#C4BEAD";
+const CHIP_EDGE = "#E2E8F0";
 const CHIP_ON_EDGE = colors.ink;
 const GREEN = "#1F7A2E";
 const PRESS_SPRING = { damping: 15, stiffness: 320 };
@@ -1464,9 +1464,9 @@ const styles = StyleSheet.create({
   amountField: {
     flexDirection: "row",
     alignItems: "center",
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#F4F2EB",
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#F8FAFC",
     marginTop: space.lg,
     paddingLeft: space.xl,
     paddingRight: space.lg,

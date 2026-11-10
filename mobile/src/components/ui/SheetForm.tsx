@@ -11,7 +11,7 @@ import './SheetForm.css'; // keeps autofilled fields in our own colours on the w
  * The parts every drawer form is built from (the wallet's Top Up, the profile drawers, sign-in):
  * soft pill fields that turn white with a dark edge when focused, soft chips, a summary box.
  */
-export const FORM = { field: '#F4F2EB', edge: '#C4BEAD', chip: '#EFECE6' } as const;
+export const FORM = { field: '#FFFFFF', edge: '#E2E8F0', chip: '#F1F5F9' } as const;
 const webCursor = Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null;
 const noOutline = Platform.OS === 'web' ? ({ outlineStyle: 'none', outline: 'none', backgroundColor: 'transparent' } as object) : null;
 
@@ -208,8 +208,8 @@ export const formStyles = StyleSheet.create({
   field: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 56,
-    borderRadius: 28,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: FORM.field,
     paddingLeft: space.xl,
     paddingRight: space.lg,
@@ -218,12 +218,12 @@ export const formStyles = StyleSheet.create({
     // keeps whatever is inside (e.g. a browser's autofill fill) within the rounded ends
     overflow: 'hidden',
   },
-  fieldFocus: { backgroundColor: FORM.field, borderColor: colors.ink },
+  fieldFocus: { backgroundColor: '#FFFFFF', borderColor: colors.ink },
   fieldError: { borderColor: colors.danger },
-  fieldLocked: { backgroundColor: '#EFEDE8', borderColor: '#E6E4DE' },
+  fieldLocked: { backgroundColor: '#F1F5F9', borderColor: '#E2E8F0' },
   inputLocked: { color: colors.inkSoft },
   input: { flex: 1, minWidth: 0, height: '100%', fontFamily: fonts.medium, fontSize: 16, color: colors.ink, backgroundColor: 'transparent' },
-  divider: { width: 1, height: 26, backgroundColor: colors.lineStrong, marginHorizontal: space.md },
+  divider: { width: 1, height: 24, backgroundColor: '#E2E8F0', marginHorizontal: space.md },
   iconBadge: {
     width: 26,
     height: 26,
@@ -276,8 +276,8 @@ export const formStyles = StyleSheet.create({
   chipTextOn: { fontFamily: fonts.semibold },
 
   otpRow: { flexDirection: 'row', gap: 8 },
-  otpCell: { flex: 1, height: 56, borderRadius: 18, backgroundColor: FORM.field, borderWidth: 1.25, borderColor: FORM.edge, alignItems: 'center', justifyContent: 'center' },
-  otpFilled: { backgroundColor: '#FFFFFF', borderColor: colors.lineStrong },
+  otpCell: { flex: 1, height: 52, borderRadius: 16, backgroundColor: FORM.field, borderWidth: 1.25, borderColor: FORM.edge, alignItems: 'center', justifyContent: 'center' },
+  otpFilled: { backgroundColor: '#FFFFFF', borderColor: colors.ink },
   otpDigit: { fontFamily: fonts.bold, fontSize: 20, color: colors.ink, fontVariant: ['tabular-nums'] },
   otpHidden: { opacity: 0.01, color: 'transparent' },
 });

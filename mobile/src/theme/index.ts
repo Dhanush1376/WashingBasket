@@ -51,7 +51,7 @@ export const colors = {
   success: '#12AD2B',
   successTint: brandShades.greenTint,
   /** Resting fill of text fields; focus turns them white with a navy edge. */
-  fieldFill: '#F4F2EB',
+  fieldFill: '#FFFFFF',
   disabled: '#ECEEF2',
   disabledInk: '#717A8A',
 } as const;

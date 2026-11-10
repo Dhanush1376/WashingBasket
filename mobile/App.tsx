@@ -51,6 +51,7 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
         outline: none !important;
         outline-style: none !important;
         background-color: transparent !important;
+        background: transparent !important;
         -webkit-tap-highlight-color: transparent !important;
       }
       input:focus, textarea:focus, select:focus {
@@ -58,17 +59,28 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
         outline-style: none !important;
         box-shadow: none !important;
         background-color: transparent !important;
+        background: transparent !important;
       }
       input:-webkit-autofill,
       input:-webkit-autofill:hover, 
       input:-webkit-autofill:focus,
-      input:-webkit-autofill:active {
-        -webkit-box-shadow: 0 0 0 1000px #F4F2EB inset !important;
-        box-shadow: 0 0 0 1000px #F4F2EB inset !important;
+      input:-webkit-autofill:active,
+      textarea:-webkit-autofill,
+      textarea:-webkit-autofill:hover,
+      textarea:-webkit-autofill:focus,
+      textarea:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+        box-shadow: 0 0 0 1000px #ffffff inset !important;
         -webkit-text-fill-color: #0A1C3E !important;
         caret-color: #0A1C3E !important;
         background-color: transparent !important;
-        transition: background-color 50000s ease-in-out 0s;
+        background: transparent !important;
+        transition: background-color 999999s ease-in-out 0s, color 999999s ease-in-out 0s !important;
+      }
+      input:autofill,
+      textarea:autofill {
+        background-color: transparent !important;
+        background: transparent !important;
       }
     `;
     document.head.appendChild(style);

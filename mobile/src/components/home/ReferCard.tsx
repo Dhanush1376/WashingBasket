@@ -90,7 +90,7 @@ export function ReferCard({
   return (
     <Pressable
       onPress={onOpen}
-      accessibilityRole="button"
+      accessibilityRole={Platform.OS === 'web' ? undefined : 'button'}
       accessibilityLabel={`Refer and earn. Give ₹${friendReward}, get ₹${reward}`}
       style={({ pressed }) => [styles.card, liftShadow, webCursor, pressed && { transform: [{ scale: 0.99 }] }]}
     >

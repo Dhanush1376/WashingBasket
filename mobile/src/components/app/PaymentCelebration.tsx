@@ -94,8 +94,8 @@ export function PaymentCelebrationHost() {
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.host]} pointerEvents="box-none">
-      {blast ? <ConfettiBlast key={blast.id} /> : null}
-      {toast ? <TopToast key={toast.id} info={toast} onClose={() => setToast(null)} /> : null}
+      {blast ? <ConfettiBlast key={`blast-${blast.id}`} /> : null}
+      {toast ? <TopToast key={`toast-${toast.id}`} info={toast} onClose={() => setToast(null)} /> : null}
     </View>
   );
 }
