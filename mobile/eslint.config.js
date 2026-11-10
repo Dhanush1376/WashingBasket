@@ -8,6 +8,7 @@ module.exports = defineConfig([
     ignores: ['dist/*', 'scripts/*'],
     rules: {
       'react-hooks/immutability': 'off',
+      'react-hooks/preserve-manual-memoization': 'warn',
       'react-hooks/set-state-in-effect': 'warn',
       'react-hooks/refs': 'warn',
       'react/no-unescaped-entities': 'off',

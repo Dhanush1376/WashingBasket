@@ -131,17 +131,18 @@ export function OverviewGrid({
   const orderLoc = currentOrder && state ? findLocation(state, currentOrder.locationId) : null;
 
   const orderDate = currentOrder ? date(currentOrder.createdAt) : '';
-  const orderService = useMemo(() => {
-    if (!currentOrder) return '';
+  let orderService = '';
+  if (currentOrder) {
     if (currentOrder.lines && currentOrder.lines.length > 0) {
       const names = currentOrder.lines.map((l) => l.name.replace(/ · .*/, '')).filter(Boolean);
       const unique = Array.from(new Set(names));
-      if (unique.length === 1) return unique[0];
-      if (unique.length === 2) return `${unique[0]} & ${unique[1]}`;
-      return `${unique[0]} + ${unique.length - 1} more`;
+      if (unique.length === 1) orderService = unique[0];
+      else if (unique.length === 2) orderService = `${unique[0]} & ${unique[1]}`;
+      else orderService = `${unique[0]} + ${unique.length - 1} more`;
+    } else {
+      orderService = plural(currentOrder.pieces, 'piece');
     }
-    return plural(currentOrder.pieces, 'piece');
-  }, [currentOrder]);
+  }
 
   const hasAnyUrgent = laundryOpen.some((o) => ['PAYMENT_PENDING', 'AWAITING_STAFF_ACCEPTANCE', 'AWAITING_CUSTOMER_VERIFICATION'].includes(o.status));
 
