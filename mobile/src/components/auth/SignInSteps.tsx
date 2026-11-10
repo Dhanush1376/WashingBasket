@@ -135,9 +135,6 @@ export function PhoneStep({ onCode, onSocial }: { onCode: (c: Challenge) => void
           <PillField
             ref={inputRef}
             value={formatNational(digits, country)}
-            // Android leaves the cursor where it was when the group space is added, so the next digit landed
-            // before it and the number came out scrambled: keep the cursor at the end
-            selection={ANDROID_END(formatNational(digits, country))}
             onChangeText={(t) => {
               setDigits((d) => readNational(t, d, country));
               if (error) setError(null);

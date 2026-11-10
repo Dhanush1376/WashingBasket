@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import { PanResponder, Platform, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
-import Animated, { Easing, FadeIn, interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, FadeIn, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '../../components/app/Icon';
@@ -75,10 +75,18 @@ export function NotificationsScreen({ navigation }: ScreenProps<'Notifications'>
   const latest = unread[0] ?? all[0];
   const groups = dayGroups(all);
 
-  const statusBarH = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0);
+  const statusBarH = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 0);
   const restingTop = Math.max(statusBarH, 6) + 104;
   const targetTop = statusBarH;
   const lift = restingTop - targetTop;
+
+  const scrollY = useSharedValue(0);
+  const onListScroll = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      'worklet';
+      scrollY.value = e.contentOffset.y;
+    },
+  });
 
   const pos = useSharedValue(0);
   const settle = (to: number) => {
@@ -119,9 +127,12 @@ export function NotificationsScreen({ navigation }: ScreenProps<'Notifications'>
     borderTopRightRadius: interpolate(pos.value, [0, 1], [28, 0]),
   }));
 
-  const statusBarOverlayStyle = useAnimatedStyle(() => ({
-    opacity: pos.value,
-  }));
+  const statusBarOverlayStyle = useAnimatedStyle(() => {
+    const scrollProgress = interpolate(scrollY.value, [0, 40], [0, 1], 'clamp');
+    return {
+      opacity: Math.max(pos.value, scrollProgress),
+    };
+  });
 
   const open = async (n: AppNotification) => {
     if (!n.read) {
@@ -235,16 +246,8 @@ export function NotificationsScreen({ navigation }: ScreenProps<'Notifications'>
               style={{ flex: 1 }}
               contentContainerStyle={{ paddingHorizontal: PAGE, paddingBottom: Math.max(insets.bottom, 12) + 110 }}
               showsVerticalScrollIndicator={false}
-              onScrollBeginDrag={() => {
-                if (pos.value < 0.5) settle(1);
-              }}
-              onScrollEndDrag={(e) => {
-                const y = e.nativeEvent.contentOffset.y;
-                const vy = e.nativeEvent.velocity?.y ?? 0;
-                if (y <= 4 && vy < -0.2 && pos.value > 0.5) {
-                  settle(0);
-                }
-              }}
+              onScroll={onListScroll}
+              scrollEventThrottle={16}
             >
               {!all.length ? (
                 <EmptyState

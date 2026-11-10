@@ -73,11 +73,11 @@ export function QrFrame({ value, locked, size = 220, label }: { value: string; l
   return (
     <View style={[styles.frame, { width: size + 28, height: size + 28 }]} accessible accessibilityLabel={label ?? (locked ? 'QR code, locked until payment' : 'QR code')}>
       <Animated.View style={codeStyle}>
-        <QrCode value={locked ? decoy : value} size={size} color={locked ? '#94A3B8' : colors.ink} />
+        <QrCode value={locked ? decoy : value} size={size} color={locked ? '#E2E8F0' : colors.ink} />
       </Animated.View>
       {veilShown ? (
         <Animated.View style={[StyleSheet.absoluteFill, styles.veil, veilStyle]} pointerEvents="none">
-          <BlurView intensity={Platform.OS === 'web' ? 18 : 40} tint="light" style={StyleSheet.absoluteFill} />
+          <BlurView intensity={Platform.OS === 'web' ? 18 : 45} tint="light" style={StyleSheet.absoluteFill} />
           <View style={[StyleSheet.absoluteFill, styles.veilWash]} />
           <View style={styles.lockContainer}>
             <View style={styles.lock}>
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
       : {}),
   },
   veilWash: {
-    backgroundColor: Platform.OS === 'web' ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: Platform.OS === 'web' ? 'rgba(255, 255, 255, 0.70)' : 'rgba(255, 255, 255, 0.94)',
   },
   lockContainer: {
     alignItems: 'center',

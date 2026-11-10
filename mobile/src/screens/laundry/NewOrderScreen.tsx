@@ -167,7 +167,7 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
     },
   });
 
-  const statusBarH = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0);
+  const statusBarH = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 0);
   const restingTop = Math.max(statusBarH, 6) + 104;
   const targetTop = statusBarH;
   const lift = restingTop - targetTop;
@@ -232,9 +232,12 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
     };
   });
 
-  const statusBarOverlayStyle = useAnimatedStyle(() => ({
-    opacity: pos.value,
-  }));
+  const statusBarOverlayStyle = useAnimatedStyle(() => {
+    const scrollProgress = interpolate(scrollY.value, [0, 40], [0, 1], 'clamp');
+    return {
+      opacity: Math.max(pos.value, scrollProgress),
+    };
+  });
 
   if (!state) {
     return (
@@ -528,19 +531,9 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
               },
             ]}
             showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="always"
             onScroll={onListScroll}
             scrollEventThrottle={16}
-            onScrollBeginDrag={() => {
-              if (pos.value < 0.5) settle(1);
-            }}
-            onScrollEndDrag={(e) => {
-              const y = e.nativeEvent.contentOffset.y;
-              const vy = e.nativeEvent.velocity?.y ?? 0;
-              if (y <= 4 && vy < -0.2 && pos.value > 0.5) {
-                settle(0);
-              }
-            }}
             alwaysBounceVertical={true}
             bounces={true}
             overScrollMode="always"
@@ -562,7 +555,7 @@ export function NewOrderScreen({ navigation, route }: TabProps<'Book'>) {
                   <View style={[styles.catCard, soft, focusCategory === c.id && { borderColor: look.color, borderWidth: 2 }]}>
                     <View style={styles.cardHead}>
                       <View style={[styles.ribbon, { backgroundColor: look.color }]}>
-                        <Icon name={look.icon} size={13} color="#FFFFFF" strokeWidth={2.2} />
+                        <Icon name={look.icon} size={11.5} color="#FFFFFF" strokeWidth={2.4} />
                         <Text style={styles.ribbonText} numberOfLines={1} ellipsizeMode="tail">
                           {c.name}
                         </Text>
@@ -1003,8 +996,8 @@ const styles = StyleSheet.create({
   catSectionNext: { marginTop: space.lg },
   catCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: space.lg,
+    borderRadius: 22,
+    padding: 16,
     borderWidth: 1,
     borderColor: '#CDD2DA',
     ...(Platform.OS === 'web'
@@ -1021,32 +1014,32 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: '#CDD2DA',
     borderStyle: 'dashed',
-    marginTop: 14,
+    marginTop: 12,
     marginBottom: 2,
   },
   ribbon: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    height: 28,
-    paddingHorizontal: 10,
-    borderRadius: 14,
+    gap: 5,
+    height: 25,
+    paddingHorizontal: 8,
+    borderRadius: 13,
     flexShrink: 1,
     minWidth: 0,
     alignSelf: 'flex-start',
   },
   ribbonText: {
     fontFamily: fonts.bold,
-    fontSize: 11,
-    letterSpacing: 0.5,
+    fontSize: 10,
+    letterSpacing: 0.3,
     textTransform: 'uppercase',
     color: '#FFFFFF',
     flexShrink: 1,
   },
   unitBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 8,
     backgroundColor: '#F4F5F7',
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -1054,8 +1047,8 @@ const styles = StyleSheet.create({
   },
   unitBadgeText: {
     fontFamily: fonts.bold,
-    fontSize: 10.5,
-    letterSpacing: 0.6,
+    fontSize: 9.5,
+    letterSpacing: 0.4,
     textTransform: 'uppercase',
     color: colors.ink,
   },

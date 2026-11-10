@@ -157,18 +157,25 @@ export function LoginScreen() {
     Math.min(1, Math.max(lift.value / Math.max(maxLift, 1), scrollY.value / Math.max(spaceH * 0.7, 1))),
   );
   // Phones: follow the keyboard's real height frame by frame, so the form always sits right on top of it,
-  // including when the keyboard changes size between steps (the details keyboard with its suggestion bar is
-  // taller than the PIN number pad). The keyboard's height includes the home-indicator area, which the sheet's
-  // bottom padding already covers, so lift by the rest.
+  // including when the keyboard changes size between steps.
+  // On iOS the window does not resize so lift translates the sheet up over the keyboard.
+  // On Android the window already resizes via adjustResize, so a large lift causes double-shifting;
+  // keep lift gentle on Android so touch hitboxes stay perfectly aligned with the buttons.
   const kb = useAnimatedKeyboardSafe();
   const bottomInset = insets.bottom;
+  const isAndroid = Platform.OS === 'android';
   useAnimatedReaction(
     () => kb.height.value,
     (h) => {
       if (Platform.OS === 'web') return;
-      lift.value = Math.min(Math.max(0, h - bottomInset), maxLift);
+      if (isAndroid) {
+        // Android window resizes automatically; prevent off-screen over-translation
+        lift.value = 0;
+      } else {
+        lift.value = Math.min(Math.max(0, h - bottomInset), maxLift);
+      }
     },
-    [bottomInset, maxLift],
+    [bottomInset, maxLift, isAndroid],
   );
   const raise = useCallback(
     (to: number, duration = LIFT_MS) => {
@@ -258,7 +265,7 @@ export function LoginScreen() {
         contentContainerStyle={[styles.content, { paddingTop: heroTop }]}
         onScroll={onScroll}
         scrollEventThrottle={16}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
         bounces={false}

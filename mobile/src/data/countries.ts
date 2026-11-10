@@ -10,7 +10,7 @@ export type Country = {
 };
 
 export const COUNTRIES: Country[] = [
-  { iso: 'IN', name: 'India', dialCode: '+91', lengths: [10], groups: [5, 5], pattern: /^[6-9]/ },
+  { iso: 'IN', name: 'India', dialCode: '+91', lengths: [10], groups: [5, 5], pattern: /^[1-9]/ },
   { iso: 'AE', name: 'United Arab Emirates', dialCode: '+971', lengths: [9], groups: [2, 3, 4], pattern: /^5/ },
   { iso: 'SA', name: 'Saudi Arabia', dialCode: '+966', lengths: [9], groups: [2, 3, 4], pattern: /^5/ },
   { iso: 'SG', name: 'Singapore', dialCode: '+65', lengths: [8], groups: [4, 4], pattern: /^[89]/ },

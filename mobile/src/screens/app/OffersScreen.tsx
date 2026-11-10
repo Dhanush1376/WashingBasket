@@ -123,7 +123,7 @@ export function OffersScreen({ navigation, route }: ScreenProps<'Offers'>) {
   const list = (offers.data ?? []).filter((o) => filter === 'all' || o.status === filter);
   const current = list[Math.min(index, list.length - 1)];
   const startAt = focusId ? Math.max(0, list.findIndex((o) => o.id === focusId)) : 0;
-  const cardW = Math.round(Math.min(308, Math.max(274, pageW * 0.78)));
+  const cardW = Math.round(Math.min(312, Math.max(280, pageW * 0.8)));
   const cardH = Math.round(cardW * 0.56);
   const book = () => navigation.navigate('Main', { screen: 'Book' });
 
@@ -863,8 +863,8 @@ function Ticket({
   const { big, small } = headline(offer);
   const code = codeOf(offer);
   const ink = theme.ink;
-  const pad = 14 * u;
-  const bigSize = (big.length > 3 ? 44 : 54) * u;
+  const pad = 12 * u;
+  const bigSize = (big.length > 3 ? 36 : 42) * u;
 
   const isExpired = offer.status === 'expired';
   const faded = offer.status !== 'active';
@@ -900,33 +900,33 @@ function Ticket({
         </View>
       </View>
 
-      <View style={[styles.main, { left: stubW, padding: pad, paddingRight: pad + 6 * u, opacity: textOpacity }]}>
+      <View style={[styles.main, { left: stubW, padding: pad, paddingRight: pad + 14 * u, opacity: textOpacity }]}>
         {/* top: the big number beside a column of small mono labels on hairlines */}
         <View style={styles.mainTop}>
-          <View style={{ flexShrink: 0 }}>
+          <View style={{ flexShrink: 0, justifyContent: 'center' }}>
             <Text style={[styles.big, { color: ink, fontSize: bigSize, lineHeight: bigSize * 1.02, letterSpacing: -2 * u }]} numberOfLines={1}>
               {big}
             </Text>
-            <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 9.5 * u, letterSpacing: 3 * u, marginTop: -2 * u }]}>{small}</Text>
+            <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 8.5 * u, letterSpacing: 2 * u, marginTop: -2 * u }]}>{small}</Text>
           </View>
-          <View style={[styles.labels, { marginLeft: 10 * u }]}>
+          <View style={[styles.labels, { marginLeft: 9 * u }]}>
             <View style={[styles.ruleRow, { borderColor: ink, paddingBottom: 2.5 * u }]}>
-              <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 8.5 * u, flexShrink: 0 }]}>
+              <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 8 * u, flexShrink: 0 }]}>
                 Nº {String(no).padStart(2, '0')}
               </Text>
               <Text
-                style={[styles.mono, { color: ink, fontSize: 8.5 * u, flexShrink: 1, textAlign: 'right' }]}
+                style={[styles.mono, styles.monoBold, { color: ink, fontSize: 7.5 * u, flex: 1, minWidth: 0, textAlign: 'right', marginLeft: 5 * u }]}
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
                 {(offer.badgeLabel ?? 'OFFER').toUpperCase()}
               </Text>
             </View>
-            <Text style={[styles.mono, { color: ink, fontSize: 9 * u, lineHeight: 12.5 * u, marginTop: 4 * u }]} numberOfLines={2}>
+            <Text style={[styles.mono, { color: ink, fontSize: 8.5 * u, lineHeight: 11.5 * u, marginTop: 3 * u }]} numberOfLines={2}>
               {offer.title.toUpperCase()}
             </Text>
             <View style={[styles.ruleRow, { borderColor: ink, borderTopWidth: 1, borderBottomWidth: 0, paddingTop: 2.5 * u, marginTop: 'auto' }]}>
-              <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 8.5 * u, flexShrink: 1 }]} numberOfLines={1}>
+              <Text style={[styles.mono, styles.monoBold, { color: ink, fontSize: 7.5 * u, flex: 1, minWidth: 0 }]} numberOfLines={1} ellipsizeMode="tail">
                 {validity(offer)}
               </Text>
             </View>

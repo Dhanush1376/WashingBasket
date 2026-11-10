@@ -1510,9 +1510,11 @@ const styles = StyleSheet.create({
   lockedQrWell: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: space.md,
+    paddingVertical: 18,
     borderRadius: 24,
-    backgroundColor: '#F6F2EB',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: 'rgba(10, 28, 62, 0.08)',
   },
   lockedHeroBottom: {
     flexDirection: 'row',

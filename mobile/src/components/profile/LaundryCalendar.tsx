@@ -607,7 +607,7 @@ function DayCell({
       <Animated.View style={[tile, { width: '100%', height }, cellAnim]}>
         {look ? (
           <View style={styles.badge}>
-            <Icon name={look.icon} size={8.5} color={look.color} strokeWidth={2.4} />
+            <Icon name={look.icon} size={7} color={look.color} strokeWidth={2.4} />
           </View>
         ) : null}
         <Text
@@ -653,9 +653,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 3.5,
     right: 3.5,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(60, 45, 20, 0.08)',

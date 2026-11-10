@@ -399,7 +399,7 @@ function DaySheet({
     return (
       <View style={styles.dayEmpty}>
         <View style={styles.dayEmptyIcon}>
-          <Icon name={ahead ? 'calendar' : 'check'} size={17} color={colors.inkSoft} />
+          <Icon name={ahead ? 'calendar' : 'check'} size={13} color={colors.inkSoft} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.dayEmptyTitle}>{ahead ? 'Free day' : 'No laundry this day'}</Text>
@@ -770,7 +770,7 @@ const styles = StyleSheet.create({
     borderColor: '#EAE6DF',
     marginTop: 6,
   },
-  dayEmptyIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+  dayEmptyIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
   dayEmptyTitle: { fontFamily: fonts.semibold, fontSize: 14.5, color: colors.ink },
   dayEmptyText: { fontFamily: fonts.regular, fontSize: 12.5, color: colors.inkMuted, marginTop: 2 },
   dayBook: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 32, paddingHorizontal: 14, borderRadius: 16, backgroundColor: '#0A1C3E' },

@@ -198,6 +198,7 @@ export function Button({ label, onPress, variant = 'primary', icon, loading, dis
     <Pressable
       onPress={onPress}
       disabled={off}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: !!disabled, busy: !!loading }}
